@@ -1,17 +1,19 @@
 -- CreateTable
 CREATE TABLE "Test" (
-    "id" TEXT NOT NULL PRIMARY KEY,
+    "id" TEXT NOT NULL,
     "title" TEXT NOT NULL,
     "description" TEXT,
     "category" TEXT,
     "durationMinutes" INTEGER,
-    "createdAt" DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    "updatedAt" DATETIME NOT NULL
+    "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "updatedAt" TIMESTAMP(3) NOT NULL,
+
+    CONSTRAINT "Test_pkey" PRIMARY KEY ("id")
 );
 
 -- CreateTable
 CREATE TABLE "Question" (
-    "id" TEXT NOT NULL PRIMARY KEY,
+    "id" TEXT NOT NULL,
     "testId" TEXT NOT NULL,
     "type" TEXT NOT NULL,
     "content" TEXT NOT NULL,
@@ -20,39 +22,42 @@ CREATE TABLE "Question" (
     "timeLimitSeconds" INTEGER,
     "points" INTEGER NOT NULL DEFAULT 1,
     "order" INTEGER NOT NULL,
-    CONSTRAINT "Question_testId_fkey" FOREIGN KEY ("testId") REFERENCES "Test" ("id") ON DELETE CASCADE ON UPDATE CASCADE
+
+    CONSTRAINT "Question_pkey" PRIMARY KEY ("id")
 );
 
 -- CreateTable
 CREATE TABLE "Candidate" (
-    "id" TEXT NOT NULL PRIMARY KEY,
+    "id" TEXT NOT NULL,
     "name" TEXT NOT NULL,
     "email" TEXT NOT NULL,
     "phone" TEXT,
     "position" TEXT,
     "status" TEXT NOT NULL DEFAULT 'active',
     "notes" TEXT,
-    "createdAt" DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    "updatedAt" DATETIME NOT NULL
+    "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "updatedAt" TIMESTAMP(3) NOT NULL,
+
+    CONSTRAINT "Candidate_pkey" PRIMARY KEY ("id")
 );
 
 -- CreateTable
 CREATE TABLE "TestAssignment" (
-    "id" TEXT NOT NULL PRIMARY KEY,
+    "id" TEXT NOT NULL,
     "candidateId" TEXT NOT NULL,
     "testId" TEXT NOT NULL,
     "uniqueLink" TEXT NOT NULL,
     "status" TEXT NOT NULL DEFAULT 'not_started',
-    "assignedAt" DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    "startedAt" DATETIME,
-    "completedAt" DATETIME,
-    CONSTRAINT "TestAssignment_candidateId_fkey" FOREIGN KEY ("candidateId") REFERENCES "Candidate" ("id") ON DELETE CASCADE ON UPDATE CASCADE,
-    CONSTRAINT "TestAssignment_testId_fkey" FOREIGN KEY ("testId") REFERENCES "Test" ("id") ON DELETE CASCADE ON UPDATE CASCADE
+    "assignedAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "startedAt" TIMESTAMP(3),
+    "completedAt" TIMESTAMP(3),
+
+    CONSTRAINT "TestAssignment_pkey" PRIMARY KEY ("id")
 );
 
 -- CreateTable
 CREATE TABLE "Response" (
-    "id" TEXT NOT NULL PRIMARY KEY,
+    "id" TEXT NOT NULL,
     "assignmentId" TEXT NOT NULL,
     "questionId" TEXT NOT NULL,
     "answer" TEXT,
@@ -60,9 +65,9 @@ CREATE TABLE "Response" (
     "score" INTEGER,
     "timeTakenSeconds" INTEGER,
     "graderNotes" TEXT,
-    "createdAt" DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    CONSTRAINT "Response_assignmentId_fkey" FOREIGN KEY ("assignmentId") REFERENCES "TestAssignment" ("id") ON DELETE CASCADE ON UPDATE CASCADE,
-    CONSTRAINT "Response_questionId_fkey" FOREIGN KEY ("questionId") REFERENCES "Question" ("id") ON DELETE CASCADE ON UPDATE CASCADE
+    "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+
+    CONSTRAINT "Response_pkey" PRIMARY KEY ("id")
 );
 
 -- CreateIndex
@@ -91,3 +96,18 @@ CREATE INDEX "Response_questionId_idx" ON "Response"("questionId");
 
 -- CreateIndex
 CREATE UNIQUE INDEX "Response_assignmentId_questionId_key" ON "Response"("assignmentId", "questionId");
+
+-- AddForeignKey
+ALTER TABLE "Question" ADD CONSTRAINT "Question_testId_fkey" FOREIGN KEY ("testId") REFERENCES "Test"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "TestAssignment" ADD CONSTRAINT "TestAssignment_candidateId_fkey" FOREIGN KEY ("candidateId") REFERENCES "Candidate"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "TestAssignment" ADD CONSTRAINT "TestAssignment_testId_fkey" FOREIGN KEY ("testId") REFERENCES "Test"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "Response" ADD CONSTRAINT "Response_assignmentId_fkey" FOREIGN KEY ("assignmentId") REFERENCES "TestAssignment"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "Response" ADD CONSTRAINT "Response_questionId_fkey" FOREIGN KEY ("questionId") REFERENCES "Question"("id") ON DELETE CASCADE ON UPDATE CASCADE;
