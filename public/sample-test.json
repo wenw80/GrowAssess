@@ -1,0 +1,82 @@
+{
+  "$schema": "https://example.com/growassess/test-schema.json",
+  "_comment": "GrowAssess Test Format v1.0 - Use this as a template for creating tests",
+
+  "title": "Sample Cognitive Assessment",
+  "description": "A comprehensive cognitive test covering analytical reasoning, verbal comprehension, and problem-solving skills.",
+  "category": "Cognitive",
+  "durationMinutes": 45,
+
+  "questions": [
+    {
+      "type": "mcq",
+      "content": "If all roses are flowers and some flowers fade quickly, which statement must be true?",
+      "options": [
+        "All roses fade quickly",
+        "Some roses may fade quickly",
+        "No roses fade quickly",
+        "Roses never fade"
+      ],
+      "correctAnswer": 1,
+      "points": 2
+    },
+    {
+      "type": "mcq",
+      "content": "What number comes next in the sequence: 2, 6, 12, 20, 30, ?",
+      "options": [
+        "40",
+        "42",
+        "44",
+        "46"
+      ],
+      "correctAnswer": 1,
+      "points": 2
+    },
+    {
+      "type": "mcq",
+      "content": "Which word is most opposite in meaning to 'EPHEMERAL'?",
+      "options": [
+        "Temporary",
+        "Permanent",
+        "Brief",
+        "Fleeting"
+      ],
+      "correctAnswer": 1,
+      "points": 1
+    },
+    {
+      "type": "timed",
+      "content": "List as many uses as you can think of for a paperclip. Be creative - there are no wrong answers.",
+      "timeLimitSeconds": 120,
+      "points": 5
+    },
+    {
+      "type": "freetext",
+      "content": "Describe a time when you had to solve a complex problem. What was your approach, and what was the outcome?",
+      "points": 10
+    },
+    {
+      "type": "mcq",
+      "content": "A company's revenue increased by 20% in Year 1 and decreased by 20% in Year 2. What is the net change from the original revenue?",
+      "options": [
+        "No change (0%)",
+        "Decrease of 4%",
+        "Increase of 4%",
+        "Decrease of 2%"
+      ],
+      "correctAnswer": 1,
+      "points": 3
+    },
+    {
+      "type": "timed",
+      "content": "You have 60 seconds to read the following paragraph and answer: What is the main argument?\n\n\"Remote work has fundamentally changed how organizations operate. While some argue it reduces collaboration, studies show that well-implemented remote policies can actually increase productivity by 13% while reducing operational costs. The key lies not in the location of work, but in the clarity of communication and the trust between team members.\"",
+      "timeLimitSeconds": 60,
+      "points": 4
+    },
+    {
+      "type": "freetext",
+      "content": "If you were given unlimited resources to solve one global problem, what would you choose and why? Outline your approach.",
+      "points": 10
+    }
+  ]
+}
