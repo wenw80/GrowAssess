@@ -1,0 +1,90 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+model Test {
+  id              String           @id @default(uuid())
+  title           String
+  description     String?
+  category        String?
+  durationMinutes Int?
+  createdAt       DateTime         @default(now())
+  updatedAt       DateTime         @updatedAt
+  questions       Question[]
+  assignments     TestAssignment[]
+}
+
+model Question {
+  id               String     @id @default(uuid())
+  testId           String
+  type             String     // mcq, freetext, timed
+  content          String
+  options          String?    // JSON string for MCQ options
+  correctAnswer    String?
+  timeLimitSeconds Int?
+  points           Int        @default(1)
+  order            Int
+  test             Test       @relation(fields: [testId], references: [id], onDelete: Cascade)
+  responses        Response[]
+
+  @@index([testId])
+}
+
+model Candidate {
+  id          String           @id @default(uuid())
+  name        String
+  email       String
+  phone       String?
+  position    String?
+  status      String           @default("active") // active, hired, rejected, pending
+  notes       String?
+  createdAt   DateTime         @default(now())
+  updatedAt   DateTime         @updatedAt
+  assignments TestAssignment[]
+
+  @@index([email])
+}
+
+model TestAssignment {
+  id          String     @id @default(uuid())
+  candidateId String
+  testId      String
+  uniqueLink  String     @unique
+  status      String     @default("not_started") // not_started, in_progress, completed
+  assignedAt  DateTime   @default(now())
+  startedAt   DateTime?
+  completedAt DateTime?
+  candidate   Candidate  @relation(fields: [candidateId], references: [id], onDelete: Cascade)
+  test        Test       @relation(fields: [testId], references: [id], onDelete: Cascade)
+  responses   Response[]
+
+  @@index([candidateId])
+  @@index([testId])
+  @@index([uniqueLink])
+}
+
+model Response {
+  id               String         @id @default(uuid())
+  assignmentId     String
+  questionId       String
+  answer           String?
+  isCorrect        Boolean?
+  score            Int?
+  timeTakenSeconds Int?
+  graderNotes      String?
+  createdAt        DateTime       @default(now())
+  assignment       TestAssignment @relation(fields: [assignmentId], references: [id], onDelete: Cascade)
+  question         Question       @relation(fields: [questionId], references: [id], onDelete: Cascade)
+
+  @@unique([assignmentId, questionId])
+  @@index([assignmentId])
+  @@index([questionId])
+}
