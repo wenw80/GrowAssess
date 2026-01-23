@@ -36,6 +36,13 @@ export default function TestsPage() {
   const [importSuccess, setImportSuccess] = useState<string | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
+  // Generate from prompt states
+  const [showGenerateModal, setShowGenerateModal] = useState(false);
+  const [generatePrompt, setGeneratePrompt] = useState('');
+  const [generating, setGenerating] = useState(false);
+  const [generateError, setGenerateError] = useState<string | null>(null);
+  const [generatedTest, setGeneratedTest] = useState<any>(null);
+
   // Filter states
   const [searchQuery, setSearchQuery] = useState('');
   const [categoryFilter, setCategoryFilter] = useState('all');
@@ -192,6 +199,81 @@ export default function TestsPage() {
     setImportSuccess(null);
   };
 
+  const openGenerateModal = () => {
+    setShowGenerateModal(true);
+    setGeneratePrompt('');
+    setGenerateError(null);
+    setGeneratedTest(null);
+  };
+
+  const handleGenerate = async () => {
+    if (!generatePrompt.trim()) {
+      setGenerateError('Please enter a prompt describing the test you want to create');
+      return;
+    }
+
+    setGenerating(true);
+    setGenerateError(null);
+    setGeneratedTest(null);
+
+    try {
+      const res = await fetch('/api/tests/generate', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ prompt: generatePrompt }),
+      });
+
+      const data = await res.json();
+
+      if (res.ok && data.test) {
+        setGeneratedTest(data.test);
+        setGenerateError(null);
+      } else {
+        setGenerateError(data.error || 'Failed to generate test');
+      }
+    } catch (error) {
+      setGenerateError('An error occurred while generating the test');
+      console.error('Error generating test:', error);
+    } finally {
+      setGenerating(false);
+    }
+  };
+
+  const handleImportGenerated = async () => {
+    if (!generatedTest) return;
+
+    setImporting(true);
+    setGenerateError(null);
+
+    try {
+      const res = await fetch('/api/tests/import', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(generatedTest),
+      });
+
+      const data = await res.json();
+
+      if (res.ok) {
+        setImportSuccess(data.message);
+        fetchTests();
+        setTimeout(() => {
+          setShowGenerateModal(false);
+          setGeneratedTest(null);
+          setGeneratePrompt('');
+          setImportSuccess(null);
+        }, 2000);
+      } else {
+        setGenerateError(data.error || 'Failed to import generated test');
+      }
+    } catch (error) {
+      setGenerateError('An error occurred during import');
+      console.error('Error importing generated test:', error);
+    } finally {
+      setImporting(false);
+    }
+  };
+
   const clearFilters = () => {
     setSearchQuery('');
     setCategoryFilter('all');
@@ -216,6 +298,9 @@ export default function TestsPage() {
           <p className="text-gray-500 mt-1">Manage your cognitive tests and assessments</p>
         </div>
         <div className="flex flex-col sm:flex-row gap-2 sm:gap-3">
+          <Button variant="secondary" onClick={openGenerateModal} className="w-full sm:w-auto">
+            Generate from Prompt
+          </Button>
           <Button variant="secondary" onClick={openImportModal} className="w-full sm:w-auto">
             Import JSON
           </Button>
@@ -289,8 +374,11 @@ export default function TestsPage() {
             />
           </svg>
           <h3 className="mt-4 text-lg font-medium text-gray-900">No tests yet</h3>
-          <p className="mt-2 text-gray-500">Get started by creating your first test or importing from JSON.</p>
+          <p className="mt-2 text-gray-500">Get started by creating a test manually, generating one with AI, or importing from JSON.</p>
           <div className="mt-6 flex flex-col sm:flex-row justify-center gap-3">
+            <Button variant="secondary" onClick={openGenerateModal}>
+              Generate from Prompt
+            </Button>
             <Button variant="secondary" onClick={openImportModal}>
               Import JSON
             </Button>
@@ -493,6 +581,165 @@ export default function TestsPage() {
               Import Test
             </Button>
           </div>
+        </div>
+      </Modal>
+
+      {/* Generate from Prompt Modal */}
+      <Modal
+        isOpen={showGenerateModal}
+        onClose={() => setShowGenerateModal(false)}
+        title="Generate Test from Prompt"
+        className="max-w-3xl"
+      >
+        <div className="space-y-4">
+          <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
+            <h4 className="font-medium text-blue-900 mb-2">AI Test Generation</h4>
+            <p className="text-sm text-blue-700 mb-2">
+              Describe the test you want to create and our AI will generate it for you. Be specific about:
+            </p>
+            <ul className="text-sm text-blue-700 list-disc list-inside space-y-1">
+              <li>The topic or skills to assess</li>
+              <li>Target role or candidate level</li>
+              <li>Number and types of questions desired</li>
+              <li>Difficulty level</li>
+            </ul>
+          </div>
+
+          {!generatedTest ? (
+            <>
+              <div>
+                <label htmlFor="generate-prompt" className="block text-sm font-medium text-gray-700 mb-2">
+                  Describe your test
+                </label>
+                <Textarea
+                  id="generate-prompt"
+                  rows={6}
+                  value={generatePrompt}
+                  onChange={(e) => {
+                    setGeneratePrompt(e.target.value);
+                    setGenerateError(null);
+                  }}
+                  placeholder="Example: Create a test for junior software developers with 10 questions about JavaScript fundamentals, including arrays, functions, and async programming. Mix multiple choice and short answer questions."
+                  className="w-full"
+                />
+              </div>
+
+              {generateError && (
+                <div className="p-3 bg-red-50 border border-red-200 rounded-lg text-red-700 text-sm">
+                  {generateError}
+                </div>
+              )}
+
+              <div className="flex flex-col sm:flex-row justify-end gap-3 pt-4 border-t">
+                <Button
+                  variant="secondary"
+                  onClick={() => setShowGenerateModal(false)}
+                  className="w-full sm:w-auto"
+                >
+                  Cancel
+                </Button>
+                <Button
+                  onClick={handleGenerate}
+                  loading={generating}
+                  disabled={!generatePrompt.trim()}
+                  className="w-full sm:w-auto"
+                >
+                  {generating ? 'Generating...' : 'Generate Test'}
+                </Button>
+              </div>
+            </>
+          ) : (
+            <>
+              <div className="bg-green-50 border border-green-200 rounded-lg p-4">
+                <h4 className="font-medium text-green-900 mb-2">Test Generated Successfully!</h4>
+                <p className="text-sm text-green-700">
+                  Review the generated test below. You can import it directly or close this dialog and try again.
+                </p>
+              </div>
+
+              <div className="bg-gray-50 border border-gray-200 rounded-lg p-4 max-h-96 overflow-y-auto">
+                <h5 className="font-semibold text-gray-900 mb-2">{generatedTest.title}</h5>
+                {generatedTest.description && (
+                  <p className="text-sm text-gray-600 mb-3">{generatedTest.description}</p>
+                )}
+                <div className="flex gap-4 text-sm text-gray-600 mb-4">
+                  {generatedTest.category && (
+                    <span><strong>Category:</strong> {generatedTest.category}</span>
+                  )}
+                  {generatedTest.durationMinutes && (
+                    <span><strong>Duration:</strong> {generatedTest.durationMinutes} min</span>
+                  )}
+                  <span><strong>Questions:</strong> {generatedTest.questions.length}</span>
+                </div>
+                <div className="space-y-3">
+                  {generatedTest.questions.map((q: any, idx: number) => (
+                    <div key={idx} className="bg-white p-3 rounded border border-gray-200">
+                      <div className="flex justify-between items-start mb-2">
+                        <span className="text-sm font-medium text-gray-900">Q{idx + 1}. {q.content}</span>
+                        <Badge variant={q.type === 'mcq' ? 'info' : q.type === 'timed' ? 'warning' : 'default'}>
+                          {q.type}
+                        </Badge>
+                      </div>
+                      {q.type === 'mcq' && q.options && (
+                        <ul className="text-sm text-gray-600 list-disc list-inside ml-2">
+                          {q.options.map((opt: string, i: number) => (
+                            <li key={i} className={i === q.correctAnswer ? 'text-green-700 font-medium' : ''}>
+                              {opt} {i === q.correctAnswer && '✓'}
+                            </li>
+                          ))}
+                        </ul>
+                      )}
+                      {q.type === 'timed' && q.timeLimitSeconds && (
+                        <p className="text-sm text-gray-600">Time limit: {q.timeLimitSeconds}s</p>
+                      )}
+                      <p className="text-xs text-gray-500 mt-1">Points: {q.points || 1}</p>
+                    </div>
+                  ))}
+                </div>
+              </div>
+
+              {generateError && (
+                <div className="p-3 bg-red-50 border border-red-200 rounded-lg text-red-700 text-sm">
+                  {generateError}
+                </div>
+              )}
+
+              {importSuccess && (
+                <div className="p-3 bg-green-50 border border-green-200 rounded-lg text-green-700 text-sm">
+                  {importSuccess}
+                </div>
+              )}
+
+              <div className="flex flex-col sm:flex-row justify-end gap-3 pt-4 border-t">
+                <Button
+                  variant="secondary"
+                  onClick={() => {
+                    setGeneratedTest(null);
+                    setGeneratePrompt('');
+                  }}
+                  disabled={importing}
+                  className="w-full sm:w-auto"
+                >
+                  Generate Another
+                </Button>
+                <Button
+                  variant="secondary"
+                  onClick={() => setShowGenerateModal(false)}
+                  disabled={importing}
+                  className="w-full sm:w-auto"
+                >
+                  Close
+                </Button>
+                <Button
+                  onClick={handleImportGenerated}
+                  loading={importing}
+                  className="w-full sm:w-auto"
+                >
+                  Import This Test
+                </Button>
+              </div>
+            </>
+          )}
         </div>
       </Modal>
     </div>
