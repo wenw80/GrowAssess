@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { GoogleGenAI } from '@google/genai';
+import { prisma } from '@/lib/db';
 
 export async function POST(request: NextRequest) {
   try {
@@ -12,10 +13,25 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    const apiKey = process.env.GEMINI_API_KEY;
+    // Try to get API key from database first, then fall back to environment variable
+    let apiKey: string | undefined;
+    try {
+      const setting = await prisma.setting.findUnique({
+        where: { key: 'gemini_api_key' },
+      });
+      apiKey = setting?.value;
+    } catch (error) {
+      console.error('Error fetching API key from database:', error);
+    }
+
+    // Fall back to environment variable if not in database
+    if (!apiKey) {
+      apiKey = process.env.GEMINI_API_KEY;
+    }
+
     if (!apiKey) {
       return NextResponse.json(
-        { error: 'Gemini API key not configured. Please set GEMINI_API_KEY in environment variables.' },
+        { error: 'Gemini API key not configured. Please set it in Settings or add GEMINI_API_KEY to environment variables.' },
         { status: 500 }
       );
     }

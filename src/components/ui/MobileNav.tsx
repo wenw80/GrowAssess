@@ -8,6 +8,7 @@ const navLinks = [
   { href: '/tests', label: 'Tests' },
   { href: '/candidates', label: 'Candidates' },
   { href: '/reports', label: 'Reports' },
+  { href: '/settings', label: 'Settings' },
 ];
 
 export default function MobileNav() {
