@@ -14,7 +14,7 @@ interface TestFormProps {
     id?: string;
     title: string;
     description: string | null;
-    category: string | null;
+    tags: string[];
     durationMinutes: number | null;
     questions: Array<{
       id: string;
@@ -34,7 +34,7 @@ export default function TestForm({ initialData }: TestFormProps) {
   const [saving, setSaving] = useState(false);
   const [title, setTitle] = useState(initialData?.title || '');
   const [description, setDescription] = useState(initialData?.description || '');
-  const [category, setCategory] = useState(initialData?.category || '');
+  const [tagsInput, setTagsInput] = useState(initialData?.tags?.join(', ') || '');
   const [durationMinutes, setDurationMinutes] = useState<number | ''>(
     initialData?.durationMinutes || ''
   );
@@ -131,10 +131,16 @@ export default function TestForm({ initialData }: TestFormProps) {
 
     setSaving(true);
     try {
+      // Convert comma-separated tags to array
+      const tags = tagsInput
+        .split(',')
+        .map(tag => tag.trim())
+        .filter(tag => tag.length > 0);
+
       const payload = {
         title: title.trim(),
         description: description.trim() || null,
-        category: category.trim() || null,
+        tags,
         durationMinutes: durationMinutes || null,
         questions: questions.map((q, i) => ({
           ...q,
@@ -188,10 +194,10 @@ export default function TestForm({ initialData }: TestFormProps) {
           />
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <Input
-              label="Category"
-              id="category"
-              value={category}
-              onChange={(e) => setCategory(e.target.value)}
+              label="Tags (comma-separated)"
+              id="tags"
+              value={tagsInput}
+              onChange={(e) => setTagsInput(e.target.value)}
               placeholder="e.g., Analytical, Verbal, Numerical"
             />
             <Input

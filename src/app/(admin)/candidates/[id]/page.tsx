@@ -30,7 +30,7 @@ interface Test {
   id: string;
   title: string;
   description: string | null;
-  category: string | null;
+  tags: string[];
   durationMinutes: number | null;
 }
 
