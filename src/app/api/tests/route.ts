@@ -39,7 +39,7 @@ export async function GET(request: NextRequest) {
 export async function POST(request: NextRequest) {
   try {
     const data = await request.json();
-    const { title, description, category, durationMinutes, questions } = data;
+    const { title, description, category, tags, durationMinutes, questions } = data;
 
     if (!title) {
       return NextResponse.json({ error: 'Title is required' }, { status: 400 });
@@ -47,11 +47,20 @@ export async function POST(request: NextRequest) {
 
     const currentUserId = await getCurrentUserId();
 
+    // Handle both tags array and legacy category string
+    let testTags: string[] = [];
+    if (tags && Array.isArray(tags)) {
+      testTags = tags;
+    } else if (category) {
+      // Convert category to tags array (split by comma)
+      testTags = category.split(',').map((t: string) => t.trim()).filter(Boolean);
+    }
+
     const test = await prisma.test.create({
       data: {
         title,
         description,
-        category,
+        tags: testTags,
         durationMinutes,
         userId: currentUserId,
         questions: {

@@ -1,15 +1,19 @@
 import { NextRequest, NextResponse } from 'next/server';
 import prisma from '@/lib/db';
+import { getCurrentUserId } from '@/lib/auth';
 
 export async function GET(request: NextRequest) {
   try {
     const searchParams = request.nextUrl.searchParams;
     const search = searchParams.get('search');
     const status = searchParams.get('status');
+    const filter = searchParams.get('filter'); // 'my' or 'all'
+    const currentUserId = await getCurrentUserId();
 
     const where: {
       OR?: Array<{ name: { contains: string } } | { email: { contains: string } } | { position: { contains: string } }>;
       status?: string;
+      userId?: string;
     } = {};
 
     if (search) {
@@ -24,9 +28,20 @@ export async function GET(request: NextRequest) {
       where.status = status;
     }
 
+    if (filter === 'my' && currentUserId) {
+      where.userId = currentUserId;
+    }
+
     const candidates = await prisma.candidate.findMany({
       where,
       include: {
+        user: {
+          select: {
+            id: true,
+            name: true,
+            email: true,
+          },
+        },
         assignments: {
           include: {
             test: {
@@ -54,6 +69,8 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'Name and email are required' }, { status: 400 });
     }
 
+    const currentUserId = await getCurrentUserId();
+
     const candidate = await prisma.candidate.create({
       data: {
         name,
@@ -62,6 +79,7 @@ export async function POST(request: NextRequest) {
         position,
         status: status || 'active',
         notes,
+        userId: currentUserId,
       },
     });
 

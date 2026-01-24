@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import prisma from '@/lib/db';
+import { getCurrentUserId } from '@/lib/auth';
 
 interface ImportedQuestion {
   type: 'mcq' | 'freetext' | 'timed';
@@ -13,7 +14,8 @@ interface ImportedQuestion {
 interface ImportedTest {
   title: string;
   description?: string;
-  category?: string;
+  category?: string; // Legacy support
+  tags?: string[]; // New format
   durationMinutes?: number;
   questions: ImportedQuestion[];
 }
@@ -105,13 +107,24 @@ export async function POST(request: NextRequest) {
       return baseQuestion;
     });
 
+    // Handle both tags array and legacy category string
+    const currentUserId = await getCurrentUserId();
+    let testTags: string[] = [];
+    if (importedTest.tags && Array.isArray(importedTest.tags)) {
+      testTags = importedTest.tags;
+    } else if (importedTest.category) {
+      // Convert category to tags array (split by comma)
+      testTags = importedTest.category.split(',').map(t => t.trim()).filter(Boolean);
+    }
+
     // Create the test in the database
     const test = await prisma.test.create({
       data: {
         title: importedTest.title,
         description: importedTest.description || null,
-        category: importedTest.category || null,
+        tags: testTags,
         durationMinutes: importedTest.durationMinutes || null,
+        userId: currentUserId,
         questions: {
           create: questions,
         },

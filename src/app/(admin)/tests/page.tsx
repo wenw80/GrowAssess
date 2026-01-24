@@ -16,7 +16,7 @@ interface Test {
   id: string;
   title: string;
   description: string | null;
-  category: string | null;
+  tags: string[];
   durationMinutes: number | null;
   createdAt: string;
   user?: {
@@ -48,14 +48,62 @@ export default function TestsPage() {
   const [generateError, setGenerateError] = useState<string | null>(null);
   const [generatedTest, setGeneratedTest] = useState<any>(null);
 
+  // Admin reassignment states
+  const [currentUser, setCurrentUser] = useState<any>(null);
+  const [allUsers, setAllUsers] = useState<any[]>([]);
+  const [reassigningTest, setReassigningTest] = useState<string | null>(null);
+
   // Filter states
   const [searchQuery, setSearchQuery] = useState('');
-  const [categoryFilter, setCategoryFilter] = useState('all');
+  const [tagFilter, setTagFilter] = useState('all');
   const [durationFilter, setDurationFilter] = useState('all');
   const [viewFilter, setViewFilter] = useState<'all' | 'my'>('all');
 
   useEffect(() => {
     fetchTests();
+    fetchCurrentUser();
+  }, [viewFilter]);
+
+  const fetchCurrentUser = async () => {
+    try {
+      const res = await fetch('/api/auth/me');
+      if (res.ok) {
+        const data = await res.json();
+        setCurrentUser(data.user);
+
+        // Fetch all users if admin
+        if (data.user.role === 'admin') {
+          const usersRes = await fetch('/api/users');
+          if (usersRes.ok) {
+            const usersData = await usersRes.json();
+            setAllUsers(usersData);
+          }
+        }
+      }
+    } catch (error) {
+      console.error('Error fetching current user:', error);
+    }
+  };
+
+  // Refetch tests when page becomes visible (e.g., after navigating back from /tests/new)
+  useEffect(() => {
+    const handleVisibilityChange = () => {
+      if (!document.hidden) {
+        fetchTests();
+      }
+    };
+
+    const handleFocus = () => {
+      fetchTests();
+    };
+
+    document.addEventListener('visibilitychange', handleVisibilityChange);
+    window.addEventListener('focus', handleFocus);
+
+    return () => {
+      document.removeEventListener('visibilitychange', handleVisibilityChange);
+      window.removeEventListener('focus', handleFocus);
+    };
   }, [viewFilter]);
 
   const fetchTests = async () => {
@@ -71,10 +119,13 @@ export default function TestsPage() {
     }
   };
 
-  // Extract unique categories from tests
-  const categories = useMemo(() => {
-    const uniqueCategories = [...new Set(tests.map(t => t.category).filter(Boolean))];
-    return uniqueCategories.sort();
+  // Extract unique tags from all tests
+  const allTags = useMemo(() => {
+    const tagSet = new Set<string>();
+    tests.forEach(test => {
+      test.tags.forEach(tag => tagSet.add(tag));
+    });
+    return Array.from(tagSet).sort();
   }, [tests]);
 
   // Filter tests based on search and filters
@@ -86,12 +137,12 @@ export default function TestsPage() {
         const matchesSearch =
           test.title.toLowerCase().includes(query) ||
           test.description?.toLowerCase().includes(query) ||
-          test.category?.toLowerCase().includes(query);
+          test.tags.some(tag => tag.toLowerCase().includes(query));
         if (!matchesSearch) return false;
       }
 
-      // Category filter
-      if (categoryFilter !== 'all' && test.category !== categoryFilter) {
+      // Tag filter
+      if (tagFilter !== 'all' && !test.tags.includes(tagFilter)) {
         return false;
       }
 
@@ -113,7 +164,7 @@ export default function TestsPage() {
 
       return true;
     });
-  }, [tests, searchQuery, categoryFilter, durationFilter]);
+  }, [tests, searchQuery, tagFilter, durationFilter]);
 
   const handleDelete = async (id: string) => {
     if (!confirm('Are you sure you want to delete this test?')) return;
@@ -283,11 +334,36 @@ export default function TestsPage() {
 
   const clearFilters = () => {
     setSearchQuery('');
-    setCategoryFilter('all');
+    setTagFilter('all');
     setDurationFilter('all');
   };
 
-  const hasActiveFilters = searchQuery || categoryFilter !== 'all' || durationFilter !== 'all';
+  const handleReassignTest = async (testId: string, newUserId: string) => {
+    setReassigningTest(testId);
+    try {
+      const res = await fetch(`/api/tests/${testId}/reassign`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ userId: newUserId || null }),
+      });
+
+      if (res.ok) {
+        // Refresh tests to show updated owner
+        fetchTests();
+      } else {
+        const data = await res.json();
+        alert(`Failed to reassign test: ${data.error}`);
+      }
+    } catch (error) {
+      console.error('Error reassigning test:', error);
+      alert('Failed to reassign test');
+    } finally {
+      setReassigningTest(null);
+    }
+  };
+
+  const hasActiveFilters = searchQuery || tagFilter !== 'all' || durationFilter !== 'all';
+  const isAdmin = currentUser?.role === 'admin';
 
   if (loading) {
     return (
@@ -357,11 +433,11 @@ export default function TestsPage() {
             />
             <Select
               options={[
-                { value: 'all', label: 'All Categories' },
-                ...categories.map(cat => ({ value: cat as string, label: cat as string }))
+                { value: 'all', label: 'All Tags' },
+                ...allTags.map(tag => ({ value: tag, label: tag }))
               ]}
-              value={categoryFilter}
-              onChange={(e) => setCategoryFilter(e.target.value)}
+              value={tagFilter}
+              onChange={(e) => setTagFilter(e.target.value)}
               className="w-full"
             />
             <Select
@@ -452,7 +528,7 @@ export default function TestsPage() {
               <TableHeader>
                 <TableRow>
                   <TableHead className="min-w-[200px]">Title</TableHead>
-                  <TableHead className="min-w-[120px]">Category</TableHead>
+                  <TableHead className="min-w-[150px]">Tags</TableHead>
                   <TableHead className="min-w-[100px]">Questions</TableHead>
                   <TableHead className="min-w-[120px]">Assignments</TableHead>
                   <TableHead className="min-w-[100px]">Duration</TableHead>
@@ -475,8 +551,12 @@ export default function TestsPage() {
                       )}
                     </TableCell>
                     <TableCell>
-                      {test.category ? (
-                        <Badge variant="info">{test.category}</Badge>
+                      {test.tags.length > 0 ? (
+                        <div className="flex flex-wrap gap-1">
+                          {test.tags.map((tag, idx) => (
+                            <Badge key={idx} variant="info">{tag}</Badge>
+                          ))}
+                        </div>
                       ) : (
                         <span className="text-gray-400">-</span>
                       )}
@@ -493,7 +573,19 @@ export default function TestsPage() {
                     )}
                     <TableCell className="whitespace-nowrap">{formatDate(test.createdAt)}</TableCell>
                     <TableCell className="text-right">
-                      <div className="flex justify-end gap-2">
+                      <div className="flex justify-end gap-2 items-center flex-wrap">
+                        {isAdmin && viewFilter === 'all' && (
+                          <Select
+                            options={[
+                              { value: '', label: '(No Owner)' },
+                              ...allUsers.map(u => ({ value: u.id, label: u.name }))
+                            ]}
+                            value={test.user?.id || ''}
+                            onChange={(e) => handleReassignTest(test.id, e.target.value)}
+                            disabled={reassigningTest === test.id}
+                            className="text-sm w-36"
+                          />
+                        )}
                         <Link href={`/tests/${test.id}`}>
                           <Button variant="ghost" size="sm">Edit</Button>
                         </Link>

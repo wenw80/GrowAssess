@@ -27,6 +27,11 @@ interface Candidate {
   status: string;
   notes: string | null;
   createdAt: string;
+  user?: {
+    id: string;
+    name: string;
+    email: string;
+  } | null;
   assignments: TestAssignment[];
 }
 
@@ -50,6 +55,7 @@ export default function CandidatesPage() {
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState('');
   const [statusFilter, setStatusFilter] = useState('all');
+  const [viewFilter, setViewFilter] = useState<'all' | 'my'>('all');
   const [showModal, setShowModal] = useState(false);
   const [saving, setSaving] = useState(false);
   const [editingCandidate, setEditingCandidate] = useState<Candidate | null>(null);
@@ -64,13 +70,15 @@ export default function CandidatesPage() {
 
   useEffect(() => {
     fetchCandidates();
-  }, [search, statusFilter]);
+  }, [search, statusFilter, viewFilter]);
 
   const fetchCandidates = async () => {
+    setLoading(true);
     try {
       const params = new URLSearchParams();
       if (search) params.set('search', search);
       if (statusFilter !== 'all') params.set('status', statusFilter);
+      params.set('filter', viewFilter);
 
       const res = await fetch(`/api/candidates?${params}`);
       const data = await res.json();
@@ -157,6 +165,34 @@ export default function CandidatesPage() {
         <Button onClick={openCreateModal}>Add Candidate</Button>
       </div>
 
+      {/* View Tabs */}
+      <div className="mb-6">
+        <div className="border-b border-gray-200">
+          <nav className="-mb-px flex space-x-8">
+            <button
+              onClick={() => setViewFilter('all')}
+              className={`py-4 px-1 border-b-2 font-medium text-sm transition-colors ${
+                viewFilter === 'all'
+                  ? 'border-blue-500 text-blue-600'
+                  : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+              }`}
+            >
+              All Candidates
+            </button>
+            <button
+              onClick={() => setViewFilter('my')}
+              className={`py-4 px-1 border-b-2 font-medium text-sm transition-colors ${
+                viewFilter === 'my'
+                  ? 'border-blue-500 text-blue-600'
+                  : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+              }`}
+            >
+              My Candidates
+            </button>
+          </nav>
+        </div>
+      </div>
+
       <Card className="mb-6">
         <div className="flex flex-col sm:flex-row gap-4">
           <Input
@@ -210,6 +246,9 @@ export default function CandidatesPage() {
                 <TableHead>Position</TableHead>
                 <TableHead>Status</TableHead>
                 <TableHead>Tests Assigned</TableHead>
+                {viewFilter === 'all' && (
+                  <TableHead>Created By</TableHead>
+                )}
                 <TableHead>Added</TableHead>
                 <TableHead className="text-right">Actions</TableHead>
               </TableRow>
@@ -262,6 +301,11 @@ export default function CandidatesPage() {
                       <span className="text-gray-400">None</span>
                     )}
                   </TableCell>
+                  {viewFilter === 'all' && (
+                    <TableCell>
+                      {candidate.user ? candidate.user.name : <span className="text-gray-400">-</span>}
+                    </TableCell>
+                  )}
                   <TableCell>{formatDate(candidate.createdAt)}</TableCell>
                   <TableCell className="text-right">
                     <div className="flex justify-end gap-2">
