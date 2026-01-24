@@ -6,8 +6,16 @@ import Card from '@/components/ui/Card';
 import Input from '@/components/ui/Input';
 import Badge from '@/components/ui/Badge';
 
+interface User {
+  id: string;
+  email: string;
+  name: string;
+  role: string;
+}
+
 export default function SettingsPage() {
   const [geminiApiKey, setGeminiApiKey] = useState('');
+  const [currentUser, setCurrentUser] = useState<User | null>(null);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [saveError, setSaveError] = useState<string | null>(null);
@@ -16,6 +24,7 @@ export default function SettingsPage() {
 
   useEffect(() => {
     fetchSettings();
+    fetchCurrentUser();
   }, []);
 
   const fetchSettings = async () => {
@@ -29,6 +38,18 @@ export default function SettingsPage() {
       console.error('Error fetching settings:', error);
     } finally {
       setLoading(false);
+    }
+  };
+
+  const fetchCurrentUser = async () => {
+    try {
+      const res = await fetch('/api/auth/me');
+      if (res.ok) {
+        const data = await res.json();
+        setCurrentUser(data.user);
+      }
+    } catch (error) {
+      console.error('Error fetching current user:', error);
     }
   };
 
@@ -105,6 +126,31 @@ export default function SettingsPage() {
         <h1 className="text-2xl font-bold text-gray-900">Settings</h1>
         <p className="text-gray-500 mt-1">Manage application settings and integrations</p>
       </div>
+
+      {/* User Profile Section */}
+      {currentUser && (
+        <Card className="mb-6">
+          <div className="p-6">
+            <h2 className="text-lg font-semibold text-gray-900 mb-4">User Profile</h2>
+            <div className="space-y-3">
+              <div className="flex items-center justify-between">
+                <span className="text-sm font-medium text-gray-500">Name</span>
+                <span className="text-sm text-gray-900">{currentUser.name}</span>
+              </div>
+              <div className="flex items-center justify-between">
+                <span className="text-sm font-medium text-gray-500">Email</span>
+                <span className="text-sm text-gray-900">{currentUser.email}</span>
+              </div>
+              <div className="flex items-center justify-between">
+                <span className="text-sm font-medium text-gray-500">Role</span>
+                <Badge variant={currentUser.role === 'admin' ? 'success' : 'default'}>
+                  {currentUser.role}
+                </Badge>
+              </div>
+            </div>
+          </div>
+        </Card>
+      )}
 
       {/* AI Integration Section */}
       <Card className="mb-6">

@@ -19,6 +19,11 @@ interface Test {
   category: string | null;
   durationMinutes: number | null;
   createdAt: string;
+  user?: {
+    id: string;
+    name: string;
+    email: string;
+  } | null;
   _count: {
     questions: number;
     assignments: number;
@@ -47,14 +52,16 @@ export default function TestsPage() {
   const [searchQuery, setSearchQuery] = useState('');
   const [categoryFilter, setCategoryFilter] = useState('all');
   const [durationFilter, setDurationFilter] = useState('all');
+  const [viewFilter, setViewFilter] = useState<'all' | 'my'>('all');
 
   useEffect(() => {
     fetchTests();
-  }, []);
+  }, [viewFilter]);
 
   const fetchTests = async () => {
+    setLoading(true);
     try {
-      const res = await fetch('/api/tests');
+      const res = await fetch(`/api/tests?filter=${viewFilter}`);
       const data = await res.json();
       setTests(data);
     } catch (error) {
@@ -310,6 +317,34 @@ export default function TestsPage() {
         </div>
       </div>
 
+      {/* View Tabs */}
+      <div className="mb-6">
+        <div className="border-b border-gray-200">
+          <nav className="-mb-px flex space-x-8">
+            <button
+              onClick={() => setViewFilter('all')}
+              className={`py-4 px-1 border-b-2 font-medium text-sm transition-colors ${
+                viewFilter === 'all'
+                  ? 'border-blue-500 text-blue-600'
+                  : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+              }`}
+            >
+              All Tests
+            </button>
+            <button
+              onClick={() => setViewFilter('my')}
+              className={`py-4 px-1 border-b-2 font-medium text-sm transition-colors ${
+                viewFilter === 'my'
+                  ? 'border-blue-500 text-blue-600'
+                  : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+              }`}
+            >
+              My Tests
+            </button>
+          </nav>
+        </div>
+      </div>
+
       {/* Filters */}
       {tests.length > 0 && (
         <Card className="mb-6">
@@ -421,6 +456,9 @@ export default function TestsPage() {
                   <TableHead className="min-w-[100px]">Questions</TableHead>
                   <TableHead className="min-w-[120px]">Assignments</TableHead>
                   <TableHead className="min-w-[100px]">Duration</TableHead>
+                  {viewFilter === 'all' && (
+                    <TableHead className="min-w-[150px]">Created By</TableHead>
+                  )}
                   <TableHead className="min-w-[120px]">Created</TableHead>
                   <TableHead className="min-w-[200px] text-right">Actions</TableHead>
                 </TableRow>
@@ -448,6 +486,11 @@ export default function TestsPage() {
                     <TableCell>
                       {test.durationMinutes ? `${test.durationMinutes} min` : '-'}
                     </TableCell>
+                    {viewFilter === 'all' && (
+                      <TableCell className="whitespace-nowrap">
+                        {test.user ? test.user.name : <span className="text-gray-400">-</span>}
+                      </TableCell>
+                    )}
                     <TableCell className="whitespace-nowrap">{formatDate(test.createdAt)}</TableCell>
                     <TableCell className="text-right">
                       <div className="flex justify-end gap-2">

@@ -10,16 +10,33 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
+model User {
+  id        String   @id @default(uuid())
+  email     String   @unique
+  name      String
+  password  String
+  role      String   @default("user") // user, admin
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  tests     Test[]
+
+  @@index([email])
+}
+
 model Test {
   id              String           @id @default(uuid())
   title           String
   description     String?
   category        String?
   durationMinutes Int?
+  userId          String?
   createdAt       DateTime         @default(now())
   updatedAt       DateTime         @updatedAt
+  user            User?            @relation(fields: [userId], references: [id], onDelete: SetNull)
   questions       Question[]
   assignments     TestAssignment[]
+
+  @@index([userId])
 }
 
 model Question {

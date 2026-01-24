@@ -7,9 +7,11 @@ import Button from '@/components/ui/Button';
 import Input from '@/components/ui/Input';
 import Card from '@/components/ui/Card';
 
-export default function LoginPage() {
+export default function RegisterPage() {
+  const [name, setName] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [confirmPassword, setConfirmPassword] = useState('');
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
   const router = useRouter();
@@ -19,11 +21,17 @@ export default function LoginPage() {
     setLoading(true);
     setError('');
 
+    if (password !== confirmPassword) {
+      setError('Passwords do not match');
+      setLoading(false);
+      return;
+    }
+
     try {
-      const res = await fetch('/api/auth/login', {
+      const res = await fetch('/api/auth/register', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ email, password }),
+        body: JSON.stringify({ name, email, password }),
       });
 
       const data = await res.json();
@@ -32,7 +40,7 @@ export default function LoginPage() {
         router.push('/tests');
         router.refresh();
       } else {
-        setError(data.error || 'Invalid email or password');
+        setError(data.error || 'Registration failed');
       }
     } catch {
       setError('An error occurred');
@@ -45,11 +53,21 @@ export default function LoginPage() {
     <div className="min-h-screen bg-gray-50 flex items-center justify-center p-4">
       <Card className="w-full max-w-md">
         <div className="text-center mb-8">
-          <h1 className="text-3xl font-bold text-gray-900">GrowAssess</h1>
-          <p className="text-gray-500 mt-2">Employee Assessment Platform</p>
+          <h1 className="text-3xl font-bold text-gray-900">Create Account</h1>
+          <p className="text-gray-500 mt-2">Join GrowAssess</p>
         </div>
 
         <form onSubmit={handleSubmit} className="space-y-4">
+          <Input
+            type="text"
+            id="name"
+            label="Full Name"
+            value={name}
+            onChange={(e) => setName(e.target.value)}
+            placeholder="John Doe"
+            required
+          />
+
           <Input
             type="email"
             id="email"
@@ -66,7 +84,17 @@ export default function LoginPage() {
             label="Password"
             value={password}
             onChange={(e) => setPassword(e.target.value)}
-            placeholder="Enter your password"
+            placeholder="At least 6 characters"
+            required
+          />
+
+          <Input
+            type="password"
+            id="confirmPassword"
+            label="Confirm Password"
+            value={confirmPassword}
+            onChange={(e) => setConfirmPassword(e.target.value)}
+            placeholder="Re-enter your password"
             required
           />
 
@@ -77,15 +105,15 @@ export default function LoginPage() {
           )}
 
           <Button type="submit" className="w-full" loading={loading}>
-            Sign In
+            Create Account
           </Button>
         </form>
 
         <div className="mt-6 text-center">
           <p className="text-sm text-gray-600">
-            Don't have an account?{' '}
-            <Link href="/register" className="text-blue-600 hover:underline font-medium">
-              Register here
+            Already have an account?{' '}
+            <Link href="/" className="text-blue-600 hover:underline font-medium">
+              Sign in here
             </Link>
           </p>
         </div>

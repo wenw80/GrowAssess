@@ -1,10 +1,27 @@
 import { NextRequest, NextResponse } from 'next/server';
 import prisma from '@/lib/db';
+import { getCurrentUserId } from '@/lib/auth';
 
-export async function GET() {
+export async function GET(request: NextRequest) {
   try {
+    const { searchParams } = new URL(request.url);
+    const filter = searchParams.get('filter'); // 'my' or 'all'
+    const currentUserId = await getCurrentUserId();
+
+    const whereClause = filter === 'my' && currentUserId
+      ? { userId: currentUserId }
+      : {};
+
     const tests = await prisma.test.findMany({
+      where: whereClause,
       include: {
+        user: {
+          select: {
+            id: true,
+            name: true,
+            email: true,
+          },
+        },
         _count: {
           select: { questions: true, assignments: true },
         },
@@ -28,12 +45,15 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'Title is required' }, { status: 400 });
     }
 
+    const currentUserId = await getCurrentUserId();
+
     const test = await prisma.test.create({
       data: {
         title,
         description,
         category,
         durationMinutes,
+        userId: currentUserId,
         questions: {
           create: questions?.map((q: {
             type: string;
