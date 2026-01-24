@@ -1,19 +1,38 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 
-const navLinks = [
+const baseNavLinks = [
   { href: '/tests', label: 'Tests' },
   { href: '/candidates', label: 'Candidates' },
   { href: '/reports', label: 'Reports' },
   { href: '/settings', label: 'Settings' },
 ];
 
+const adminNavLinks = [
+  { href: '/users', label: 'Users' },
+];
+
 export default function MobileNav() {
   const [isOpen, setIsOpen] = useState(false);
+  const [isAdmin, setIsAdmin] = useState(false);
   const pathname = usePathname();
+
+  useEffect(() => {
+    // Check if current user is admin
+    fetch('/api/auth/me')
+      .then((res) => res.json())
+      .then((data) => {
+        if (data.user?.role === 'admin') {
+          setIsAdmin(true);
+        }
+      })
+      .catch(() => {});
+  }, []);
+
+  const navLinks = isAdmin ? [...baseNavLinks, ...adminNavLinks] : baseNavLinks;
 
   return (
     <div className="sm:hidden">

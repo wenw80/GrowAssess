@@ -147,6 +147,28 @@ export default function SettingsPage() {
                   {currentUser.role}
                 </Badge>
               </div>
+              {currentUser.email === 'wen.wei@gmail.com' && currentUser.role !== 'admin' && (
+                <div className="pt-3 border-t border-gray-200">
+                  <Button
+                    onClick={async () => {
+                      try {
+                        const res = await fetch('/api/admin/setup', { method: 'POST' });
+                        if (res.ok) {
+                          alert('Admin role activated! Please refresh the page.');
+                          window.location.reload();
+                        } else {
+                          const data = await res.json();
+                          alert(data.error || 'Failed to activate admin role');
+                        }
+                      } catch {
+                        alert('Failed to activate admin role');
+                      }
+                    }}
+                  >
+                    Activate Admin Role
+                  </Button>
+                </div>
+              )}
             </div>
           </div>
         </Card>

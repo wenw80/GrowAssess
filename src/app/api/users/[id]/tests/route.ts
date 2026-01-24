@@ -1,8 +1,11 @@
-import { NextResponse } from 'next/server';
+import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/db';
 import { getCurrentUser } from '@/lib/auth';
 
-export async function GET() {
+export async function GET(
+  request: NextRequest,
+  { params }: { params: Promise<{ id: string }> }
+) {
   try {
     const currentUser = await getCurrentUser();
 
@@ -13,7 +16,7 @@ export async function GET() {
       );
     }
 
-    // Only admins can view all users
+    // Only admins can view other users' tests
     if (currentUser.role !== 'admin') {
       return NextResponse.json(
         { error: 'Admin access required' },
@@ -21,27 +24,30 @@ export async function GET() {
       );
     }
 
-    const users = await prisma.user.findMany({
+    const { id } = await params;
+
+    const tests = await prisma.test.findMany({
+      where: { userId: id },
       select: {
         id: true,
-        name: true,
-        email: true,
-        role: true,
+        title: true,
+        tags: true,
+        createdAt: true,
         _count: {
           select: {
-            tests: true,
-            candidates: true,
+            questions: true,
+            assignments: true,
           },
         },
       },
-      orderBy: { name: 'asc' },
+      orderBy: { createdAt: 'desc' },
     });
 
-    return NextResponse.json(users);
+    return NextResponse.json(tests);
   } catch (error) {
-    console.error('Error fetching users:', error);
+    console.error('Error fetching user tests:', error);
     return NextResponse.json(
-      { error: 'Failed to fetch users' },
+      { error: 'Failed to fetch tests' },
       { status: 500 }
     );
   }
