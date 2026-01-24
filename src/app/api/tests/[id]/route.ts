@@ -34,7 +34,16 @@ export async function PUT(
   try {
     const { id } = await params;
     const data = await request.json();
-    const { title, description, category, durationMinutes, questions } = data;
+    const { title, description, category, tags, durationMinutes, questions } = data;
+
+    // Handle both tags array and legacy category string
+    let testTags: string[] = [];
+    if (tags && Array.isArray(tags)) {
+      testTags = tags;
+    } else if (category) {
+      // Convert category to tags array (split by comma)
+      testTags = category.split(',').map((t: string) => t.trim()).filter(Boolean);
+    }
 
     // Delete existing questions and create new ones
     await prisma.question.deleteMany({
@@ -46,7 +55,7 @@ export async function PUT(
       data: {
         title,
         description,
-        category,
+        tags: testTags,
         durationMinutes,
         questions: {
           create: questions?.map((q: {
