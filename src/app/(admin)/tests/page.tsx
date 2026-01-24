@@ -10,6 +10,7 @@ import Select from '@/components/ui/Select';
 import Input from '@/components/ui/Input';
 import Textarea from '@/components/ui/Textarea';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/Table';
+import TagFilter from '@/components/ui/TagFilter';
 import { formatDate } from '@/lib/utils';
 
 interface Test {
@@ -55,7 +56,7 @@ export default function TestsPage() {
 
   // Filter states
   const [searchQuery, setSearchQuery] = useState('');
-  const [tagFilter, setTagFilter] = useState('all');
+  const [selectedTags, setSelectedTags] = useState<string[]>([]);
   const [durationFilter, setDurationFilter] = useState('all');
   const [viewFilter, setViewFilter] = useState<'all' | 'my'>('all');
 
@@ -141,9 +142,10 @@ export default function TestsPage() {
         if (!matchesSearch) return false;
       }
 
-      // Tag filter
-      if (tagFilter !== 'all' && !test.tags.includes(tagFilter)) {
-        return false;
+      // Tag filter (match if test has ANY of the selected tags)
+      if (selectedTags.length > 0) {
+        const hasMatchingTag = test.tags.some(tag => selectedTags.includes(tag));
+        if (!hasMatchingTag) return false;
       }
 
       // Duration filter
@@ -164,7 +166,7 @@ export default function TestsPage() {
 
       return true;
     });
-  }, [tests, searchQuery, tagFilter, durationFilter]);
+  }, [tests, searchQuery, selectedTags, durationFilter]);
 
   const handleDelete = async (id: string) => {
     if (!confirm('Are you sure you want to delete this test?')) return;
@@ -334,7 +336,7 @@ export default function TestsPage() {
 
   const clearFilters = () => {
     setSearchQuery('');
-    setTagFilter('all');
+    setSelectedTags([]);
     setDurationFilter('all');
   };
 
@@ -362,7 +364,7 @@ export default function TestsPage() {
     }
   };
 
-  const hasActiveFilters = searchQuery || tagFilter !== 'all' || durationFilter !== 'all';
+  const hasActiveFilters = searchQuery || selectedTags.length > 0 || durationFilter !== 'all';
   const isAdmin = currentUser?.role === 'admin';
 
   if (loading) {
@@ -431,14 +433,11 @@ export default function TestsPage() {
               onChange={(e) => setSearchQuery(e.target.value)}
               className="w-full"
             />
-            <Select
-              options={[
-                { value: 'all', label: 'All Tags' },
-                ...allTags.map(tag => ({ value: tag, label: tag }))
-              ]}
-              value={tagFilter}
-              onChange={(e) => setTagFilter(e.target.value)}
-              className="w-full"
+            <TagFilter
+              tags={allTags}
+              selectedTags={selectedTags}
+              onChange={setSelectedTags}
+              placeholder="Filter by tags..."
             />
             <Select
               options={[
