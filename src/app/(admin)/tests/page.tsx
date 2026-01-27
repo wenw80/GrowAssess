@@ -561,7 +561,18 @@ export default function TestsPage() {
                       )}
                     </TableCell>
                     <TableCell>{test._count.questions}</TableCell>
-                    <TableCell>{test._count.assignments}</TableCell>
+                    <TableCell>
+                      {test._count.assignments > 0 ? (
+                        <Link
+                          href={`/tests/${test.id}/instances`}
+                          className="text-blue-600 hover:underline font-medium"
+                        >
+                          {test._count.assignments}
+                        </Link>
+                      ) : (
+                        <span className="text-gray-400">0</span>
+                      )}
+                    </TableCell>
                     <TableCell>
                       {test.durationMinutes ? `${test.durationMinutes} min` : '-'}
                     </TableCell>
@@ -588,11 +599,6 @@ export default function TestsPage() {
                         <a href={`/api/tests/${test.id}/export`} download>
                           <Button variant="ghost" size="sm">Export</Button>
                         </a>
-                        <Link href={`/tests/${test.id}/instances`}>
-                          <Button variant="ghost" size="sm">
-                            Instances ({test._count.assignments})
-                          </Button>
-                        </Link>
                         <Link href={`/tests/${test.id}`}>
                           <Button variant="ghost" size="sm">Edit</Button>
                         </Link>
