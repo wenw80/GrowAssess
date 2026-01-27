@@ -48,16 +48,17 @@ export async function POST(
     }
 
     // Generate a unique link
-    let publicLink: string;
+    let publicLink = randomBytes(16).toString('hex');
     let isUnique = false;
 
     while (!isUnique) {
-      publicLink = randomBytes(16).toString('hex');
       const existing = await prisma.test.findUnique({
         where: { publicLink },
       });
       if (!existing) {
         isUnique = true;
+      } else {
+        publicLink = randomBytes(16).toString('hex');
       }
     }
 
