@@ -1,0 +1,159 @@
+{
+  "$schema": "https://example.com/growassess/test-schema.json",
+  "_comment": "GrowAssess v1.0 – QSR GM Assessment (Advanced Weighted Judgment, Subtle Distractors)",
+
+  "title": "QSR General Manager Judgment Assessment (Advanced)",
+  "description": "High-fidelity situational judgment and operational decision-making assessment for QSR General Managers using nuanced, weighted scoring.",
+  "category": "Leadership",
+  "durationMinutes": 35,
+
+  "questions": [
+    {
+      "type": "mcq",
+      "content": "Lunch rush is peaking. Two crew members call out, DT is backing up, and you are short a key position. What is the BEST action in the next few minutes?",
+      "options": [
+        { "text": "Step into the most constrained station yourself while directing the shift lead to rebalance the rest of the floor", "points": 3 },
+        { "text": "Quickly reset the rush plan: reassign positions, narrow focus to core items, and align the team on DT pacing", "points": 5 },
+        { "text": "Temporarily slow order flow by tightening handoff checks while the team stabilizes", "points": 4 },
+        { "text": "Hold current assignments steady to avoid confusion and reassess after the rush peak", "points": 2 }
+      ],
+      "correctAnswer": 1,
+      "points": 5
+    },
+    {
+      "type": "mcq",
+      "content": "DT times have gradually increased over the last 15 minutes. What response is MOST likely to sustainably improve throughput?",
+      "options": [
+        { "text": "Reinforce urgency at the window and encourage faster handoff", "points": 2 },
+        { "text": "Shift your strongest communicator to expo and clarify ownership of drinks, bagging, and runner roles", "points": 5 },
+        { "text": "Pre-build popular items slightly ahead to absorb spikes", "points": 3 },
+        { "text": "Accept slightly longer DT times to preserve order accuracy", "points": 4 }
+      ],
+      "correctAnswer": 1,
+      "points": 5
+    },
+    {
+      "type": "mcq",
+      "content": "A top performer is consistently fast but is skipping a handwashing step during rush. What is the BEST immediate response?",
+      "options": [
+        { "text": "Correct the behavior briefly and keep them in position to avoid disrupting flow", "points": 4 },
+        { "text": "Pull them aside, reinforce the standard, and reassign if needed to protect food safety", "points": 5 },
+        { "text": "Note it mentally and address it in a post-shift coaching conversation", "points": 3 },
+        { "text": "Assign another team member to double-check their work until the rush ends", "points": 2 }
+      ],
+      "correctAnswer": 1,
+      "points": 5
+    },
+    {
+      "type": "mcq",
+      "content": "You notice temperature checks were missed on a batch prepared during peak. What is the BEST course of action?",
+      "options": [
+        { "text": "Immediately verify temps and discard only what cannot be validated", "points": 5 },
+        { "text": "Re-check temperatures now and document after the rush", "points": 3 },
+        { "text": "Discard the batch to eliminate risk and keep moving", "points": 4 },
+        { "text": "Flag it for the next shift to review when volume slows", "points": 2 }
+      ],
+      "correctAnswer": 0,
+      "points": 5
+    },
+    {
+      "type": "mcq",
+      "content": "Morale is slipping during peak. You sense frustration and short tempers. What is the MOST effective quick intervention?",
+      "options": [
+        { "text": "Briefly acknowledge the pressure, restate one clear goal, and reinforce teamwork expectations", "points": 5 },
+        { "text": "Focus solely on execution and address morale after the rush", "points": 3 },
+        { "text": "Rotate one stressed team member to a lower-intensity task", "points": 4 },
+        { "text": "Let the shift lead handle morale while you focus on numbers", "points": 2 }
+      ],
+      "correctAnswer": 0,
+      "points": 5
+    },
+
+    {
+      "type": "mcq",
+      "content": "Sales are tracking 20% below forecast at 2pm. Labor is currently at 33%. What is the BEST decision in the next 30 minutes?",
+      "options": [
+        { "text": "Reduce one non-critical position now and reassess in 30 minutes", "points": 4 },
+        { "text": "Re-forecast the afternoon, start breaks early, and protect peak-critical stations", "points": 6 },
+        { "text": "Hold staffing steady until sales stabilize to avoid service gaps", "points": 3 },
+        { "text": "Make a larger cut immediately to get labor back in line", "points": 2 }
+      ],
+      "correctAnswer": 1,
+      "points": 6
+    },
+    {
+      "type": "mcq",
+      "content": "Your labor target is 28%. You are trending at 31% with four hours remaining. What is the BEST next move?",
+      "options": [
+        { "text": "Stagger early outs for lower-impact roles while maintaining coverage for expected peaks", "points": 5 },
+        { "text": "Delay any cuts until you see actual sales results", "points": 3 },
+        { "text": "Trim hours evenly across the team to spread impact", "points": 2 },
+        { "text": "Make a decisive cut now to get ahead of the number", "points": 4 }
+      ],
+      "correctAnswer": 0,
+      "points": 5
+    },
+    {
+      "type": "mcq",
+      "content": "A case costs $48 and yields 24 servings. What is the cost per serving?",
+      "options": [
+        { "text": "$1.75", "points": 3 },
+        { "text": "$2.00", "points": 5 },
+        { "text": "$2.25", "points": 4 },
+        { "text": "$2.50", "points": 2 }
+      ],
+      "correctAnswer": 1,
+      "points": 5
+    },
+
+    {
+      "type": "mcq",
+      "content": "A team member has opened late twice this week. What is the MOST effective response?",
+      "options": [
+        { "text": "Document the issue, coach expectations, and align on a prevention plan", "points": 5 },
+        { "text": "Issue a formal warning to set a clear tone", "points": 4 },
+        { "text": "Adjust their schedule to reduce risk of recurrence", "points": 3 },
+        { "text": "Monitor closely for another incident before acting", "points": 2 }
+      ],
+      "correctAnswer": 0,
+      "points": 5
+    },
+    {
+      "type": "mcq",
+      "content": "A high-performing team member asks for flexibility on a minor policy because they deliver results. What is the BEST response?",
+      "options": [
+        { "text": "Reinforce that standards apply consistently while acknowledging their contributions", "points": 6 },
+        { "text": "Allow limited flexibility short-term while coaching expectations", "points": 4 },
+        { "text": "Redirect the conversation to performance goals and avoid policy discussion", "points": 3 },
+        { "text": "Escalate immediately to formal discipline to set precedent", "points": 2 }
+      ],
+      "correctAnswer": 0,
+      "points": 6
+    },
+
+    {
+      "type": "timed",
+      "content": "ROLE PLAY (3 minutes): Coach a late opener. Address impact, expectations, and next steps while maintaining engagement.",
+      "timeLimitSeconds": 180,
+      "points": 6
+    },
+    {
+      "type": "timed",
+      "content": "ROLE PLAY (3 minutes): Handle a guest upset about DT speed while keeping throughput and tone steady.",
+      "timeLimitSeconds": 180,
+      "points": 6
+    },
+    {
+      "type": "timed",
+      "content": "ROLE PLAY (3 minutes): Correct a food safety lapse during rush without escalating team stress.",
+      "timeLimitSeconds": 180,
+      "points": 6
+    },
+
+    {
+      "type": "freetext",
+      "content": "Values & Compliance: Describe a time you intentionally slowed operations to protect standards. What tradeoffs did you consider and what was the outcome?",
+      "points": 8
+    }
+  ]
+}

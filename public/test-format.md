@@ -19,6 +19,8 @@ This document describes the JSON format for creating cognitive tests in GrowAsse
 
 ### 1. Multiple Choice (`mcq`)
 
+> **⚠️ IMPORTANT**: All MCQ questions **MUST** include the `correctAnswer` field (zero-based index). This is required even when using flexible points scoring.
+
 **Simple Format (Binary Scoring):**
 ```json
 {
@@ -30,7 +32,7 @@ This document describes the JSON format for creating cognitive tests in GrowAsse
 }
 ```
 - `options`: Array of 2-6 answer choices (strings)
-- `correctAnswer`: Zero-based index of the correct option (0 = first option)
+- `correctAnswer`: **REQUIRED** - Zero-based index of the correct option (0 = first option)
 - `points`: Points awarded for correct answer (default: 1)
 - All incorrect answers receive 0 points
 
@@ -52,8 +54,10 @@ This document describes the JSON format for creating cognitive tests in GrowAsse
 - `options`: Array of objects with `text` and `points` fields
 - Each option specifies its own point value
 - Allows for partial credit and nuanced scoring
-- `correctAnswer`: Still indicates the "best" answer for UI purposes
+- `correctAnswer`: **REQUIRED** - Zero-based index of the "best" answer (0 = first option)
 - `points`: Represents maximum possible points for the question
+
+**IMPORTANT**: The `correctAnswer` field is **always required** for MCQ questions, even when using flexible points. It indicates which answer is considered the "correct" or "best" choice for administrative and UI purposes, while the per-option points determine the actual score awarded.
 
 ### 2. Free Text (`freetext`)
 ```json
@@ -91,9 +95,9 @@ This document describes the JSON format for creating cognitive tests in GrowAsse
 | `questions` | array | Yes | Array of question objects |
 | `questions[].type` | string | Yes | One of: `mcq`, `freetext`, `timed` |
 | `questions[].content` | string | Yes | The question or prompt text |
-| `questions[].options` | array | MCQ only | Answer choices: string array OR object array with text/points |
-| `questions[].correctAnswer` | number | MCQ only | Zero-based index of correct option |
-| `questions[].timeLimitSeconds` | number | Timed only | Time limit in seconds |
+| `questions[].options` | array | MCQ only (required) | Answer choices: string array OR object array with text/points |
+| `questions[].correctAnswer` | number | MCQ only (required) | Zero-based index of correct/best option (0, 1, 2, etc.) |
+| `questions[].timeLimitSeconds` | number | Timed only (required) | Time limit in seconds |
 | `questions[].points` | number | No | Points for this question (default: 1) |
 
 ## Flexible Points Use Cases
@@ -104,13 +108,16 @@ The flexible points format enables sophisticated scoring scenarios:
 Award partial points for answers that are partially correct:
 ```json
 {
+  "type": "mcq",
   "content": "What is the capital of France?",
   "options": [
     {"text": "Paris", "points": 10},
     {"text": "Lyon (major city, not capital)", "points": 3},
     {"text": "Berlin", "points": 0},
     {"text": "Madrid", "points": 0}
-  ]
+  ],
+  "correctAnswer": 0,
+  "points": 10
 }
 ```
 
@@ -118,13 +125,16 @@ Award partial points for answers that are partially correct:
 Differentiate between good and excellent answers:
 ```json
 {
+  "type": "mcq",
   "content": "Which best describes photosynthesis?",
   "options": [
     {"text": "Complete technical definition", "points": 10},
     {"text": "Good definition with key concepts", "points": 7},
     {"text": "Basic understanding", "points": 4},
     {"text": "Incorrect definition", "points": 0}
-  ]
+  ],
+  "correctAnswer": 0,
+  "points": 10
 }
 ```
 
@@ -132,13 +142,16 @@ Differentiate between good and excellent answers:
 Allow candidates to indicate confidence with point multipliers:
 ```json
 {
+  "type": "mcq",
   "content": "How confident are you in your previous answer?",
   "options": [
     {"text": "Very confident (2x multiplier)", "points": 20},
     {"text": "Confident (1x)", "points": 10},
     {"text": "Uncertain (0.5x)", "points": 5},
     {"text": "Guessing (0.2x)", "points": 2}
-  ]
+  ],
+  "correctAnswer": 0,
+  "points": 20
 }
 ```
 
