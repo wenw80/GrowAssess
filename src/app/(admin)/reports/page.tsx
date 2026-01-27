@@ -24,12 +24,12 @@ interface Question {
 
 interface Response {
   id: string;
+  questionId: string;
   answer: string | null;
   isCorrect: boolean | null;
   score: number | null;
   timeTakenSeconds: number | null;
   graderNotes: string | null;
-  question: Question;
 }
 
 interface Candidate {
@@ -89,6 +89,7 @@ export default function ReportsPage() {
 
   const [selectedAssignment, setSelectedAssignment] = useState<Assignment | null>(null);
   const [gradingResponse, setGradingResponse] = useState<Response | null>(null);
+  const [gradingQuestion, setGradingQuestion] = useState<Question | null>(null);
   const [gradeForm, setGradeForm] = useState({ score: '', notes: '' });
   const [saving, setSaving] = useState(false);
 
@@ -157,8 +158,9 @@ export default function ReportsPage() {
     window.location.href = `/api/reports/export?${params}`;
   };
 
-  const openGradeModal = (response: Response) => {
+  const openGradeModal = (response: Response, question: Question) => {
     setGradingResponse(response);
+    setGradingQuestion(question);
     setGradeForm({
       score: response.score?.toString() || '',
       notes: response.graderNotes || '',
@@ -181,6 +183,7 @@ export default function ReportsPage() {
 
       if (res.ok) {
         setGradingResponse(null);
+        setGradingQuestion(null);
         fetchReports();
       }
     } catch (error) {
@@ -408,7 +411,7 @@ export default function ReportsPage() {
               <h3 className="font-semibold">Responses</h3>
               {selectedAssignment.test.questions.map((question, index) => {
                 const response = selectedAssignment.responses.find(
-                  (r) => r.question.id === question.id
+                  (r) => r.questionId === question.id
                 );
 
                 return (
@@ -469,7 +472,7 @@ export default function ReportsPage() {
                             <Button
                               variant="secondary"
                               size="sm"
-                              onClick={() => openGradeModal(response)}
+                              onClick={() => openGradeModal(response, question)}
                             >
                               Grade
                             </Button>
@@ -494,15 +497,18 @@ export default function ReportsPage() {
       {/* Grading Modal */}
       <Modal
         isOpen={!!gradingResponse}
-        onClose={() => setGradingResponse(null)}
+        onClose={() => {
+          setGradingResponse(null);
+          setGradingQuestion(null);
+        }}
         title="Grade Response"
       >
-        {gradingResponse && (
+        {gradingResponse && gradingQuestion && (
           <div className="space-y-4">
             <div className="p-4 bg-gray-50 rounded-lg">
               <p className="text-sm text-gray-500 mb-2">Question</p>
               <p className="text-gray-900 whitespace-pre-wrap">
-                {gradingResponse.question.content}
+                {gradingQuestion.content}
               </p>
             </div>
 
@@ -514,11 +520,11 @@ export default function ReportsPage() {
             </div>
 
             <Input
-              label={`Score (max ${gradingResponse.question.points})`}
+              label={`Score (max ${gradingQuestion.points})`}
               id="score"
               type="number"
               min={0}
-              max={gradingResponse.question.points}
+              max={gradingQuestion.points}
               value={gradeForm.score}
               onChange={(e) => setGradeForm({ ...gradeForm, score: e.target.value })}
             />
@@ -533,7 +539,13 @@ export default function ReportsPage() {
             />
 
             <div className="flex justify-end gap-3 pt-4">
-              <Button variant="secondary" onClick={() => setGradingResponse(null)}>
+              <Button
+                variant="secondary"
+                onClick={() => {
+                  setGradingResponse(null);
+                  setGradingQuestion(null);
+                }}
+              >
                 Cancel
               </Button>
               <Button onClick={handleGrade} loading={saving}>
