@@ -1,0 +1,92 @@
+{
+  "title": "Example Test with Flexible Points",
+  "description": "Demonstrates the new flexible point assignment feature",
+  "tags": ["Example", "Flexible Points"],
+  "durationMinutes": 30,
+  "questions": [
+    {
+      "type": "mcq",
+      "content": "Traditional MCQ: What is 2 + 2?",
+      "options": ["3", "4", "5", "6"],
+      "correctAnswer": 1,
+      "points": 10
+    },
+    {
+      "type": "mcq",
+      "content": "Flexible Points: Select the BEST answer. Partial credit available for partially correct answers.",
+      "options": [
+        {
+          "text": "Excellent answer - fully correct",
+          "points": 10
+        },
+        {
+          "text": "Good answer - mostly correct",
+          "points": 7
+        },
+        {
+          "text": "Partial answer - somewhat correct",
+          "points": 3
+        },
+        {
+          "text": "Incorrect answer",
+          "points": 0
+        }
+      ],
+      "correctAnswer": 0,
+      "points": 10
+    },
+    {
+      "type": "mcq",
+      "content": "Multiple correct answers with different weights: Which of these are programming languages? (Choose the most comprehensive answer)",
+      "options": [
+        {
+          "text": "Python, Java, C++, JavaScript, Ruby, Go, Rust",
+          "points": 10
+        },
+        {
+          "text": "Python, Java, C++, JavaScript",
+          "points": 7
+        },
+        {
+          "text": "Python, Java",
+          "points": 4
+        },
+        {
+          "text": "HTML, CSS",
+          "points": 0
+        }
+      ],
+      "correctAnswer": 0,
+      "points": 10
+    },
+    {
+      "type": "mcq",
+      "content": "Risk assessment: How confident are you in your answer to the previous question?",
+      "options": [
+        {
+          "text": "Very confident - I'm certain (bonus points if correct)",
+          "points": 12
+        },
+        {
+          "text": "Confident - Pretty sure",
+          "points": 10
+        },
+        {
+          "text": "Somewhat confident - Educated guess",
+          "points": 8
+        },
+        {
+          "text": "Not confident - Random guess",
+          "points": 5
+        }
+      ],
+      "correctAnswer": 0,
+      "points": 12
+    },
+    {
+      "type": "freetext",
+      "content": "Explain the difference between a compiler and an interpreter.",
+      "points": 15
+    }
+  ]
+}

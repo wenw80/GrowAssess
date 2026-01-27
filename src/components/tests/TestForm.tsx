@@ -40,16 +40,33 @@ export default function TestForm({ initialData }: TestFormProps) {
   );
   const [questions, setQuestions] = useState<QuestionFormData[]>(() => {
     if (initialData?.questions) {
-      return initialData.questions.map((q) => ({
-        id: q.id,
-        type: q.type as 'mcq' | 'freetext' | 'timed',
-        content: q.content,
-        options: q.options ? JSON.parse(q.options) : undefined,
-        correctAnswer: q.correctAnswer || undefined,
-        timeLimitSeconds: q.timeLimitSeconds || undefined,
-        points: q.points,
-        order: q.order,
-      }));
+      return initialData.questions.map((q) => {
+        let options: MCQOption[] | undefined = undefined;
+
+        // Parse options and add points if missing (backwards compatibility)
+        if (q.options) {
+          const parsed = JSON.parse(q.options);
+          options = parsed.map((opt: { id: string; text: string; points?: number }) => ({
+            id: opt.id,
+            text: opt.text,
+            // If points field is missing, assign full points to correct answer, 0 to others
+            points: opt.points !== undefined
+              ? opt.points
+              : (opt.id === q.correctAnswer ? q.points : 0),
+          }));
+        }
+
+        return {
+          id: q.id,
+          type: q.type as 'mcq' | 'freetext' | 'timed',
+          content: q.content,
+          options,
+          correctAnswer: q.correctAnswer || undefined,
+          timeLimitSeconds: q.timeLimitSeconds || undefined,
+          points: q.points,
+          order: q.order,
+        };
+      });
     }
     return [];
   });
@@ -63,8 +80,8 @@ export default function TestForm({ initialData }: TestFormProps) {
       ...(type === 'mcq'
         ? {
             options: [
-              { id: crypto.randomUUID(), text: '' },
-              { id: crypto.randomUUID(), text: '' },
+              { id: crypto.randomUUID(), text: '', points: 1 },
+              { id: crypto.randomUUID(), text: '', points: 0 },
             ] as MCQOption[],
             correctAnswer: '',
           }

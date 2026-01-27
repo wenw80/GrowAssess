@@ -5,7 +5,7 @@ import { getCurrentUserId } from '@/lib/auth';
 interface ImportedQuestion {
   type: 'mcq' | 'freetext' | 'timed';
   content: string;
-  options?: string[];
+  options?: string[] | Array<{ text: string; points: number }>;
   correctAnswer?: number;
   timeLimitSeconds?: number;
   points?: number;
@@ -54,6 +54,18 @@ function validateTest(data: unknown): { valid: boolean; error?: string; test?: I
       if (typeof q.correctAnswer !== 'number' || q.correctAnswer < 0 || q.correctAnswer >= q.options.length) {
         return { valid: false, error: `Question ${qNum}: Invalid "correctAnswer" index for MCQ` };
       }
+      // Validate points for each option if provided
+      for (let i = 0; i < q.options.length; i++) {
+        const opt = q.options[i];
+        if (typeof opt === 'object' && opt !== null) {
+          if (!opt.text || typeof opt.text !== 'string') {
+            return { valid: false, error: `Question ${qNum}, Option ${i + 1}: Missing or invalid "text"` };
+          }
+          if (typeof opt.points !== 'number') {
+            return { valid: false, error: `Question ${qNum}, Option ${i + 1}: Missing or invalid "points"` };
+          }
+        }
+      }
     }
 
     if (q.type === 'timed') {
@@ -92,12 +104,29 @@ export async function POST(request: NextRequest) {
 
       if (q.type === 'mcq' && q.options) {
         // Convert options array to the format expected by the database
-        const optionsWithIds = q.options.map((text, i) => ({
-          id: String.fromCharCode(97 + i), // a, b, c, d, etc.
-          text,
-        }));
+        const questionPoints = baseQuestion.points;
+        const correctAnswerIndex = q.correctAnswer || 0;
+
+        const optionsWithIds = q.options.map((opt, i) => {
+          // Handle both string format and object format
+          if (typeof opt === 'string') {
+            // Legacy format: assign full points to correct answer, 0 to others
+            return {
+              id: String.fromCharCode(97 + i), // a, b, c, d, etc.
+              text: opt,
+              points: i === correctAnswerIndex ? questionPoints : 0,
+            };
+          } else {
+            // New format: use provided points
+            return {
+              id: String.fromCharCode(97 + i),
+              text: opt.text,
+              points: opt.points,
+            };
+          }
+        });
         baseQuestion.options = JSON.stringify(optionsWithIds);
-        baseQuestion.correctAnswer = String.fromCharCode(97 + (q.correctAnswer || 0));
+        baseQuestion.correctAnswer = String.fromCharCode(97 + correctAnswerIndex);
       }
 
       if (q.type === 'timed' && q.timeLimitSeconds) {

@@ -3,6 +3,7 @@ export type QuestionType = 'mcq' | 'freetext' | 'timed';
 export interface MCQOption {
   id: string;
   text: string;
+  points: number;
 }
 
 export interface QuestionFormData {

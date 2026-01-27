@@ -48,6 +48,7 @@ export default function QuestionEditor({
     const newOption: MCQOption = {
       id: crypto.randomUUID(),
       text: '',
+      points: 0,
     };
     const options = question.options || [];
     updateField('options', [...options, newOption]);
@@ -56,6 +57,12 @@ export default function QuestionEditor({
   const updateOption = (optionIndex: number, text: string) => {
     const options = [...(question.options || [])];
     options[optionIndex] = { ...options[optionIndex], text };
+    updateField('options', options);
+  };
+
+  const updateOptionPoints = (optionIndex: number, points: number) => {
+    const options = [...(question.options || [])];
+    options[optionIndex] = { ...options[optionIndex], points };
     updateField('options', options);
   };
 
@@ -155,7 +162,7 @@ export default function QuestionEditor({
           {question.type === 'mcq' && (
             <div className="space-y-3">
               <label className="block text-sm font-medium text-gray-700">
-                Options (select the correct answer)
+                Options (select the correct answer and assign points)
               </label>
               {question.options?.map((option, optionIndex) => (
                 <div key={option.id} className="flex items-center gap-2">
@@ -171,6 +178,14 @@ export default function QuestionEditor({
                     onChange={(e) => updateOption(optionIndex, e.target.value)}
                     placeholder={`Option ${String.fromCharCode(65 + optionIndex)}`}
                     className="flex-1"
+                  />
+                  <Input
+                    type="number"
+                    min={0}
+                    value={option.points}
+                    onChange={(e) => updateOptionPoints(optionIndex, parseInt(e.target.value) || 0)}
+                    placeholder="pts"
+                    className="w-20"
                   />
                   <Button
                     variant="ghost"

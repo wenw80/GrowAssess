@@ -26,9 +26,32 @@ export async function POST(request: NextRequest) {
     let isCorrect: boolean | null = null;
     let score: number | null = null;
 
-    if (question.type === 'mcq' && question.correctAnswer) {
-      isCorrect = answer === question.correctAnswer;
-      score = isCorrect ? question.points : 0;
+    if (question.type === 'mcq' && question.options) {
+      // Parse options to get points for the selected answer
+      try {
+        const options = JSON.parse(question.options) as Array<{ id: string; text: string; points?: number }>;
+        const selectedOption = options.find(opt => opt.id === answer);
+
+        if (selectedOption) {
+          // Use option points if available, otherwise use binary scoring (backwards compatibility)
+          if (selectedOption.points !== undefined) {
+            score = selectedOption.points;
+          } else {
+            // Old format: binary scoring
+            score = answer === question.correctAnswer ? question.points : 0;
+          }
+          // isCorrect is true if the answer matches the correctAnswer
+          isCorrect = answer === question.correctAnswer;
+        } else {
+          // Invalid answer selected
+          score = 0;
+          isCorrect = false;
+        }
+      } catch (e) {
+        // Fallback to old scoring if JSON parsing fails
+        isCorrect = answer === question.correctAnswer;
+        score = isCorrect ? question.points : 0;
+      }
     }
 
     // Upsert the response (create or update)
