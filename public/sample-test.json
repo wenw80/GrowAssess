@@ -24,13 +24,14 @@
       "type": "mcq",
       "content": "What number comes next in the sequence: 2, 6, 12, 20, 30, ?",
       "options": [
-        "40",
-        "42",
-        "44",
-        "46"
+        {"text": "40", "points": 0},
+        {"text": "42", "points": 2},
+        {"text": "44", "points": 0},
+        {"text": "46", "points": 0}
       ],
       "correctAnswer": 1,
-      "points": 2
+      "points": 2,
+      "_comment": "Example with flexible points - each option has its own point value"
     },
     {
       "type": "mcq",
@@ -59,13 +60,14 @@
       "type": "mcq",
       "content": "A company's revenue increased by 20% in Year 1 and decreased by 20% in Year 2. What is the net change from the original revenue?",
       "options": [
-        "No change (0%)",
-        "Decrease of 4%",
-        "Increase of 4%",
-        "Decrease of 2%"
+        {"text": "No change (0%)", "points": 0},
+        {"text": "Decrease of 4%", "points": 3},
+        {"text": "Increase of 4%", "points": 0},
+        {"text": "Decrease of 2%", "points": 1}
       ],
       "correctAnswer": 1,
-      "points": 3
+      "points": 3,
+      "_comment": "Partial credit example - close answer (2%) gets 1 point, correct answer (4%) gets 3 points"
     },
     {
       "type": "timed",

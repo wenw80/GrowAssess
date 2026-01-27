@@ -618,7 +618,8 @@ export default function TestsPage() {
             <h4 className="font-medium text-blue-900 mb-2">JSON Format</h4>
             <p className="text-sm text-blue-700 mb-3">
               Upload a JSON file or paste JSON content below. The format supports multiple choice,
-              free text, and timed questions.
+              free text, and timed questions. Multiple choice questions can assign different point values
+              to each answer option for partial credit and nuanced scoring.
             </p>
             <div className="flex flex-wrap gap-3 text-sm">
               <a
@@ -680,14 +681,19 @@ export default function TestsPage() {
 {
   "title": "My Test",
   "description": "Test description",
-  "category": "Cognitive",
+  "tags": ["Cognitive", "Analytical"],
   "questions": [
     {
       "type": "mcq",
       "content": "Question text",
-      "options": ["A", "B", "C", "D"],
+      "options": [
+        {"text": "Excellent answer", "points": 10},
+        {"text": "Good answer", "points": 7},
+        {"text": "Partial answer", "points": 3},
+        {"text": "Wrong answer", "points": 0}
+      ],
       "correctAnswer": 0,
-      "points": 1
+      "points": 10
     }
   ]
 }'
