@@ -89,7 +89,6 @@ export async function GET(request: NextRequest) {
           timeTakenSeconds: true,
           graderNotes: true,
           createdAt: true,
-          updatedAt: true,
         },
       }),
     ]);
