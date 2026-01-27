@@ -30,6 +30,7 @@ model Test {
   description     String?
   tags            String[]         @default([])
   durationMinutes Int?
+  publicLink      String?          @unique
   userId          String?
   createdAt       DateTime         @default(now())
   updatedAt       DateTime         @updatedAt
@@ -38,6 +39,7 @@ model Test {
   assignments     TestAssignment[]
 
   @@index([userId])
+  @@index([publicLink])
 }
 
 model Question {

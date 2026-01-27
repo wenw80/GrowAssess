@@ -585,6 +585,9 @@ export default function TestsPage() {
                             className="text-sm w-36"
                           />
                         )}
+                        <a href={`/api/tests/${test.id}/export`} download>
+                          <Button variant="ghost" size="sm">Export</Button>
+                        </a>
                         <Link href={`/tests/${test.id}`}>
                           <Button variant="ghost" size="sm">Edit</Button>
                         </Link>
