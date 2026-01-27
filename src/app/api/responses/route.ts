@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import prisma from '@/lib/db';
+import { parseTestSnapshot } from '@/lib/testSnapshot';
 
 export async function POST(request: NextRequest) {
   try {
@@ -13,13 +14,22 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Get the question to check the correct answer
-    const question = await prisma.question.findUnique({
-      where: { id: questionId },
+    // Get the assignment to access the test snapshot
+    const assignment = await prisma.testAssignment.findUnique({
+      where: { id: assignmentId },
+      select: { testSnapshot: true },
     });
 
+    if (!assignment) {
+      return NextResponse.json({ error: 'Assignment not found' }, { status: 404 });
+    }
+
+    // Get the question from the snapshot (not from live test)
+    const snapshot = parseTestSnapshot(assignment.testSnapshot);
+    const question = snapshot.questions.find(q => q.id === questionId);
+
     if (!question) {
-      return NextResponse.json({ error: 'Question not found' }, { status: 404 });
+      return NextResponse.json({ error: 'Question not found in test snapshot' }, { status: 404 });
     }
 
     // Determine if the answer is correct for MCQ questions

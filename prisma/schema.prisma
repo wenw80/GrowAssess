@@ -78,17 +78,18 @@ model Candidate {
 }
 
 model TestAssignment {
-  id          String     @id @default(uuid())
-  candidateId String
-  testId      String
-  uniqueLink  String     @unique
-  status      String     @default("not_started") // not_started, in_progress, completed
-  assignedAt  DateTime   @default(now())
-  startedAt   DateTime?
-  completedAt DateTime?
-  candidate   Candidate  @relation(fields: [candidateId], references: [id], onDelete: Cascade)
-  test        Test       @relation(fields: [testId], references: [id], onDelete: Cascade)
-  responses   Response[]
+  id           String     @id @default(uuid())
+  candidateId  String
+  testId       String
+  testSnapshot String     // JSON snapshot of test at assignment time
+  uniqueLink   String     @unique
+  status       String     @default("not_started") // not_started, in_progress, completed
+  assignedAt   DateTime   @default(now())
+  startedAt    DateTime?
+  completedAt  DateTime?
+  candidate    Candidate  @relation(fields: [candidateId], references: [id], onDelete: Cascade)
+  test         Test       @relation(fields: [testId], references: [id], onDelete: Cascade)
+  responses    Response[]
 
   @@index([candidateId])
   @@index([testId])

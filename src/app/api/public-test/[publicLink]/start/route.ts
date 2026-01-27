@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import prisma from '@/lib/db';
 import { randomBytes } from 'crypto';
+import { createTestSnapshot, serializeTestSnapshot } from '@/lib/testSnapshot';
 
 export async function POST(
   request: NextRequest,
@@ -68,14 +69,16 @@ export async function POST(
       });
     }
 
-    // Create new assignment
+    // Create new assignment with test snapshot
     const uniqueLink = randomBytes(16).toString('hex');
+    const snapshot = await createTestSnapshot(test.id);
 
     assignment = await prisma.testAssignment.create({
       data: {
         candidateId: candidate.id,
         testId: test.id,
         uniqueLink,
+        testSnapshot: serializeTestSnapshot(snapshot),
         status: 'not_started',
       },
     });

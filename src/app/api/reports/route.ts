@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import prisma from '@/lib/db';
+import { parseTestSnapshot } from '@/lib/testSnapshot';
 
 export async function GET(request: NextRequest) {
   try {
@@ -53,33 +54,42 @@ export async function GET(request: NextRequest) {
       include: {
         candidate: true,
         test: {
-          include: {
-            questions: {
-              orderBy: { order: 'asc' },
-            },
+          select: {
+            id: true,
+            title: true,
           },
         },
-        responses: {
-          include: {
-            question: true,
-          },
-        },
+        responses: true,
       },
       orderBy: { assignedAt: 'desc' },
     });
 
-    // Calculate scores
+    // Calculate scores using test snapshots
     const results = assignments.map((assignment) => {
+      const snapshot = parseTestSnapshot(assignment.testSnapshot);
       const responses = assignment.responses;
-      const totalPoints = assignment.test.questions.reduce((sum, q) => sum + q.points, 0);
+
+      // Create a map of question ID to points from snapshot
+      const questionPointsMap = new Map(
+        snapshot.questions.map(q => [q.id, q.points])
+      );
+
+      const totalPoints = snapshot.questions.reduce((sum, q) => sum + q.points, 0);
       const earnedPoints = responses.reduce((sum, r) => {
         if (r.score !== null) return sum + r.score;
-        if (r.isCorrect) return sum + r.question.points;
+        if (r.isCorrect) {
+          const questionPoints = questionPointsMap.get(r.questionId) || 0;
+          return sum + questionPoints;
+        }
         return sum;
       }, 0);
 
       return {
         ...assignment,
+        test: {
+          ...assignment.test,
+          ...snapshot,
+        },
         score: {
           earned: earnedPoints,
           total: totalPoints,

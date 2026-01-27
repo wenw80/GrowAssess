@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import prisma from '@/lib/db';
 import { generateUniqueLink } from '@/lib/utils';
+import { createTestSnapshot, serializeTestSnapshot } from '@/lib/testSnapshot';
 
 export async function GET() {
   try {
@@ -46,11 +47,15 @@ export async function POST(request: NextRequest) {
       );
     }
 
+    // Create a snapshot of the test at assignment time
+    const snapshot = await createTestSnapshot(testId);
+
     const assignment = await prisma.testAssignment.create({
       data: {
         candidateId,
         testId,
         uniqueLink: generateUniqueLink(),
+        testSnapshot: serializeTestSnapshot(snapshot),
       },
       include: {
         candidate: true,

@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import prisma from '@/lib/db';
+import { parseTestSnapshot } from '@/lib/testSnapshot';
 
 export async function GET(
   request: NextRequest,
@@ -13,22 +14,6 @@ export async function GET(
         candidate: {
           select: { name: true, email: true },
         },
-        test: {
-          include: {
-            questions: {
-              orderBy: { order: 'asc' },
-              select: {
-                id: true,
-                type: true,
-                content: true,
-                options: true,
-                timeLimitSeconds: true,
-                points: true,
-                order: true,
-              },
-            },
-          },
-        },
         responses: true,
       },
     });
@@ -37,7 +22,14 @@ export async function GET(
       return NextResponse.json({ error: 'Test not found' }, { status: 404 });
     }
 
-    return NextResponse.json(assignment);
+    // Parse the test snapshot to get the test structure at assignment time
+    const testSnapshot = parseTestSnapshot(assignment.testSnapshot);
+
+    // Return assignment with snapshot as the test data
+    return NextResponse.json({
+      ...assignment,
+      test: testSnapshot,
+    });
   } catch (error) {
     console.error('Error fetching assignment:', error);
     return NextResponse.json({ error: 'Failed to fetch test' }, { status: 500 });
