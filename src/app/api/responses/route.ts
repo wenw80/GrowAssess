@@ -17,7 +17,7 @@ export async function POST(request: NextRequest) {
     // Get the assignment to access the test snapshot
     const assignment = await prisma.testAssignment.findUnique({
       where: { id: assignmentId },
-      select: { testSnapshot: true },
+      select: { testSnapshot: true, testId: true },
     });
 
     if (!assignment) {
@@ -25,11 +25,36 @@ export async function POST(request: NextRequest) {
     }
 
     // Get the question from the snapshot (not from live test)
-    const snapshot = parseTestSnapshot(assignment.testSnapshot);
-    const question = snapshot.questions.find(q => q.id === questionId);
+    let question;
+    try {
+      const snapshot = parseTestSnapshot(assignment.testSnapshot);
+      if (snapshot.questions && snapshot.questions.length > 0) {
+        question = snapshot.questions.find(q => q.id === questionId);
+      }
+    } catch {
+      // Snapshot parsing failed or empty, fall back to live test
+    }
 
+    // Fall back to live test if snapshot is missing or invalid
     if (!question) {
-      return NextResponse.json({ error: 'Question not found in test snapshot' }, { status: 404 });
+      const liveQuestion = await prisma.question.findUnique({
+        where: { id: questionId },
+      });
+
+      if (!liveQuestion) {
+        return NextResponse.json({ error: 'Question not found' }, { status: 404 });
+      }
+
+      question = {
+        id: liveQuestion.id,
+        type: liveQuestion.type,
+        content: liveQuestion.content,
+        options: liveQuestion.options,
+        correctAnswer: liveQuestion.correctAnswer,
+        timeLimitSeconds: liveQuestion.timeLimitSeconds,
+        points: liveQuestion.points,
+        order: liveQuestion.order,
+      };
     }
 
     // Determine if the answer is correct for MCQ questions

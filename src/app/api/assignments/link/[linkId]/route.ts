@@ -15,6 +15,7 @@ export async function GET(
           select: { name: true, email: true },
         },
         responses: true,
+        test: true,
       },
     });
 
@@ -23,7 +24,59 @@ export async function GET(
     }
 
     // Parse the test snapshot to get the test structure at assignment time
-    const testSnapshot = parseTestSnapshot(assignment.testSnapshot);
+    let testSnapshot;
+    try {
+      const parsed = parseTestSnapshot(assignment.testSnapshot);
+      if (parsed.questions && parsed.questions.length > 0) {
+        testSnapshot = parsed;
+      } else {
+        // Empty snapshot, fall back to live test with questions
+        const questions = await prisma.question.findMany({
+          where: { testId: assignment.testId },
+          orderBy: { order: 'asc' },
+        });
+        testSnapshot = {
+          title: assignment.test.title,
+          description: assignment.test.description,
+          requirements: assignment.test.requirements,
+          tags: assignment.test.tags,
+          durationMinutes: assignment.test.durationMinutes,
+          questions: questions.map(q => ({
+            id: q.id,
+            type: q.type,
+            content: q.content,
+            options: q.options,
+            correctAnswer: q.correctAnswer,
+            timeLimitSeconds: q.timeLimitSeconds,
+            points: q.points,
+            order: q.order,
+          })),
+        };
+      }
+    } catch {
+      // Invalid JSON or parsing error, fall back to live test
+      const questions = await prisma.question.findMany({
+        where: { testId: assignment.testId },
+        orderBy: { order: 'asc' },
+      });
+      testSnapshot = {
+        title: assignment.test.title,
+        description: assignment.test.description,
+        requirements: assignment.test.requirements,
+        tags: assignment.test.tags,
+        durationMinutes: assignment.test.durationMinutes,
+        questions: questions.map(q => ({
+          id: q.id,
+          type: q.type,
+          content: q.content,
+          options: q.options,
+          correctAnswer: q.correctAnswer,
+          timeLimitSeconds: q.timeLimitSeconds,
+          points: q.points,
+          order: q.order,
+        })),
+      };
+    }
 
     // Return assignment with snapshot as the test data
     return NextResponse.json({

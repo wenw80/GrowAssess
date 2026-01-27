@@ -57,6 +57,10 @@ export async function GET(request: NextRequest) {
           select: {
             id: true,
             title: true,
+            description: true,
+            requirements: true,
+            tags: true,
+            durationMinutes: true,
           },
         },
         responses: true,
@@ -64,9 +68,63 @@ export async function GET(request: NextRequest) {
       orderBy: { assignedAt: 'desc' },
     });
 
+    // Fetch questions for assignments without snapshots
+    const assignmentsWithQuestions = await Promise.all(
+      assignments.map(async (assignment) => {
+        let snapshot;
+
+        // Try to parse snapshot, fall back to live test if empty/invalid
+        try {
+          const parsed = parseTestSnapshot(assignment.testSnapshot);
+          if (parsed.questions && parsed.questions.length > 0) {
+            snapshot = parsed;
+          } else {
+            // Empty snapshot, fall back to live test
+            const questions = await prisma.question.findMany({
+              where: { testId: assignment.testId },
+              orderBy: { order: 'asc' },
+            });
+            snapshot = {
+              ...assignment.test,
+              questions: questions.map(q => ({
+                id: q.id,
+                type: q.type,
+                content: q.content,
+                options: q.options,
+                correctAnswer: q.correctAnswer,
+                timeLimitSeconds: q.timeLimitSeconds,
+                points: q.points,
+                order: q.order,
+              })),
+            };
+          }
+        } catch {
+          // Invalid JSON or parsing error, fall back to live test
+          const questions = await prisma.question.findMany({
+            where: { testId: assignment.testId },
+            orderBy: { order: 'asc' },
+          });
+          snapshot = {
+            ...assignment.test,
+            questions: questions.map(q => ({
+              id: q.id,
+              type: q.type,
+              content: q.content,
+              options: q.options,
+              correctAnswer: q.correctAnswer,
+              timeLimitSeconds: q.timeLimitSeconds,
+              points: q.points,
+              order: q.order,
+            })),
+          };
+        }
+
+        return { assignment, snapshot };
+      })
+    );
+
     // Calculate scores using test snapshots
-    const results = assignments.map((assignment) => {
-      const snapshot = parseTestSnapshot(assignment.testSnapshot);
+    const results = assignmentsWithQuestions.map(({ assignment, snapshot }) => {
       const responses = assignment.responses;
 
       // Create a map of question ID to points from snapshot
