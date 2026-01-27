@@ -34,7 +34,7 @@ export async function PUT(
   try {
     const { id } = await params;
     const data = await request.json();
-    const { title, description, category, tags, durationMinutes, questions } = data;
+    const { title, description, requirements, category, tags, durationMinutes, questions } = data;
 
     // Handle both tags array and legacy category string
     let testTags: string[] = [];
@@ -55,6 +55,7 @@ export async function PUT(
       data: {
         title,
         description,
+        requirements,
         tags: testTags,
         durationMinutes,
         questions: {

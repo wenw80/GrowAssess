@@ -39,7 +39,7 @@ export async function GET(request: NextRequest) {
 export async function POST(request: NextRequest) {
   try {
     const data = await request.json();
-    const { title, description, category, tags, durationMinutes, questions } = data;
+    const { title, description, requirements, category, tags, durationMinutes, questions } = data;
 
     if (!title) {
       return NextResponse.json({ error: 'Title is required' }, { status: 400 });
@@ -60,6 +60,7 @@ export async function POST(request: NextRequest) {
       data: {
         title,
         description,
+        requirements,
         tags: testTags,
         durationMinutes,
         userId: currentUserId,

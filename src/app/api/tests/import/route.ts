@@ -14,6 +14,7 @@ interface ImportedQuestion {
 interface ImportedTest {
   title: string;
   description?: string;
+  requirements?: string;
   category?: string; // Legacy support
   tags?: string[]; // New format
   durationMinutes?: number;
@@ -151,6 +152,7 @@ export async function POST(request: NextRequest) {
       data: {
         title: importedTest.title,
         description: importedTest.description || null,
+        requirements: importedTest.requirements || null,
         tags: testTags,
         durationMinutes: importedTest.durationMinutes || null,
         userId: currentUserId,

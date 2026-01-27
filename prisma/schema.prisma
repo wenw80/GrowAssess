@@ -28,6 +28,7 @@ model Test {
   id              String           @id @default(uuid())
   title           String
   description     String?
+  requirements    String?
   tags            String[]         @default([])
   durationMinutes Int?
   publicLink      String?          @unique

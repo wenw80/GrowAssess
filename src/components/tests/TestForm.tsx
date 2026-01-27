@@ -14,6 +14,7 @@ interface TestFormProps {
     id?: string;
     title: string;
     description: string | null;
+    requirements: string | null;
     tags: string[];
     durationMinutes: number | null;
     questions: Array<{
@@ -34,6 +35,7 @@ export default function TestForm({ initialData }: TestFormProps) {
   const [saving, setSaving] = useState(false);
   const [title, setTitle] = useState(initialData?.title || '');
   const [description, setDescription] = useState(initialData?.description || '');
+  const [requirements, setRequirements] = useState(initialData?.requirements || '');
   const [tagsInput, setTagsInput] = useState(initialData?.tags?.join(', ') || '');
   const [durationMinutes, setDurationMinutes] = useState<number | ''>(
     initialData?.durationMinutes || ''
@@ -157,6 +159,7 @@ export default function TestForm({ initialData }: TestFormProps) {
       const payload = {
         title: title.trim(),
         description: description.trim() || null,
+        requirements: requirements.trim() || null,
         tags,
         durationMinutes: durationMinutes || null,
         questions: questions.map((q, i) => ({
@@ -208,6 +211,14 @@ export default function TestForm({ initialData }: TestFormProps) {
             value={description}
             onChange={(e) => setDescription(e.target.value)}
             placeholder="Describe what this test measures..."
+          />
+          <Textarea
+            label="Requirements / Generation Prompt"
+            id="requirements"
+            rows={5}
+            value={requirements}
+            onChange={(e) => setRequirements(e.target.value)}
+            placeholder="Store the AI prompt used to generate this test, or any requirements and notes..."
           />
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <Input

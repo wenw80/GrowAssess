@@ -26,6 +26,7 @@ export async function GET(
     const exportData = {
       title: test.title,
       description: test.description || undefined,
+      requirements: test.requirements || undefined,
       tags: test.tags.length > 0 ? test.tags : undefined,
       durationMinutes: test.durationMinutes || undefined,
       questions: test.questions.map((q) => {
