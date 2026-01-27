@@ -21,6 +21,7 @@ export default function SettingsPage() {
   const [saveError, setSaveError] = useState<string | null>(null);
   const [saveSuccess, setSaveSuccess] = useState(false);
   const [showApiKey, setShowApiKey] = useState(false);
+  const [exporting, setExporting] = useState(false);
 
   useEffect(() => {
     fetchSettings();
@@ -107,6 +108,35 @@ export default function SettingsPage() {
       console.error('Error deleting API key:', error);
     } finally {
       setSaving(false);
+    }
+  };
+
+  const handleExportDatabase = async () => {
+    setExporting(true);
+    try {
+      const response = await fetch('/api/database/export');
+      if (!response.ok) {
+        throw new Error('Export failed');
+      }
+
+      const blob = await response.blob();
+      const url = window.URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+
+      // Generate filename with current date
+      const timestamp = new Date().toISOString().split('T')[0];
+      a.download = `growassess-export-${timestamp}.json`;
+
+      document.body.appendChild(a);
+      a.click();
+      window.URL.revokeObjectURL(url);
+      document.body.removeChild(a);
+    } catch (error) {
+      console.error('Error exporting database:', error);
+      alert('Failed to export database. Please try again.');
+    } finally {
+      setExporting(false);
     }
   };
 
@@ -260,6 +290,63 @@ export default function SettingsPage() {
           </div>
         </div>
       </Card>
+
+      {/* Database Management Section */}
+      {currentUser?.role === 'admin' && (
+        <Card className="mb-6">
+          <div className="p-6">
+            <div className="flex items-center justify-between mb-4">
+              <div>
+                <h2 className="text-lg font-semibold text-gray-900">Database Management</h2>
+                <p className="text-sm text-gray-500 mt-1">
+                  Backup and manage your application data
+                </p>
+              </div>
+            </div>
+
+            <div className="border-t border-gray-200 pt-4">
+              <div className="mb-4">
+                <h3 className="text-sm font-medium text-gray-700 mb-2">Export Database</h3>
+                <p className="text-sm text-gray-500 mb-4">
+                  Download a complete backup of your database in JSON format. This includes all tests,
+                  candidates, assignments, responses, and settings.
+                </p>
+                <div className="flex items-start gap-3 p-4 bg-yellow-50 border border-yellow-200 rounded-lg mb-4">
+                  <svg
+                    className="h-5 w-5 text-yellow-600 flex-shrink-0 mt-0.5"
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={2}
+                      d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"
+                    />
+                  </svg>
+                  <div className="text-sm text-yellow-800">
+                    <p className="font-medium mb-1">Important Notes:</p>
+                    <ul className="list-disc list-inside space-y-1">
+                      <li>API keys are redacted in the export for security</li>
+                      <li>User passwords are excluded from the export</li>
+                      <li>Store the backup file securely as it contains sensitive data</li>
+                      <li>The file is in JSON format and can be used for backup or migration</li>
+                    </ul>
+                  </div>
+                </div>
+                <Button
+                  onClick={handleExportDatabase}
+                  loading={exporting}
+                  variant="secondary"
+                >
+                  {exporting ? 'Exporting...' : 'Export Database'}
+                </Button>
+              </div>
+            </div>
+          </div>
+        </Card>
+      )}
 
       {/* Instructions Card */}
       <Card>
