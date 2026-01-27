@@ -92,6 +92,13 @@ export default function ReportsPage() {
   const [gradingQuestion, setGradingQuestion] = useState<Question | null>(null);
   const [gradeForm, setGradeForm] = useState({ score: '', notes: '' });
   const [saving, setSaving] = useState(false);
+  const [aiGrade, setAiGrade] = useState<{
+    suggestedScore: number;
+    strengths: string;
+    weaknesses: string;
+    fitAnalysis: string;
+  } | null>(null);
+  const [generatingAiGrade, setGeneratingAiGrade] = useState(false);
 
   useEffect(() => {
     fetchFiltersData();
@@ -165,6 +172,39 @@ export default function ReportsPage() {
       score: response.score?.toString() || '',
       notes: response.graderNotes || '',
     });
+    setAiGrade(null); // Reset AI grade when opening modal
+  };
+
+  const generateAiGrade = async () => {
+    if (!gradingResponse) return;
+
+    setGeneratingAiGrade(true);
+    try {
+      const res = await fetch(`/api/responses/${gradingResponse.id}/ai-grade`, {
+        method: 'POST',
+      });
+
+      const data = await res.json();
+
+      if (res.ok && data.success) {
+        setAiGrade(data.grade);
+      } else {
+        alert(data.error || 'Failed to generate AI grade');
+      }
+    } catch (error) {
+      console.error('Error generating AI grade:', error);
+      alert('Failed to generate AI grade');
+    } finally {
+      setGeneratingAiGrade(false);
+    }
+  };
+
+  const useAiSuggestion = () => {
+    if (!aiGrade) return;
+    setGradeForm({
+      score: aiGrade.suggestedScore.toString(),
+      notes: `Strengths:\n${aiGrade.strengths}\n\nWeaknesses:\n${aiGrade.weaknesses}\n\nFit Analysis:\n${aiGrade.fitAnalysis}`,
+    });
   };
 
   const handleGrade = async () => {
@@ -184,6 +224,7 @@ export default function ReportsPage() {
       if (res.ok) {
         setGradingResponse(null);
         setGradingQuestion(null);
+        setAiGrade(null);
         fetchReports();
       }
     } catch (error) {
@@ -500,57 +541,152 @@ export default function ReportsPage() {
         onClose={() => {
           setGradingResponse(null);
           setGradingQuestion(null);
+          setAiGrade(null);
         }}
         title="Grade Response"
+        className="max-w-6xl"
       >
         {gradingResponse && gradingQuestion && (
           <div className="space-y-4">
-            <div className="p-4 bg-gray-50 rounded-lg">
-              <p className="text-sm text-gray-500 mb-2">Question</p>
-              <p className="text-gray-900 whitespace-pre-wrap">
-                {gradingQuestion.content}
-              </p>
+            {/* Question and Answer Context */}
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div className="p-4 bg-gray-50 rounded-lg">
+                <p className="text-sm font-medium text-gray-700 mb-2">Question</p>
+                <p className="text-gray-900 whitespace-pre-wrap text-sm">
+                  {gradingQuestion.content}
+                </p>
+              </div>
+
+              <div className="p-4 bg-blue-50 rounded-lg">
+                <p className="text-sm font-medium text-gray-700 mb-2">Candidate Answer</p>
+                <p className="text-gray-900 whitespace-pre-wrap text-sm">
+                  {gradingResponse.answer || 'No answer provided'}
+                </p>
+              </div>
             </div>
 
-            <div className="p-4 bg-blue-50 rounded-lg">
-              <p className="text-sm text-gray-500 mb-2">Answer</p>
-              <p className="text-gray-900 whitespace-pre-wrap">
-                {gradingResponse.answer || 'No answer provided'}
-              </p>
-            </div>
-
-            <Input
-              label={`Score (max ${gradingQuestion.points})`}
-              id="score"
-              type="number"
-              min={0}
-              max={gradingQuestion.points}
-              value={gradeForm.score}
-              onChange={(e) => setGradeForm({ ...gradeForm, score: e.target.value })}
-            />
-
-            <Textarea
-              label="Grader Notes"
-              id="notes"
-              rows={3}
-              value={gradeForm.notes}
-              onChange={(e) => setGradeForm({ ...gradeForm, notes: e.target.value })}
-              placeholder="Optional feedback for this response..."
-            />
-
-            <div className="flex justify-end gap-3 pt-4">
+            {/* AI Generate Button */}
+            <div className="flex justify-center">
               <Button
                 variant="secondary"
-                onClick={() => {
-                  setGradingResponse(null);
-                  setGradingQuestion(null);
-                }}
+                onClick={generateAiGrade}
+                loading={generatingAiGrade}
+                disabled={!!aiGrade}
               >
-                Cancel
+                {aiGrade ? '✓ AI Grade Generated' : '🤖 Generate AI Grade'}
               </Button>
-              <Button onClick={handleGrade} loading={saving}>
-                Save Grade
-              </Button>
+            </div>
+
+            {/* Side-by-Side Layout: AI Suggestions + Human Grading */}
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 pt-4 border-t">
+              {/* AI Suggestions Panel */}
+              <div className="space-y-4">
+                <div className="flex items-center justify-between">
+                  <h3 className="text-lg font-semibold text-gray-900">AI Suggestions</h3>
+                  {aiGrade && (
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={useAiSuggestion}
+                    >
+                      Use AI Grade →
+                    </Button>
+                  )}
+                </div>
+
+                {aiGrade ? (
+                  <div className="space-y-3">
+                    <div className="p-3 bg-green-50 border border-green-200 rounded-lg">
+                      <p className="text-sm font-medium text-green-900 mb-1">Suggested Score</p>
+                      <p className="text-2xl font-bold text-green-700">
+                        {aiGrade.suggestedScore} / {gradingQuestion.points}
+                      </p>
+                    </div>
+
+                    <div className="p-3 bg-blue-50 border border-blue-200 rounded-lg">
+                      <p className="text-sm font-medium text-blue-900 mb-2">Strengths</p>
+                      <p className="text-sm text-blue-800 whitespace-pre-wrap">
+                        {aiGrade.strengths}
+                      </p>
+                    </div>
+
+                    <div className="p-3 bg-orange-50 border border-orange-200 rounded-lg">
+                      <p className="text-sm font-medium text-orange-900 mb-2">Weaknesses</p>
+                      <p className="text-sm text-orange-800 whitespace-pre-wrap">
+                        {aiGrade.weaknesses}
+                      </p>
+                    </div>
+
+                    <div className="p-3 bg-purple-50 border border-purple-200 rounded-lg">
+                      <p className="text-sm font-medium text-purple-900 mb-2">Fit Analysis</p>
+                      <p className="text-sm text-purple-800 whitespace-pre-wrap">
+                        {aiGrade.fitAnalysis}
+                      </p>
+                    </div>
+                  </div>
+                ) : (
+                  <div className="flex items-center justify-center h-64 bg-gray-50 rounded-lg border-2 border-dashed border-gray-300">
+                    <div className="text-center px-4">
+                      <svg
+                        className="mx-auto h-12 w-12 text-gray-400"
+                        fill="none"
+                        stroke="currentColor"
+                        viewBox="0 0 24 24"
+                      >
+                        <path
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          strokeWidth={2}
+                          d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z"
+                        />
+                      </svg>
+                      <p className="mt-2 text-sm text-gray-600">
+                        Click "Generate AI Grade" to get AI-powered grading suggestions
+                      </p>
+                    </div>
+                  </div>
+                )}
+              </div>
+
+              {/* Human Grading Panel */}
+              <div className="space-y-4">
+                <h3 className="text-lg font-semibold text-gray-900">Your Grade</h3>
+
+                <Input
+                  label={`Score (max ${gradingQuestion.points})`}
+                  id="score"
+                  type="number"
+                  min={0}
+                  max={gradingQuestion.points}
+                  value={gradeForm.score}
+                  onChange={(e) => setGradeForm({ ...gradeForm, score: e.target.value })}
+                />
+
+                <Textarea
+                  label="Grader Notes"
+                  id="notes"
+                  rows={12}
+                  value={gradeForm.notes}
+                  onChange={(e) => setGradeForm({ ...gradeForm, notes: e.target.value })}
+                  placeholder="Enter your feedback, including strengths, weaknesses, and fit analysis..."
+                />
+
+                <div className="flex justify-end gap-3 pt-4 border-t">
+                  <Button
+                    variant="secondary"
+                    onClick={() => {
+                      setGradingResponse(null);
+                      setGradingQuestion(null);
+                      setAiGrade(null);
+                    }}
+                  >
+                    Cancel
+                  </Button>
+                  <Button onClick={handleGrade} loading={saving}>
+                    Save Grade
+                  </Button>
+                </div>
+              </div>
             </div>
           </div>
         )}
