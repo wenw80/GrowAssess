@@ -588,6 +588,11 @@ export default function TestsPage() {
                         <a href={`/api/tests/${test.id}/export`} download>
                           <Button variant="ghost" size="sm">Export</Button>
                         </a>
+                        <Link href={`/tests/${test.id}/instances`}>
+                          <Button variant="ghost" size="sm">
+                            Instances ({test._count.assignments})
+                          </Button>
+                        </Link>
                         <Link href={`/tests/${test.id}`}>
                           <Button variant="ghost" size="sm">Edit</Button>
                         </Link>

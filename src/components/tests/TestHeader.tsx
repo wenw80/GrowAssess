@@ -127,6 +127,11 @@ export default function TestHeader({ testId, testTitle }: TestHeaderProps) {
             <p className="text-gray-500 mt-1">Update test details and questions</p>
           </div>
           <div className="flex gap-2">
+            <Link href={`/tests/${testId}/instances`}>
+              <Button variant="secondary">
+                View Instances
+              </Button>
+            </Link>
             <Button
               variant="secondary"
               onClick={() => setShowLinkModal(true)}
