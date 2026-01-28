@@ -81,11 +81,16 @@ export default function TestForm({ initialData }: TestFormProps) {
   });
 
   const addQuestions = (newQuestions: QuestionFormData[]) => {
-    const questionsWithOrder = newQuestions.map((q, idx) => ({
-      ...q,
-      order: questions.length + idx,
-    }));
-    setQuestions([...questions, ...questionsWithOrder]);
+    try {
+      const questionsWithOrder = newQuestions.map((q, idx) => ({
+        ...q,
+        order: questions.length + idx,
+      }));
+      setQuestions([...questions, ...questionsWithOrder]);
+    } catch (error) {
+      console.error('Error adding questions:', error);
+      // Don't propagate error to prevent navigation
+    }
   };
 
   const updateQuestion = (index: number, question: QuestionFormData) => {

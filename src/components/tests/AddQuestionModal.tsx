@@ -73,84 +73,109 @@ export default function AddQuestionModal({
     }
   };
 
-  const handleAddNewQuestion = () => {
-    let newQuestion: QuestionFormData;
+  const handleAddNewQuestion = (e?: React.MouseEvent) => {
+    e?.preventDefault();
+    e?.stopPropagation();
 
-    if (questionType === 'mcq') {
-      const option1Id = crypto.randomUUID();
-      const option2Id = crypto.randomUUID();
-      newQuestion = {
-        id: crypto.randomUUID(),
-        type: questionType,
-        content: '',
-        points: 1,
-        order: 0,
-        options: [
-          { id: option1Id, text: '', points: 1 },
-          { id: option2Id, text: '', points: 0 },
-        ],
-        correctAnswer: option1Id, // Set to first option ID instead of empty string
-      };
-    } else {
-      newQuestion = {
-        id: crypto.randomUUID(),
-        type: questionType,
-        content: '',
-        points: 1,
-        order: 0,
-        ...(questionType === 'timed' ? { timeLimitSeconds: 60 } : {}),
-      };
-    }
+    try {
+      let newQuestion: QuestionFormData;
 
-    onAddQuestions([newQuestion]);
-    onClose();
-  };
-
-  const handleAddFromLibrary = () => {
-    const selected = allQuestions.filter((q) => selectedQuestionIds.has(q.id));
-    const questionsToAdd: QuestionFormData[] = selected.map((q) => {
-      let options: MCQOption[] | undefined = undefined;
-      let correctAnswer: string | undefined = undefined;
-
-      if (q.options) {
-        const parsed = JSON.parse(q.options);
-        // Create mapping from old IDs to new IDs
-        const idMap = new Map<string, string>();
-
-        options = parsed.map((opt: { id: string; text: string; points?: number }) => {
-          const newId = crypto.randomUUID();
-          idMap.set(opt.id, newId);
-          return {
-            id: newId,
-            text: opt.text,
-            points: opt.points !== undefined ? opt.points : (opt.id === q.correctAnswer ? q.points : 0),
-          };
-        });
-
-        // Map old correctAnswer ID to new ID
-        if (q.correctAnswer && idMap.has(q.correctAnswer)) {
-          correctAnswer = idMap.get(q.correctAnswer);
-        }
+      if (questionType === 'mcq') {
+        const option1Id = crypto.randomUUID();
+        const option2Id = crypto.randomUUID();
+        newQuestion = {
+          id: crypto.randomUUID(),
+          type: questionType,
+          content: '',
+          points: 1,
+          order: 0,
+          options: [
+            { id: option1Id, text: '', points: 1 },
+            { id: option2Id, text: '', points: 0 },
+          ],
+          correctAnswer: option1Id, // Set to first option ID instead of empty string
+        };
+      } else {
+        newQuestion = {
+          id: crypto.randomUUID(),
+          type: questionType,
+          content: '',
+          points: 1,
+          order: 0,
+          ...(questionType === 'timed' ? { timeLimitSeconds: 60 } : {}),
+        };
       }
 
-      return {
-        id: crypto.randomUUID(),
-        type: q.type as 'mcq' | 'freetext' | 'timed',
-        content: q.content,
-        options,
-        correctAnswer,
-        timeLimitSeconds: q.timeLimitSeconds || undefined,
-        points: q.points,
-        order: 0, // Will be set by parent
-      };
-    });
+      onAddQuestions([newQuestion]);
 
-    onAddQuestions(questionsToAdd);
-    setSelectedQuestionIds(new Set());
-    onClose();
+      // Delay closing modal to allow state to settle
+      setTimeout(() => {
+        onClose();
+      }, 0);
+    } catch (error) {
+      console.error('Error adding new question:', error);
+    }
   };
 
-  const handleImportFromJSON = () => {
+  const handleAddFromLibrary = (e?: React.MouseEvent) => {
+    e?.preventDefault();
+    e?.stopPropagation();
+
+    try {
+      const selected = allQuestions.filter((q) => selectedQuestionIds.has(q.id));
+      const questionsToAdd: QuestionFormData[] = selected.map((q) => {
+        let options: MCQOption[] | undefined = undefined;
+        let correctAnswer: string | undefined = undefined;
+
+        if (q.options) {
+          const parsed = JSON.parse(q.options);
+          // Create mapping from old IDs to new IDs
+          const idMap = new Map<string, string>();
+
+          options = parsed.map((opt: { id: string; text: string; points?: number }) => {
+            const newId = crypto.randomUUID();
+            idMap.set(opt.id, newId);
+            return {
+              id: newId,
+              text: opt.text,
+              points: opt.points !== undefined ? opt.points : (opt.id === q.correctAnswer ? q.points : 0),
+            };
+          });
+
+          // Map old correctAnswer ID to new ID
+          if (q.correctAnswer && idMap.has(q.correctAnswer)) {
+            correctAnswer = idMap.get(q.correctAnswer);
+          }
+        }
+
+        return {
+          id: crypto.randomUUID(),
+          type: q.type as 'mcq' | 'freetext' | 'timed',
+          content: q.content,
+          options,
+          correctAnswer,
+          timeLimitSeconds: q.timeLimitSeconds || undefined,
+          points: q.points,
+          order: 0, // Will be set by parent
+        };
+      });
+
+      onAddQuestions(questionsToAdd);
+      setSelectedQuestionIds(new Set());
+
+      // Delay closing modal to allow state to settle
+      setTimeout(() => {
+        onClose();
+      }, 0);
+    } catch (error) {
+      console.error('Error adding questions from library:', error);
+    }
+  };
+
+  const handleImportFromJSON = (e?: React.MouseEvent) => {
+    e?.preventDefault();
+    e?.stopPropagation();
+
     setImportError(null);
     try {
       const parsed = JSON.parse(jsonInput);
@@ -215,7 +240,11 @@ export default function AddQuestionModal({
 
       onAddQuestions(questionsToAdd);
       setJsonInput('');
-      onClose();
+
+      // Delay closing modal to allow state to settle
+      setTimeout(() => {
+        onClose();
+      }, 0);
     } catch (error) {
       setImportError(error instanceof Error ? error.message : 'Invalid JSON format');
     }
@@ -304,7 +333,7 @@ export default function AddQuestionModal({
               <Button type="button" variant="secondary" onClick={onClose}>
                 Cancel
               </Button>
-              <Button type="button" onClick={handleAddNewQuestion}>
+              <Button type="button" onClick={(e) => handleAddNewQuestion(e)}>
                 Add Question
               </Button>
             </div>
@@ -382,7 +411,7 @@ export default function AddQuestionModal({
                 </Button>
                 <Button
                   type="button"
-                  onClick={handleAddFromLibrary}
+                  onClick={(e) => handleAddFromLibrary(e)}
                   disabled={selectedQuestionIds.size === 0}
                 >
                   Add Selected
@@ -441,7 +470,7 @@ export default function AddQuestionModal({
               </Button>
               <Button
                 type="button"
-                onClick={handleImportFromJSON}
+                onClick={(e) => handleImportFromJSON(e)}
                 disabled={!jsonInput.trim()}
               >
                 Import Questions
