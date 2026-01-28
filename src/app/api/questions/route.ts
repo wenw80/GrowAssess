@@ -67,6 +67,18 @@ export async function GET(request: NextRequest) {
             tests: true,
           },
         },
+        tests: {
+          include: {
+            test: {
+              select: {
+                id: true,
+                title: true,
+                tags: true,
+                createdAt: true,
+              },
+            },
+          },
+        },
       },
       orderBy: {
         updatedAt: 'desc',

@@ -27,6 +27,14 @@ interface Question {
   _count: {
     tests: number;
   };
+  tests: Array<{
+    test: {
+      id: string;
+      title: string;
+      tags: string[];
+      createdAt: string;
+    };
+  }>;
 }
 
 export default function QuestionsLibraryPage() {
@@ -39,6 +47,7 @@ export default function QuestionsLibraryPage() {
   const [deleting, setDeleting] = useState<string | null>(null);
   const [selectedQuestionIds, setSelectedQuestionIds] = useState<Set<string>>(new Set());
   const [showBulkTagEditor, setShowBulkTagEditor] = useState(false);
+  const [questionForTests, setQuestionForTests] = useState<Question | null>(null);
 
   useEffect(() => {
     fetchQuestions();
@@ -334,7 +343,16 @@ export default function QuestionsLibraryPage() {
                     </TableCell>
                     <TableCell>{question.points}</TableCell>
                     <TableCell>
-                      <span className="text-sm">{question._count.tests} test{question._count.tests !== 1 ? 's' : ''}</span>
+                      {question._count.tests > 0 ? (
+                        <button
+                          onClick={() => setQuestionForTests(question)}
+                          className="text-sm text-blue-600 hover:text-blue-800 hover:underline"
+                        >
+                          {question._count.tests} test{question._count.tests !== 1 ? 's' : ''}
+                        </button>
+                      ) : (
+                        <span className="text-sm text-gray-400">0 tests</span>
+                      )}
                     </TableCell>
                     <TableCell className="text-right">
                       <div className="flex justify-end gap-2">
@@ -455,9 +473,19 @@ export default function QuestionsLibraryPage() {
 
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-2">Usage</label>
-              <p className="text-gray-600 text-sm">
-                Used in {selectedQuestion._count.tests} test{selectedQuestion._count.tests !== 1 ? 's' : ''}
-              </p>
+              {selectedQuestion._count.tests > 0 ? (
+                <button
+                  onClick={() => {
+                    setQuestionForTests(selectedQuestion);
+                    setSelectedQuestion(null);
+                  }}
+                  className="text-sm text-blue-600 hover:text-blue-800 hover:underline"
+                >
+                  Used in {selectedQuestion._count.tests} test{selectedQuestion._count.tests !== 1 ? 's' : ''} - Click to view
+                </button>
+              ) : (
+                <p className="text-gray-600 text-sm">Not used in any tests yet</p>
+              )}
             </div>
 
             <div className="flex justify-end gap-3 pt-4 border-t">
@@ -467,6 +495,82 @@ export default function QuestionsLibraryPage() {
               <Link href={`/questions/${selectedQuestion.id}`}>
                 <Button>Edit Question</Button>
               </Link>
+            </div>
+          </div>
+        )}
+      </Modal>
+
+      {/* Tests Using This Question Modal */}
+      <Modal
+        isOpen={!!questionForTests}
+        onClose={() => setQuestionForTests(null)}
+        title="Tests Using This Question"
+        className="max-w-3xl"
+      >
+        {questionForTests && (
+          <div className="space-y-4">
+            <div className="bg-gray-50 p-4 rounded-lg">
+              <p className="text-sm text-gray-600 mb-1">Question:</p>
+              <p className="font-medium line-clamp-2">{questionForTests.content}</p>
+            </div>
+
+            <div>
+              <p className="text-sm text-gray-600 mb-3">
+                This question is used in {questionForTests._count.tests} test{questionForTests._count.tests !== 1 ? 's' : ''}:
+              </p>
+
+              {questionForTests.tests.length === 0 ? (
+                <p className="text-center text-gray-500 py-8">No tests use this question</p>
+              ) : (
+                <div className="space-y-2">
+                  {questionForTests.tests.map((testQuestion) => (
+                    <Link
+                      key={testQuestion.test.id}
+                      href={`/tests/${testQuestion.test.id}`}
+                      className="block p-4 border rounded-lg hover:border-blue-300 hover:bg-blue-50 transition-colors"
+                    >
+                      <div className="flex items-start justify-between">
+                        <div className="flex-1 min-w-0">
+                          <h3 className="font-medium text-gray-900 hover:text-blue-600">
+                            {testQuestion.test.title}
+                          </h3>
+                          {testQuestion.test.tags.length > 0 && (
+                            <div className="flex flex-wrap gap-1 mt-2">
+                              {testQuestion.test.tags.map((tag, idx) => (
+                                <Badge key={idx} variant="info">
+                                  {tag}
+                                </Badge>
+                              ))}
+                            </div>
+                          )}
+                          <p className="text-xs text-gray-500 mt-2">
+                            Created {new Date(testQuestion.test.createdAt).toLocaleDateString()}
+                          </p>
+                        </div>
+                        <svg
+                          className="w-5 h-5 text-gray-400 ml-3 flex-shrink-0"
+                          fill="none"
+                          stroke="currentColor"
+                          viewBox="0 0 24 24"
+                        >
+                          <path
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                            strokeWidth={2}
+                            d="M9 5l7 7-7 7"
+                          />
+                        </svg>
+                      </div>
+                    </Link>
+                  ))}
+                </div>
+              )}
+            </div>
+
+            <div className="flex justify-end pt-4 border-t">
+              <Button variant="secondary" onClick={() => setQuestionForTests(null)}>
+                Close
+              </Button>
             </div>
           </div>
         )}
