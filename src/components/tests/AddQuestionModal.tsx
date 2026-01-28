@@ -164,7 +164,7 @@ export default function AddQuestionModal({
             throw new Error(`Question ${idx + 1}: MCQ questions require correctAnswer field`);
           }
 
-          if (q.correctAnswer < 0 || q.correctAnswer >= options.length) {
+          if (!options || q.correctAnswer < 0 || q.correctAnswer >= options.length) {
             throw new Error(`Question ${idx + 1}: Invalid correctAnswer index`);
           }
         }
