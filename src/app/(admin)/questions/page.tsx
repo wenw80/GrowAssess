@@ -139,6 +139,48 @@ export default function QuestionsLibraryPage() {
     setSelectedQuestionIds(new Set());
   };
 
+  const handleBulkDelete = async () => {
+    const selectedQuestions = questions.filter(q => selectedQuestionIds.has(q.id));
+    const questionsInUse = selectedQuestions.filter(q => q._count.tests > 0);
+
+    let confirmMessage = `Are you sure you want to delete ${selectedQuestionIds.size} question${selectedQuestionIds.size !== 1 ? 's' : ''}?`;
+
+    if (questionsInUse.length > 0) {
+      confirmMessage = `WARNING: ${questionsInUse.length} of the selected questions are used in tests and CANNOT be deleted.\n\nOnly ${selectedQuestionIds.size - questionsInUse.length} unused questions will be deleted.\n\nQuestions in use:\n${questionsInUse.map(q => `- "${q.content.substring(0, 50)}..." (used in ${q._count.tests} test${q._count.tests !== 1 ? 's' : ''})`).join('\n')}\n\nDo you want to continue and delete only the unused questions?`;
+    }
+
+    if (!confirm(confirmMessage)) {
+      return;
+    }
+
+    try {
+      const res = await fetch('/api/questions/bulk-delete', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          questionIds: Array.from(selectedQuestionIds),
+        }),
+      });
+
+      const data = await res.json();
+
+      if (res.ok) {
+        alert(`Successfully deleted ${data.deletedCount} question${data.deletedCount !== 1 ? 's' : ''}`);
+        await fetchQuestions();
+        setSelectedQuestionIds(new Set());
+      } else {
+        if (data.questionsInUse) {
+          alert(`Cannot delete questions:\n${data.questionsInUse.map((q: any) => `- "${q.content.substring(0, 50)}..." (used in ${q.testCount} test${q.testCount !== 1 ? 's' : ''})`).join('\n')}`);
+        } else {
+          alert('Failed to delete questions');
+        }
+      }
+    } catch (error) {
+      console.error('Error deleting questions:', error);
+      alert('An error occurred while deleting questions');
+    }
+  };
+
   const getOptionText = (options: string | null, answerId: string | null) => {
     if (!options || !answerId) return '-';
     try {
@@ -267,6 +309,13 @@ export default function QuestionsLibraryPage() {
                   >
                     Edit Tags
                   </Button>
+                  <Button
+                    variant="danger"
+                    size="sm"
+                    onClick={handleBulkDelete}
+                  >
+                    Delete Selected
+                  </Button>
                 </div>
               </div>
             </Card>
@@ -277,7 +326,7 @@ export default function QuestionsLibraryPage() {
               <Table>
                 <TableHeader>
                   <TableRow>
-                    <TableHead className="w-12">
+                    <TableHead className="w-10">
                       <input
                         type="checkbox"
                         checked={selectedQuestionIds.size === filteredQuestions.length && filteredQuestions.length > 0}
@@ -291,18 +340,18 @@ export default function QuestionsLibraryPage() {
                         className="rounded"
                       />
                     </TableHead>
-                    <TableHead className="min-w-[400px]">Question</TableHead>
-                    <TableHead>Type</TableHead>
-                    <TableHead>Tags</TableHead>
-                    <TableHead>Points</TableHead>
-                    <TableHead>Used in Tests</TableHead>
-                    <TableHead className="text-right">Actions</TableHead>
+                    <TableHead className="w-[35%]">Question</TableHead>
+                    <TableHead className="w-[10%]">Type</TableHead>
+                    <TableHead className="w-[20%]">Tags</TableHead>
+                    <TableHead className="w-[8%]">Points</TableHead>
+                    <TableHead className="w-[12%]">Tests</TableHead>
+                    <TableHead className="w-[15%] text-right">Actions</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
                   {filteredQuestions.map((question) => (
                     <TableRow key={question.id}>
-                      <TableCell>
+                      <TableCell className="w-10">
                         <input
                           type="checkbox"
                           checked={selectedQuestionIds.has(question.id)}
@@ -310,67 +359,72 @@ export default function QuestionsLibraryPage() {
                           className="rounded"
                         />
                       </TableCell>
-                      <TableCell className="min-w-[400px]">
-                      <button
-                        onClick={() => setSelectedQuestion(question)}
-                        className="text-left hover:text-blue-600 transition-colors"
-                      >
-                        <p className="font-medium line-clamp-2">{question.content}</p>
-                        {question.type === 'mcq' && question.correctAnswer && (
-                          <p className="text-sm text-gray-500 mt-1">
-                            Correct: {getOptionText(question.options, question.correctAnswer)}
-                          </p>
-                        )}
-                      </button>
-                    </TableCell>
-                    <TableCell>
-                      <Badge variant="default">
-                        {question.type === 'mcq' ? 'MCQ' : question.type === 'freetext' ? 'Free Text' : 'Timed'}
-                      </Badge>
-                    </TableCell>
-                    <TableCell>
-                      {question.tags.length > 0 ? (
-                        <div className="flex flex-wrap gap-1">
-                          {question.tags.map((tag, idx) => (
-                            <Badge key={idx} variant="info">
-                              {tag}
-                            </Badge>
-                          ))}
-                        </div>
-                      ) : (
-                        <span className="text-gray-400">-</span>
-                      )}
-                    </TableCell>
-                    <TableCell>{question.points}</TableCell>
-                    <TableCell>
-                      {question._count.tests > 0 ? (
+                      <TableCell className="w-[35%]">
                         <button
-                          onClick={() => setQuestionForTests(question)}
-                          className="text-sm text-blue-600 hover:text-blue-800 hover:underline"
+                          onClick={() => setSelectedQuestion(question)}
+                          className="text-left hover:text-blue-600 transition-colors w-full"
                         >
-                          {question._count.tests} test{question._count.tests !== 1 ? 's' : ''}
+                          <p className="font-medium line-clamp-1" title={question.content}>
+                            {question.content}
+                          </p>
+                          {question.type === 'mcq' && question.correctAnswer && (
+                            <p className="text-sm text-gray-500 mt-1 truncate">
+                              Correct: {getOptionText(question.options, question.correctAnswer)}
+                            </p>
+                          )}
                         </button>
-                      ) : (
-                        <span className="text-sm text-gray-400">0 tests</span>
-                      )}
-                    </TableCell>
-                    <TableCell className="text-right">
-                      <div className="flex justify-end gap-2">
-                        <Link href={`/questions/${question.id}`}>
-                          <Button variant="ghost" size="sm">
-                            Edit
+                      </TableCell>
+                      <TableCell className="w-[10%]">
+                        <Badge variant="default">
+                          {question.type === 'mcq' ? 'MCQ' : question.type === 'freetext' ? 'Free Text' : 'Timed'}
+                        </Badge>
+                      </TableCell>
+                      <TableCell className="w-[20%]">
+                        {question.tags.length > 0 ? (
+                          <div className="flex flex-wrap gap-1 max-h-16 overflow-hidden">
+                            {question.tags.slice(0, 3).map((tag, idx) => (
+                              <Badge key={idx} variant="info" className="text-xs">
+                                {tag}
+                              </Badge>
+                            ))}
+                            {question.tags.length > 3 && (
+                              <span className="text-xs text-gray-500">+{question.tags.length - 3}</span>
+                            )}
+                          </div>
+                        ) : (
+                          <span className="text-gray-400">-</span>
+                        )}
+                      </TableCell>
+                      <TableCell className="w-[8%]">{question.points}</TableCell>
+                      <TableCell className="w-[12%]">
+                        {question._count.tests > 0 ? (
+                          <button
+                            onClick={() => setQuestionForTests(question)}
+                            className="text-sm text-blue-600 hover:text-blue-800 hover:underline whitespace-nowrap"
+                          >
+                            {question._count.tests} test{question._count.tests !== 1 ? 's' : ''}
+                          </button>
+                        ) : (
+                          <span className="text-sm text-gray-400 whitespace-nowrap">0 tests</span>
+                        )}
+                      </TableCell>
+                      <TableCell className="w-[15%] text-right">
+                        <div className="flex justify-end gap-1">
+                          <Link href={`/questions/${question.id}`}>
+                            <Button variant="ghost" size="sm">
+                              Edit
+                            </Button>
+                          </Link>
+                          <Button
+                            variant="danger"
+                            size="sm"
+                            onClick={() => handleDelete(question.id)}
+                            loading={deleting === question.id}
+                          >
+                            Delete
                           </Button>
-                        </Link>
-                        <Button
-                          variant="danger"
-                          size="sm"
-                          onClick={() => handleDelete(question.id)}
-                          loading={deleting === question.id}
-                        >
-                          Delete
-                        </Button>
-                      </div>
-                    </TableCell>
+                        </div>
+                      </TableCell>
                   </TableRow>
                 ))}
               </TableBody>
