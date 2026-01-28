@@ -75,6 +75,7 @@ export default function AddQuestionModal({
 
   const handleAddNewQuestion = () => {
     const newQuestion: QuestionFormData = {
+      id: crypto.randomUUID(),
       type: questionType,
       content: '',
       points: 1,
@@ -98,20 +99,35 @@ export default function AddQuestionModal({
     const selected = allQuestions.filter((q) => selectedQuestionIds.has(q.id));
     const questionsToAdd: QuestionFormData[] = selected.map((q) => {
       let options: MCQOption[] | undefined = undefined;
+      let correctAnswer: string | undefined = undefined;
+
       if (q.options) {
         const parsed = JSON.parse(q.options);
-        options = parsed.map((opt: { id: string; text: string; points?: number }) => ({
-          id: opt.id || crypto.randomUUID(),
-          text: opt.text,
-          points: opt.points !== undefined ? opt.points : (opt.id === q.correctAnswer ? q.points : 0),
-        }));
+        // Create mapping from old IDs to new IDs
+        const idMap = new Map<string, string>();
+
+        options = parsed.map((opt: { id: string; text: string; points?: number }) => {
+          const newId = crypto.randomUUID();
+          idMap.set(opt.id, newId);
+          return {
+            id: newId,
+            text: opt.text,
+            points: opt.points !== undefined ? opt.points : (opt.id === q.correctAnswer ? q.points : 0),
+          };
+        });
+
+        // Map old correctAnswer ID to new ID
+        if (q.correctAnswer && idMap.has(q.correctAnswer)) {
+          correctAnswer = idMap.get(q.correctAnswer);
+        }
       }
 
       return {
+        id: crypto.randomUUID(),
         type: q.type as 'mcq' | 'freetext' | 'timed',
         content: q.content,
         options,
-        correctAnswer: q.correctAnswer || undefined,
+        correctAnswer,
         timeLimitSeconds: q.timeLimitSeconds || undefined,
         points: q.points,
         order: 0, // Will be set by parent
@@ -138,6 +154,8 @@ export default function AddQuestionModal({
         }
 
         let options: MCQOption[] | undefined = undefined;
+        let correctAnswer: string | undefined = undefined;
+
         if (q.type === 'mcq') {
           if (!q.options || !Array.isArray(q.options)) {
             throw new Error(`Question ${idx + 1}: MCQ questions require options array`);
@@ -167,13 +185,17 @@ export default function AddQuestionModal({
           if (!options || q.correctAnswer < 0 || q.correctAnswer >= options.length) {
             throw new Error(`Question ${idx + 1}: Invalid correctAnswer index`);
           }
+
+          // Set correctAnswer to the ID of the correct option
+          correctAnswer = options[q.correctAnswer]?.id;
         }
 
         return {
+          id: crypto.randomUUID(),
           type: q.type as 'mcq' | 'freetext' | 'timed',
           content: q.content,
           options,
-          correctAnswer: options ? options[q.correctAnswer]?.id : undefined,
+          correctAnswer,
           timeLimitSeconds: q.timeLimitSeconds || undefined,
           points: q.points || 1,
           order: 0, // Will be set by parent
