@@ -7,6 +7,7 @@ import Input from '@/components/ui/Input';
 import Textarea from '@/components/ui/Textarea';
 import Card from '@/components/ui/Card';
 import QuestionEditor from './QuestionEditor';
+import AddQuestionModal from './AddQuestionModal';
 import { QuestionFormData, MCQOption } from '@/types';
 
 interface TestFormProps {
@@ -40,6 +41,7 @@ export default function TestForm({ initialData }: TestFormProps) {
   const [durationMinutes, setDurationMinutes] = useState<number | ''>(
     initialData?.durationMinutes || ''
   );
+  const [showAddQuestionModal, setShowAddQuestionModal] = useState(false);
   const [questions, setQuestions] = useState<QuestionFormData[]>(() => {
     if (initialData?.questions) {
       return initialData.questions.map((q) => {
@@ -73,24 +75,12 @@ export default function TestForm({ initialData }: TestFormProps) {
     return [];
   });
 
-  const addQuestion = (type: 'mcq' | 'freetext' | 'timed') => {
-    const newQuestion: QuestionFormData = {
-      type,
-      content: '',
-      points: 1,
-      order: questions.length,
-      ...(type === 'mcq'
-        ? {
-            options: [
-              { id: crypto.randomUUID(), text: '', points: 1 },
-              { id: crypto.randomUUID(), text: '', points: 0 },
-            ] as MCQOption[],
-            correctAnswer: '',
-          }
-        : {}),
-      ...(type === 'timed' ? { timeLimitSeconds: 60 } : {}),
-    };
-    setQuestions([...questions, newQuestion]);
+  const addQuestions = (newQuestions: QuestionFormData[]) => {
+    const questionsWithOrder = newQuestions.map((q, idx) => ({
+      ...q,
+      order: questions.length + idx,
+    }));
+    setQuestions([...questions, ...questionsWithOrder]);
   };
 
   const updateQuestion = (index: number, question: QuestionFormData) => {
@@ -246,17 +236,13 @@ export default function TestForm({ initialData }: TestFormProps) {
       <div className="space-y-4">
         <div className="flex items-center justify-between">
           <h2 className="text-lg font-semibold">Questions ({questions.length})</h2>
-          <div className="flex gap-2">
-            <Button type="button" variant="secondary" size="sm" onClick={() => addQuestion('mcq')}>
-              + Multiple Choice
-            </Button>
-            <Button type="button" variant="secondary" size="sm" onClick={() => addQuestion('freetext')}>
-              + Free Text
-            </Button>
-            <Button type="button" variant="secondary" size="sm" onClick={() => addQuestion('timed')}>
-              + Timed Task
-            </Button>
-          </div>
+          <Button
+            type="button"
+            variant="secondary"
+            onClick={() => setShowAddQuestionModal(true)}
+          >
+            + Add Questions
+          </Button>
         </div>
 
         {questions.length === 0 ? (
@@ -288,6 +274,12 @@ export default function TestForm({ initialData }: TestFormProps) {
           {initialData?.id ? 'Save Changes' : 'Create Test'}
         </Button>
       </div>
+
+      <AddQuestionModal
+        isOpen={showAddQuestionModal}
+        onClose={() => setShowAddQuestionModal(false)}
+        onAddQuestions={addQuestions}
+      />
     </form>
   );
 }

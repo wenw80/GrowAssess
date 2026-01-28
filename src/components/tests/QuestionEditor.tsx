@@ -74,6 +74,13 @@ export default function QuestionEditor({
     }
   };
 
+  const moveOption = (optionIndex: number, direction: 'up' | 'down') => {
+    const options = [...(question.options || [])];
+    const newIndex = direction === 'up' ? optionIndex - 1 : optionIndex + 1;
+    [options[optionIndex], options[newIndex]] = [options[newIndex], options[optionIndex]];
+    updateField('options', options);
+  };
+
   return (
     <Card className="border-l-4 border-l-blue-500">
       <div className="flex items-center justify-between mb-4">
@@ -166,6 +173,26 @@ export default function QuestionEditor({
               </label>
               {question.options?.map((option, optionIndex) => (
                 <div key={option.id} className="flex items-center gap-2">
+                  <div className="flex flex-col">
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={() => moveOption(optionIndex, 'up')}
+                      disabled={optionIndex === 0}
+                      className="px-1 py-0 h-4 text-xs"
+                    >
+                      ▲
+                    </Button>
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={() => moveOption(optionIndex, 'down')}
+                      disabled={optionIndex === (question.options?.length || 0) - 1}
+                      className="px-1 py-0 h-4 text-xs"
+                    >
+                      ▼
+                    </Button>
+                  </div>
                   <input
                     type="radio"
                     name={`q-${index}-correct`}
