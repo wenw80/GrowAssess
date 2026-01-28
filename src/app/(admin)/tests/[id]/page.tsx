@@ -15,6 +15,9 @@ export default async function EditTestPage({
     where: { id },
     include: {
       questions: {
+        include: {
+          question: true,
+        },
         orderBy: { order: 'asc' },
       },
     },
@@ -24,10 +27,19 @@ export default async function EditTestPage({
     notFound();
   }
 
+  // Transform the test data to match the expected format
+  const transformedTest = {
+    ...test,
+    questions: test.questions.map(tq => ({
+      ...tq.question,
+      order: tq.order,
+    })),
+  };
+
   return (
     <div className="px-4 sm:px-0">
       <TestHeader testId={id} testTitle={test.title} />
-      <TestForm initialData={test} />
+      <TestForm initialData={transformedTest} />
     </div>
   );
 }

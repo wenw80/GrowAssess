@@ -156,12 +156,44 @@ export async function POST(request: NextRequest) {
         tags: testTags,
         durationMinutes: importedTest.durationMinutes || null,
         userId: currentUserId,
-        questions: {
-          create: questions,
-        },
       },
+    });
+
+    // Create questions and link them to the test
+    for (let index = 0; index < questions.length; index++) {
+      const q = questions[index];
+
+      // Create the question
+      const question = await prisma.question.create({
+        data: {
+          type: q.type,
+          content: q.content,
+          options: q.options,
+          correctAnswer: q.correctAnswer,
+          timeLimitSeconds: q.timeLimitSeconds,
+          points: q.points,
+          tags: [],
+        },
+      });
+
+      // Create the TestQuestion link
+      await prisma.testQuestion.create({
+        data: {
+          testId: test.id,
+          questionId: question.id,
+          order: q.order ?? index,
+        },
+      });
+    }
+
+    // Fetch the complete test with questions
+    const completeTest = await prisma.test.findUnique({
+      where: { id: test.id },
       include: {
         questions: {
+          include: {
+            question: true,
+          },
           orderBy: { order: 'asc' },
         },
       },
@@ -169,8 +201,8 @@ export async function POST(request: NextRequest) {
 
     return NextResponse.json({
       success: true,
-      test,
-      message: `Successfully imported "${test.title}" with ${test.questions.length} questions`,
+      test: completeTest,
+      message: `Successfully imported "${test.title}" with ${questions.length} questions`,
     }, { status: 201 });
   } catch (error) {
     console.error('Error importing test:', error);

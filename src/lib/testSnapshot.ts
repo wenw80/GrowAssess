@@ -27,6 +27,9 @@ export async function createTestSnapshot(testId: string): Promise<TestSnapshot> 
     where: { id: testId },
     include: {
       questions: {
+        include: {
+          question: true,
+        },
         orderBy: { order: 'asc' },
       },
     },
@@ -42,15 +45,15 @@ export async function createTestSnapshot(testId: string): Promise<TestSnapshot> 
     requirements: test.requirements,
     tags: test.tags,
     durationMinutes: test.durationMinutes,
-    questions: test.questions.map((q) => ({
-      id: q.id,
-      type: q.type,
-      content: q.content,
-      options: q.options,
-      correctAnswer: q.correctAnswer,
-      timeLimitSeconds: q.timeLimitSeconds,
-      points: q.points,
-      order: q.order,
+    questions: test.questions.map((tq) => ({
+      id: tq.question.id,
+      type: tq.question.type,
+      content: tq.question.content,
+      options: tq.question.options,
+      correctAnswer: tq.question.correctAnswer,
+      timeLimitSeconds: tq.question.timeLimitSeconds,
+      points: tq.question.points,
+      order: tq.order,
     })),
   };
 }

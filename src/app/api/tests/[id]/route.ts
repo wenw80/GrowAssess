@@ -11,6 +11,9 @@ export async function GET(
       where: { id },
       include: {
         questions: {
+          include: {
+            question: true,
+          },
           orderBy: { order: 'asc' },
         },
       },
@@ -20,7 +23,16 @@ export async function GET(
       return NextResponse.json({ error: 'Test not found' }, { status: 404 });
     }
 
-    return NextResponse.json(test);
+    // Transform the response to match the old format
+    const transformedTest = {
+      ...test,
+      questions: test.questions.map(tq => ({
+        ...tq.question,
+        order: tq.order,
+      })),
+    };
+
+    return NextResponse.json(transformedTest);
   } catch (error) {
     console.error('Error fetching test:', error);
     return NextResponse.json({ error: 'Failed to fetch test' }, { status: 500 });
@@ -45,40 +57,34 @@ export async function PUT(
       testTags = category.split(',').map((t: string) => t.trim()).filter(Boolean);
     }
 
-    // CRITICAL FIX: Preserve question IDs to maintain response relationships
-    // Get existing questions
-    const existingQuestions = await prisma.question.findMany({
+    // Get existing TestQuestion records for this test
+    const existingTestQuestions = await prisma.testQuestion.findMany({
       where: { testId: id },
-      select: { id: true },
+      include: { question: true },
     });
 
-    const existingQuestionIds = new Set(existingQuestions.map(q => q.id));
+    const existingQuestionIds = new Set(existingTestQuestions.map(tq => tq.question.id));
     const updatedQuestionIds = new Set(
       questions?.filter((q: any) => q.id).map((q: any) => q.id) || []
     );
 
-    // Delete questions that are no longer in the update (user deleted them)
-    const questionsToDelete = existingQuestions
-      .filter(q => !updatedQuestionIds.has(q.id))
-      .map(q => q.id);
+    // Remove TestQuestion links that are no longer in the update
+    const testQuestionsToDelete = existingTestQuestions
+      .filter(tq => !updatedQuestionIds.has(tq.question.id));
 
-    if (questionsToDelete.length > 0) {
-      await prisma.question.deleteMany({
-        where: { id: { in: questionsToDelete } },
+    if (testQuestionsToDelete.length > 0) {
+      await prisma.testQuestion.deleteMany({
+        where: {
+          id: { in: testQuestionsToDelete.map(tq => tq.id) },
+        },
       });
     }
 
-    // Update existing questions and create new ones
-    const questionUpdates = questions?.map((q: {
-      id?: string;
-      type: string;
-      content: string;
-      options?: unknown;
-      correctAnswer?: string;
-      timeLimitSeconds?: number;
-      points?: number;
-      order: number;
-    }, index: number) => {
+    // Process each question
+    const processedQuestionIds: string[] = [];
+
+    for (let index = 0; index < (questions?.length || 0); index++) {
+      const q = questions[index];
       const questionData = {
         type: q.type,
         content: q.content,
@@ -86,26 +92,46 @@ export async function PUT(
         correctAnswer: q.correctAnswer || null,
         timeLimitSeconds: q.timeLimitSeconds || null,
         points: q.points || 1,
-        order: q.order ?? index,
-        testId: id,
+        tags: q.tags || [],
       };
+
+      let questionId: string;
 
       if (q.id && existingQuestionIds.has(q.id)) {
         // Update existing question
-        return prisma.question.update({
+        await prisma.question.update({
           where: { id: q.id },
           data: questionData,
         });
+        questionId = q.id;
+
+        // Update order in TestQuestion
+        const existingTQ = existingTestQuestions.find(tq => tq.question.id === q.id);
+        if (existingTQ) {
+          await prisma.testQuestion.update({
+            where: { id: existingTQ.id },
+            data: { order: q.order ?? index },
+          });
+        }
       } else {
         // Create new question
-        return prisma.question.create({
+        const newQuestion = await prisma.question.create({
           data: questionData,
         });
-      }
-    }) || [];
+        questionId = newQuestion.id;
 
-    // Execute all question updates/creates
-    await Promise.all(questionUpdates);
+        // Create TestQuestion link
+        await prisma.testQuestion.create({
+          data: {
+            testId: id,
+            questionId: newQuestion.id,
+            order: q.order ?? index,
+          },
+        });
+      }
+
+      processedQuestionIds.push(questionId);
+    }
 
     // Update test metadata
     await prisma.test.update({
@@ -124,12 +150,24 @@ export async function PUT(
       where: { id },
       include: {
         questions: {
+          include: {
+            question: true,
+          },
           orderBy: { order: 'asc' },
         },
       },
     });
 
-    return NextResponse.json(test);
+    // Transform the response to match the old format
+    const transformedTest = test ? {
+      ...test,
+      questions: test.questions.map(tq => ({
+        ...tq.question,
+        order: tq.order,
+      })),
+    } : null;
+
+    return NextResponse.json(transformedTest);
   } catch (error) {
     console.error('Error updating test:', error);
     return NextResponse.json({ error: 'Failed to update test' }, { status: 500 });

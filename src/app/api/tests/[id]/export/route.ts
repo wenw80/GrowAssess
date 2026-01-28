@@ -13,6 +13,9 @@ export async function GET(
       where: { id },
       include: {
         questions: {
+          include: {
+            question: true,
+          },
           orderBy: { order: 'asc' },
         },
       },
@@ -29,7 +32,8 @@ export async function GET(
       requirements: test.requirements || undefined,
       tags: test.tags.length > 0 ? test.tags : undefined,
       durationMinutes: test.durationMinutes || undefined,
-      questions: test.questions.map((q) => {
+      questions: test.questions.map((tq) => {
+        const q = tq.question;
         const baseQuestion: any = {
           type: q.type,
           content: q.content,

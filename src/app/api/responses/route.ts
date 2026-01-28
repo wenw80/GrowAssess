@@ -53,7 +53,7 @@ export async function POST(request: NextRequest) {
         correctAnswer: liveQuestion.correctAnswer,
         timeLimitSeconds: liveQuestion.timeLimitSeconds,
         points: liveQuestion.points,
-        order: liveQuestion.order,
+        order: 0, // Order not available in Question model anymore
       };
     }
 

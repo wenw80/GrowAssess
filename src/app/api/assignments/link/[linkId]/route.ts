@@ -31,8 +31,9 @@ export async function GET(
         testSnapshot = parsed;
       } else {
         // Empty snapshot, fall back to live test with questions
-        const questions = await prisma.question.findMany({
+        const testQuestions = await prisma.testQuestion.findMany({
           where: { testId: assignment.testId },
+          include: { question: true },
           orderBy: { order: 'asc' },
         });
         testSnapshot = {
@@ -41,22 +42,23 @@ export async function GET(
           requirements: assignment.test.requirements,
           tags: assignment.test.tags,
           durationMinutes: assignment.test.durationMinutes,
-          questions: questions.map(q => ({
-            id: q.id,
-            type: q.type,
-            content: q.content,
-            options: q.options,
-            correctAnswer: q.correctAnswer,
-            timeLimitSeconds: q.timeLimitSeconds,
-            points: q.points,
-            order: q.order,
+          questions: testQuestions.map(tq => ({
+            id: tq.question.id,
+            type: tq.question.type,
+            content: tq.question.content,
+            options: tq.question.options,
+            correctAnswer: tq.question.correctAnswer,
+            timeLimitSeconds: tq.question.timeLimitSeconds,
+            points: tq.question.points,
+            order: tq.order,
           })),
         };
       }
     } catch {
       // Invalid JSON or parsing error, fall back to live test
-      const questions = await prisma.question.findMany({
+      const testQuestions = await prisma.testQuestion.findMany({
         where: { testId: assignment.testId },
+        include: { question: true },
         orderBy: { order: 'asc' },
       });
       testSnapshot = {
@@ -65,15 +67,15 @@ export async function GET(
         requirements: assignment.test.requirements,
         tags: assignment.test.tags,
         durationMinutes: assignment.test.durationMinutes,
-        questions: questions.map(q => ({
-          id: q.id,
-          type: q.type,
-          content: q.content,
-          options: q.options,
-          correctAnswer: q.correctAnswer,
-          timeLimitSeconds: q.timeLimitSeconds,
-          points: q.points,
-          order: q.order,
+        questions: testQuestions.map(tq => ({
+          id: tq.question.id,
+          type: tq.question.type,
+          content: tq.question.content,
+          options: tq.question.options,
+          correctAnswer: tq.question.correctAnswer,
+          timeLimitSeconds: tq.question.timeLimitSeconds,
+          points: tq.question.points,
+          order: tq.order,
         })),
       };
     }

@@ -1,24 +1,53 @@
 import { NextRequest, NextResponse } from 'next/server';
 import prisma from '@/lib/db';
 
+export async function POST(request: NextRequest) {
+  try {
+    const data = await request.json();
+    const { type, content, options, correctAnswer, timeLimitSeconds, points, tags } = data;
+
+    if (!type || !content) {
+      return NextResponse.json({ error: 'Type and content are required' }, { status: 400 });
+    }
+
+    const question = await prisma.question.create({
+      data: {
+        type,
+        content,
+        options: options ? JSON.stringify(options) : null,
+        correctAnswer: correctAnswer || null,
+        timeLimitSeconds: timeLimitSeconds || null,
+        points: points || 1,
+        tags: tags || [],
+      },
+      include: {
+        _count: {
+          select: {
+            tests: true,
+          },
+        },
+      },
+    });
+
+    return NextResponse.json(question, { status: 201 });
+  } catch (error) {
+    console.error('Error creating question:', error);
+    return NextResponse.json({ error: 'Failed to create question' }, { status: 500 });
+  }
+}
+
 export async function GET(request: NextRequest) {
   try {
     const searchParams = request.nextUrl.searchParams;
     const search = searchParams.get('search');
     const type = searchParams.get('type');
-    const testId = searchParams.get('testId');
 
     const where: {
-      testId?: string;
       type?: string;
       OR?: Array<{
         content?: { contains: string; mode: 'insensitive' };
       }>;
     } = {};
-
-    if (testId) {
-      where.testId = testId;
-    }
 
     if (type) {
       where.type = type;
@@ -33,18 +62,15 @@ export async function GET(request: NextRequest) {
     const questions = await prisma.question.findMany({
       where,
       include: {
-        test: {
+        _count: {
           select: {
-            id: true,
-            title: true,
-            tags: true,
+            tests: true,
           },
         },
       },
-      orderBy: [
-        { testId: 'asc' },
-        { order: 'asc' },
-      ],
+      orderBy: {
+        updatedAt: 'desc',
+      },
     });
 
     return NextResponse.json(questions);

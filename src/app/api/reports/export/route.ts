@@ -49,6 +49,9 @@ export async function GET(request: NextRequest) {
         test: {
           include: {
             questions: {
+              include: {
+                question: true,
+              },
               orderBy: { order: 'asc' },
             },
           },
@@ -77,7 +80,7 @@ export async function GET(request: NextRequest) {
     ];
 
     const rows = assignments.map((assignment) => {
-      const totalPoints = assignment.test.questions.reduce((sum, q) => sum + q.points, 0);
+      const totalPoints = assignment.test.questions.reduce((sum, tq) => sum + tq.question.points, 0);
       const earnedPoints = assignment.responses.reduce((sum, r) => {
         if (r.score !== null) return sum + r.score;
         if (r.isCorrect) return sum + r.question.points;

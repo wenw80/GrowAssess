@@ -56,6 +56,7 @@ export async function POST(request: NextRequest) {
       testTags = category.split(',').map((t: string) => t.trim()).filter(Boolean);
     }
 
+    // Create the test first
     const test = await prisma.test.create({
       data: {
         title,
@@ -64,32 +65,61 @@ export async function POST(request: NextRequest) {
         tags: testTags,
         durationMinutes,
         userId: currentUserId,
-        questions: {
-          create: questions?.map((q: {
-            type: string;
-            content: string;
-            options?: unknown;
-            correctAnswer?: string;
-            timeLimitSeconds?: number;
-            points?: number;
-            order: number;
-          }, index: number) => ({
-            type: q.type,
-            content: q.content,
-            options: q.options ? JSON.stringify(q.options) : null,
-            correctAnswer: q.correctAnswer,
-            timeLimitSeconds: q.timeLimitSeconds,
-            points: q.points || 1,
-            order: q.order ?? index,
-          })) || [],
-        },
-      },
-      include: {
-        questions: true,
       },
     });
 
-    return NextResponse.json(test, { status: 201 });
+    // Create questions and link them to the test
+    if (questions && questions.length > 0) {
+      for (let index = 0; index < questions.length; index++) {
+        const q = questions[index];
+
+        // Create the question
+        const question = await prisma.question.create({
+          data: {
+            type: q.type,
+            content: q.content,
+            options: q.options ? JSON.stringify(q.options) : null,
+            correctAnswer: q.correctAnswer || null,
+            timeLimitSeconds: q.timeLimitSeconds || null,
+            points: q.points || 1,
+            tags: q.tags || [],
+          },
+        });
+
+        // Create the TestQuestion link
+        await prisma.testQuestion.create({
+          data: {
+            testId: test.id,
+            questionId: question.id,
+            order: q.order ?? index,
+          },
+        });
+      }
+    }
+
+    // Fetch the complete test with questions
+    const completeTest = await prisma.test.findUnique({
+      where: { id: test.id },
+      include: {
+        questions: {
+          include: {
+            question: true,
+          },
+          orderBy: { order: 'asc' },
+        },
+      },
+    });
+
+    // Transform the response to match the old format
+    const transformedTest = completeTest ? {
+      ...completeTest,
+      questions: completeTest.questions.map(tq => ({
+        ...tq.question,
+        order: tq.order,
+      })),
+    } : null;
+
+    return NextResponse.json(transformedTest, { status: 201 });
   } catch (error) {
     console.error('Error creating test:', error);
     return NextResponse.json({ error: 'Failed to create test' }, { status: 500 });
