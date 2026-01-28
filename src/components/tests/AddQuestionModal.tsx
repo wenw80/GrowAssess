@@ -74,23 +74,34 @@ export default function AddQuestionModal({
   };
 
   const handleAddNewQuestion = () => {
-    const newQuestion: QuestionFormData = {
-      id: crypto.randomUUID(),
-      type: questionType,
-      content: '',
-      points: 1,
-      order: 0, // Will be set by parent
-      ...(questionType === 'mcq'
-        ? {
-            options: [
-              { id: crypto.randomUUID(), text: '', points: 1 },
-              { id: crypto.randomUUID(), text: '', points: 0 },
-            ] as MCQOption[],
-            correctAnswer: '',
-          }
-        : {}),
-      ...(questionType === 'timed' ? { timeLimitSeconds: 60 } : {}),
-    };
+    let newQuestion: QuestionFormData;
+
+    if (questionType === 'mcq') {
+      const option1Id = crypto.randomUUID();
+      const option2Id = crypto.randomUUID();
+      newQuestion = {
+        id: crypto.randomUUID(),
+        type: questionType,
+        content: '',
+        points: 1,
+        order: 0,
+        options: [
+          { id: option1Id, text: '', points: 1 },
+          { id: option2Id, text: '', points: 0 },
+        ],
+        correctAnswer: option1Id, // Set to first option ID instead of empty string
+      };
+    } else {
+      newQuestion = {
+        id: crypto.randomUUID(),
+        type: questionType,
+        content: '',
+        points: 1,
+        order: 0,
+        ...(questionType === 'timed' ? { timeLimitSeconds: 60 } : {}),
+      };
+    }
+
     onAddQuestions([newQuestion]);
     onClose();
   };

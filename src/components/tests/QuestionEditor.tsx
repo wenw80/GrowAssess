@@ -75,9 +75,19 @@ export default function QuestionEditor({
   };
 
   const moveOption = (optionIndex: number, direction: 'up' | 'down') => {
-    const options = [...(question.options || [])];
+    if (!question.options) return;
+
+    const options = [...question.options];
     const newIndex = direction === 'up' ? optionIndex - 1 : optionIndex + 1;
-    [options[optionIndex], options[newIndex]] = [options[newIndex], options[optionIndex]];
+
+    // Ensure indices are valid
+    if (newIndex < 0 || newIndex >= options.length) return;
+
+    // Swap elements
+    const temp = options[optionIndex];
+    options[optionIndex] = options[newIndex];
+    options[newIndex] = temp;
+
     updateField('options', options);
   };
 
@@ -129,14 +139,14 @@ export default function QuestionEditor({
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
             <Select
               label="Type"
-              id={`q-${index}-type`}
+              id={`q-${question.id || index}-type`}
               options={questionTypes}
               value={question.type}
               onChange={(e) => updateField('type', e.target.value as QuestionType)}
             />
             <Input
               label="Points"
-              id={`q-${index}-points`}
+              id={`q-${question.id || index}-points`}
               type="number"
               min={1}
               value={question.points}
@@ -145,7 +155,7 @@ export default function QuestionEditor({
             {(question.type === 'timed') && (
               <Input
                 label="Time Limit (seconds)"
-                id={`q-${index}-time`}
+                id={`q-${question.id || index}-time`}
                 type="number"
                 min={10}
                 value={question.timeLimitSeconds || ''}
@@ -159,7 +169,7 @@ export default function QuestionEditor({
 
           <Textarea
             label="Question Content"
-            id={`q-${index}-content`}
+            id={`q-${question.id || index}-content`}
             rows={3}
             value={question.content}
             onChange={(e) => updateField('content', e.target.value)}
@@ -171,8 +181,11 @@ export default function QuestionEditor({
               <label className="block text-sm font-medium text-gray-700">
                 Options (select the correct answer and assign points)
               </label>
-              {question.options?.map((option, optionIndex) => (
-                <div key={option.id} className="flex items-center gap-2">
+              {question.options?.map((option, optionIndex) => {
+                // Ensure option has a valid ID for React key
+                const optionId = option.id || `temp-${optionIndex}`;
+                return (
+                <div key={optionId} className="flex items-center gap-2">
                   <div className="flex flex-col">
                     <Button
                       variant="ghost"
@@ -195,7 +208,7 @@ export default function QuestionEditor({
                   </div>
                   <input
                     type="radio"
-                    name={`q-${index}-correct`}
+                    name={`q-${question.id || index}-correct`}
                     checked={question.correctAnswer === option.id}
                     onChange={() => updateField('correctAnswer', option.id)}
                     className="h-4 w-4 text-blue-600"
@@ -223,7 +236,8 @@ export default function QuestionEditor({
                     ×
                   </Button>
                 </div>
-              ))}
+                );
+              })}
               {(question.options?.length || 0) < 6 && (
                 <Button variant="secondary" size="sm" onClick={addOption}>
                   Add Option

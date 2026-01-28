@@ -50,14 +50,19 @@ export default function TestForm({ initialData }: TestFormProps) {
         // Parse options and add points if missing (backwards compatibility)
         if (q.options) {
           const parsed = JSON.parse(q.options);
-          options = parsed.map((opt: { id?: string; text: string; points?: number }) => ({
-            id: opt.id || crypto.randomUUID(),
-            text: opt.text,
-            // If points field is missing, assign full points to correct answer, 0 to others
-            points: opt.points !== undefined
-              ? opt.points
-              : (opt.id === q.correctAnswer ? q.points : 0),
-          }));
+          // Ensure all options have unique IDs
+          const optionsWithIds = parsed.map((opt: { id?: string; text: string; points?: number }) => {
+            const optionId = opt.id || crypto.randomUUID();
+            return {
+              id: optionId,
+              text: opt.text,
+              // If points field is missing, assign full points to correct answer, 0 to others
+              points: opt.points !== undefined
+                ? opt.points
+                : (opt.id === q.correctAnswer ? q.points : 0),
+            };
+          });
+          options = optionsWithIds;
         }
 
         return {
