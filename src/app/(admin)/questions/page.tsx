@@ -11,6 +11,7 @@ import TagFilter from '@/components/ui/TagFilter';
 import Modal from '@/components/ui/Modal';
 import Textarea from '@/components/ui/Textarea';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/Table';
+import BulkTagEditor from '@/components/questions/BulkTagEditor';
 
 interface Question {
   id: string;
@@ -36,6 +37,8 @@ export default function QuestionsLibraryPage() {
   const [typeFilter, setTypeFilter] = useState('all');
   const [selectedQuestion, setSelectedQuestion] = useState<Question | null>(null);
   const [deleting, setDeleting] = useState<string | null>(null);
+  const [selectedQuestionIds, setSelectedQuestionIds] = useState<Set<string>>(new Set());
+  const [showBulkTagEditor, setShowBulkTagEditor] = useState(false);
 
   useEffect(() => {
     fetchQuestions();
@@ -101,6 +104,30 @@ export default function QuestionsLibraryPage() {
     setSearchQuery('');
     setSelectedTags([]);
     setTypeFilter('all');
+  };
+
+  const toggleQuestionSelection = (id: string) => {
+    const newSet = new Set(selectedQuestionIds);
+    if (newSet.has(id)) {
+      newSet.delete(id);
+    } else {
+      newSet.add(id);
+    }
+    setSelectedQuestionIds(newSet);
+  };
+
+  const selectAllFiltered = () => {
+    const newSet = new Set(filteredQuestions.map(q => q.id));
+    setSelectedQuestionIds(newSet);
+  };
+
+  const deselectAll = () => {
+    setSelectedQuestionIds(new Set());
+  };
+
+  const handleBulkTagSuccess = async () => {
+    await fetchQuestions();
+    setSelectedQuestionIds(new Set());
   };
 
   const getOptionText = (options: string | null, answerId: string | null) => {
@@ -207,23 +234,74 @@ export default function QuestionsLibraryPage() {
           )}
         </Card>
       ) : (
-        <Card className="p-0 overflow-hidden">
-          <div className="overflow-x-auto">
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead className="min-w-[400px]">Question</TableHead>
-                  <TableHead>Type</TableHead>
-                  <TableHead>Tags</TableHead>
-                  <TableHead>Points</TableHead>
-                  <TableHead>Used in Tests</TableHead>
-                  <TableHead className="text-right">Actions</TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {filteredQuestions.map((question) => (
-                  <TableRow key={question.id}>
-                    <TableCell className="min-w-[400px]">
+        <>
+          {/* Bulk Actions Bar */}
+          {selectedQuestionIds.size > 0 && (
+            <Card className="mb-4 bg-blue-50 border-blue-200">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-4">
+                  <span className="text-sm font-medium text-blue-900">
+                    {selectedQuestionIds.size} question{selectedQuestionIds.size !== 1 ? 's' : ''} selected
+                  </span>
+                  <button
+                    onClick={deselectAll}
+                    className="text-sm text-blue-600 hover:text-blue-800 underline"
+                  >
+                    Deselect all
+                  </button>
+                </div>
+                <div className="flex gap-2">
+                  <Button
+                    variant="secondary"
+                    size="sm"
+                    onClick={() => setShowBulkTagEditor(true)}
+                  >
+                    Edit Tags
+                  </Button>
+                </div>
+              </div>
+            </Card>
+          )}
+
+          <Card className="p-0 overflow-hidden">
+            <div className="overflow-x-auto">
+              <Table>
+                <TableHeader>
+                  <TableRow>
+                    <TableHead className="w-12">
+                      <input
+                        type="checkbox"
+                        checked={selectedQuestionIds.size === filteredQuestions.length && filteredQuestions.length > 0}
+                        onChange={(e) => {
+                          if (e.target.checked) {
+                            selectAllFiltered();
+                          } else {
+                            deselectAll();
+                          }
+                        }}
+                        className="rounded"
+                      />
+                    </TableHead>
+                    <TableHead className="min-w-[400px]">Question</TableHead>
+                    <TableHead>Type</TableHead>
+                    <TableHead>Tags</TableHead>
+                    <TableHead>Points</TableHead>
+                    <TableHead>Used in Tests</TableHead>
+                    <TableHead className="text-right">Actions</TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {filteredQuestions.map((question) => (
+                    <TableRow key={question.id}>
+                      <TableCell>
+                        <input
+                          type="checkbox"
+                          checked={selectedQuestionIds.has(question.id)}
+                          onChange={() => toggleQuestionSelection(question.id)}
+                          className="rounded"
+                        />
+                      </TableCell>
+                      <TableCell className="min-w-[400px]">
                       <button
                         onClick={() => setSelectedQuestion(question)}
                         className="text-left hover:text-blue-600 transition-colors"
@@ -281,7 +359,17 @@ export default function QuestionsLibraryPage() {
             </Table>
           </div>
         </Card>
+        </>
       )}
+
+      {/* Bulk Tag Editor */}
+      <BulkTagEditor
+        isOpen={showBulkTagEditor}
+        onClose={() => setShowBulkTagEditor(false)}
+        selectedQuestionIds={Array.from(selectedQuestionIds)}
+        existingTags={allTags}
+        onSuccess={handleBulkTagSuccess}
+      />
 
       {/* Question Detail Modal */}
       <Modal
