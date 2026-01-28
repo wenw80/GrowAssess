@@ -301,10 +301,10 @@ export default function AddQuestionModal({
               onChange={(e) => setQuestionType(e.target.value as 'mcq' | 'freetext' | 'timed')}
             />
             <div className="flex justify-end gap-3 pt-4 border-t">
-              <Button variant="secondary" onClick={onClose}>
+              <Button type="button" variant="secondary" onClick={onClose}>
                 Cancel
               </Button>
-              <Button onClick={handleAddNewQuestion}>
+              <Button type="button" onClick={handleAddNewQuestion}>
                 Add Question
               </Button>
             </div>
@@ -377,10 +377,11 @@ export default function AddQuestionModal({
                 {selectedQuestionIds.size} question{selectedQuestionIds.size !== 1 ? 's' : ''} selected
               </span>
               <div className="flex gap-3">
-                <Button variant="secondary" onClick={onClose}>
+                <Button type="button" variant="secondary" onClick={onClose}>
                   Cancel
                 </Button>
                 <Button
+                  type="button"
                   onClick={handleAddFromLibrary}
                   disabled={selectedQuestionIds.size === 0}
                 >
@@ -435,10 +436,11 @@ export default function AddQuestionModal({
             )}
 
             <div className="flex justify-end gap-3 pt-4 border-t">
-              <Button variant="secondary" onClick={onClose}>
+              <Button type="button" variant="secondary" onClick={onClose}>
                 Cancel
               </Button>
               <Button
+                type="button"
                 onClick={handleImportFromJSON}
                 disabled={!jsonInput.trim()}
               >

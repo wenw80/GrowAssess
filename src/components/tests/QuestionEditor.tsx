@@ -95,6 +95,7 @@ export default function QuestionEditor({
     <Card className="border-l-4 border-l-blue-500">
       <div className="flex items-center justify-between mb-4">
         <button
+          type="button"
           onClick={() => setExpanded(!expanded)}
           className="flex items-center gap-2 text-left"
         >
@@ -113,6 +114,7 @@ export default function QuestionEditor({
         </button>
         <div className="flex items-center gap-2">
           <Button
+            type="button"
             variant="ghost"
             size="sm"
             onClick={() => onMoveUp(index)}
@@ -121,6 +123,7 @@ export default function QuestionEditor({
             ↑
           </Button>
           <Button
+            type="button"
             variant="ghost"
             size="sm"
             onClick={() => onMoveDown(index)}
@@ -128,7 +131,7 @@ export default function QuestionEditor({
           >
             ↓
           </Button>
-          <Button variant="danger" size="sm" onClick={() => onDelete(index)}>
+          <Button type="button" variant="danger" size="sm" onClick={() => onDelete(index)}>
             Delete
           </Button>
         </div>
@@ -188,6 +191,7 @@ export default function QuestionEditor({
                 <div key={optionId} className="flex items-center gap-2">
                   <div className="flex flex-col">
                     <Button
+                      type="button"
                       variant="ghost"
                       size="sm"
                       onClick={() => moveOption(optionIndex, 'up')}
@@ -197,6 +201,7 @@ export default function QuestionEditor({
                       ▲
                     </Button>
                     <Button
+                      type="button"
                       variant="ghost"
                       size="sm"
                       onClick={() => moveOption(optionIndex, 'down')}
@@ -228,6 +233,7 @@ export default function QuestionEditor({
                     className="w-20"
                   />
                   <Button
+                    type="button"
                     variant="ghost"
                     size="sm"
                     onClick={() => removeOption(optionIndex)}
@@ -239,7 +245,7 @@ export default function QuestionEditor({
                 );
               })}
               {(question.options?.length || 0) < 6 && (
-                <Button variant="secondary" size="sm" onClick={addOption}>
+                <Button type="button" variant="secondary" size="sm" onClick={addOption}>
                   Add Option
                 </Button>
               )}
