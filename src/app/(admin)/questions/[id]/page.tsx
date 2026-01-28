@@ -1,16 +1,6 @@
+import { notFound } from 'next/navigation';
+import prisma from '@/lib/db';
 import QuestionForm from '@/components/questions/QuestionForm';
-
-async function getQuestion(id: string) {
-  const res = await fetch(`${process.env.NEXT_PUBLIC_BASE_URL || 'http://localhost:3000'}/api/questions/${id}`, {
-    cache: 'no-store',
-  });
-
-  if (!res.ok) {
-    throw new Error('Failed to fetch question');
-  }
-
-  return res.json();
-}
 
 export default async function EditQuestionPage({
   params,
@@ -18,7 +8,21 @@ export default async function EditQuestionPage({
   params: Promise<{ id: string }>;
 }) {
   const { id } = await params;
-  const question = await getQuestion(id);
+
+  const question = await prisma.question.findUnique({
+    where: { id },
+    include: {
+      _count: {
+        select: {
+          tests: true,
+        },
+      },
+    },
+  });
+
+  if (!question) {
+    notFound();
+  }
 
   return (
     <div className="px-4 sm:px-6 lg:px-8 py-8">
