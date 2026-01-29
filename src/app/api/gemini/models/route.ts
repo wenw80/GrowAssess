@@ -20,17 +20,10 @@ export async function GET(request: NextRequest) {
     }
 
     if (!apiKey) {
-      // Return static list if no API key configured
       return NextResponse.json({
-        models: [
-          {
-            value: 'gemini-1.5-flash-latest',
-            label: 'Gemini 1.5 Flash',
-            description: 'Recommended - Best balance of speed and quality',
-            category: 'recommended',
-          },
-        ],
-        count: 1,
+        models: [],
+        count: 0,
+        error: 'No API key configured',
       });
     }
 
@@ -79,24 +72,10 @@ export async function GET(request: NextRequest) {
   } catch (error: any) {
     console.error('Error fetching Gemini models:', error);
 
-    // Return static fallback list on error
     return NextResponse.json({
-      models: [
-        {
-          value: 'gemini-1.5-flash-latest',
-          label: 'Gemini 1.5 Flash',
-          description: 'Recommended - Best balance of speed and quality',
-          category: 'recommended',
-        },
-        {
-          value: 'gemini-1.5-pro-latest',
-          label: 'Gemini 1.5 Pro',
-          description: 'Highest quality for complex reasoning',
-          category: 'quality',
-        },
-      ],
-      count: 2,
+      models: [],
+      count: 0,
       error: error?.message || 'Failed to fetch models from API',
-    });
+    }, { status: 500 });
   }
 }

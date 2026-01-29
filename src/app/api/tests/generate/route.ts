@@ -15,16 +15,14 @@ export async function POST(request: NextRequest) {
 
     // Try to get API key and model from database first, then fall back to environment variable
     let apiKey: string | undefined;
-    let modelName = 'gemini-1.5-flash-latest'; // default
+    let modelName: string | undefined;
     try {
       const [apiKeySetting, modelSetting] = await Promise.all([
         prisma.setting.findUnique({ where: { key: 'gemini_api_key' } }),
         prisma.setting.findUnique({ where: { key: 'gemini_model' } }),
       ]);
       apiKey = apiKeySetting?.value;
-      if (modelSetting?.value) {
-        modelName = modelSetting.value;
-      }
+      modelName = modelSetting?.value;
     } catch (error) {
       console.error('Error fetching settings from database:', error);
     }
@@ -37,6 +35,13 @@ export async function POST(request: NextRequest) {
     if (!apiKey) {
       return NextResponse.json(
         { error: 'Gemini API key not configured. Please set it in Settings or add GEMINI_API_KEY to environment variables.' },
+        { status: 500 }
+      );
+    }
+
+    if (!modelName) {
+      return NextResponse.json(
+        { error: 'Gemini model not configured. Please run the debug tool in Settings to find a working model.' },
         { status: 500 }
       );
     }

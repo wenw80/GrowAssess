@@ -33,6 +33,10 @@ export default function SettingsPage() {
   const [saveSuccess, setSaveSuccess] = useState(false);
   const [showApiKey, setShowApiKey] = useState(false);
   const [exporting, setExporting] = useState(false);
+  const [debugMode, setDebugMode] = useState(false);
+  const [debugLogs, setDebugLogs] = useState<string[]>([]);
+  const [debugRunning, setDebugRunning] = useState(false);
+  const [workingModel, setWorkingModel] = useState<string | null>(null);
 
   useEffect(() => {
     fetchSettings();
@@ -87,51 +91,11 @@ export default function SettingsPage() {
         const data = await res.json();
         setAvailableModels(data.models || []);
       } else {
-        // Use fallback models if API fails
-        setAvailableModels([
-          {
-            value: 'gemini-1.5-flash-latest',
-            label: 'Gemini 1.5 Flash',
-            description: 'Recommended - Best balance of speed and quality',
-            category: 'recommended',
-          },
-          {
-            value: 'gemini-1.5-pro-latest',
-            label: 'Gemini 1.5 Pro',
-            description: 'Highest quality for complex reasoning',
-            category: 'quality',
-          },
-          {
-            value: 'gemini-pro',
-            label: 'Gemini Pro',
-            description: 'Production-ready general purpose model',
-            category: 'quality',
-          },
-        ]);
+        setAvailableModels([]);
       }
     } catch (error) {
       console.error('Error fetching available models:', error);
-      // Use fallback models on error
-      setAvailableModels([
-        {
-          value: 'gemini-1.5-flash-latest',
-          label: 'Gemini 1.5 Flash',
-          description: 'Recommended - Best balance of speed and quality',
-          category: 'recommended',
-        },
-        {
-          value: 'gemini-1.5-pro-latest',
-          label: 'Gemini 1.5 Pro',
-          description: 'Highest quality for complex reasoning',
-          category: 'quality',
-        },
-        {
-          value: 'gemini-pro',
-          label: 'Gemini Pro',
-          description: 'Production-ready general purpose model',
-          category: 'quality',
-        },
-      ]);
+      setAvailableModels([]);
     } finally {
       setLoadingModels(false);
     }
@@ -231,6 +195,47 @@ export default function SettingsPage() {
       alert('Failed to export database. Please try again.');
     } finally {
       setExporting(false);
+    }
+  };
+
+  const handleRunDebug = async () => {
+    setDebugRunning(true);
+    setDebugLogs([]);
+    setWorkingModel(null);
+    setDebugMode(true);
+
+    try {
+      const response = await fetch('/api/gemini/debug', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ apiKey: geminiApiKey || undefined }),
+      });
+
+      const data = await response.json();
+
+      setDebugLogs(data.steps || []);
+      setWorkingModel(data.workingModel || null);
+
+      // If a working model was found, automatically set it
+      if (data.workingModel) {
+        setGeminiModel(data.workingModel);
+
+        // Update the available models list to include only working models
+        if (data.availableModels && data.availableModels.length > 0) {
+          const formattedModels = data.availableModels.map((model: any) => ({
+            value: model.name,
+            label: model.displayName || model.name,
+            description: model.description || '',
+            category: model.name.includes('flash') ? 'recommended' : 'quality',
+          }));
+          setAvailableModels(formattedModels);
+        }
+      }
+    } catch (error) {
+      console.error('Debug error:', error);
+      setDebugLogs(['Fatal error running debug: ' + String(error)]);
+    } finally {
+      setDebugRunning(false);
     }
   };
 
@@ -390,6 +395,73 @@ export default function SettingsPage() {
               ) : (
                 <div className="p-3 bg-yellow-50 border border-yellow-200 rounded text-sm text-yellow-800">
                   Unable to load models. Using default model (gemini-1.5-flash).
+                </div>
+              )}
+            </div>
+
+            {/* Debug Console */}
+            <div className="border-t border-gray-200 pt-4">
+              <div className="mb-3">
+                <Button
+                  variant="secondary"
+                  onClick={handleRunDebug}
+                  loading={debugRunning}
+                  disabled={!geminiApiKey.trim()}
+                  className="w-full"
+                >
+                  {debugRunning ? 'Running Debug...' : '🔍 Test API Connection & Find Working Model'}
+                </Button>
+                {!geminiApiKey.trim() && (
+                  <p className="text-xs text-gray-500 mt-2">
+                    Enter an API key above to test the connection
+                  </p>
+                )}
+              </div>
+
+              {debugMode && debugLogs.length > 0 && (
+                <div className="mt-4">
+                  <div className="flex items-center justify-between mb-2">
+                    <h4 className="text-sm font-semibold text-gray-700">Debug Console</h4>
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={() => setDebugMode(false)}
+                    >
+                      Close
+                    </Button>
+                  </div>
+                  <div className="bg-gray-900 text-green-400 p-4 rounded-lg font-mono text-xs overflow-auto max-h-96">
+                    {debugLogs.map((log, idx) => (
+                      <div key={idx} className="mb-1">
+                        {log}
+                      </div>
+                    ))}
+                  </div>
+
+                  {workingModel && (
+                    <div className="mt-3 p-3 bg-green-50 border border-green-200 rounded-lg">
+                      <p className="text-sm font-semibold text-green-800 mb-1">
+                        ✓ Working Model Found!
+                      </p>
+                      <p className="text-sm text-green-700">
+                        Model: <code className="bg-green-100 px-2 py-1 rounded">{workingModel}</code>
+                      </p>
+                      <p className="text-xs text-green-600 mt-2">
+                        This model has been automatically selected. Click "Save API Key" below to use it.
+                      </p>
+                    </div>
+                  )}
+
+                  {!workingModel && !debugRunning && (
+                    <div className="mt-3 p-3 bg-red-50 border border-red-200 rounded-lg">
+                      <p className="text-sm font-semibold text-red-800 mb-1">
+                        ✗ No Working Model Found
+                      </p>
+                      <p className="text-sm text-red-700">
+                        Please check the debug logs above for details. Your API key may be invalid or you may not have access to Gemini models.
+                      </p>
+                    </div>
+                  )}
                 </div>
               )}
             </div>
