@@ -12,6 +12,7 @@ import Textarea from '@/components/ui/Textarea';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/Table';
 import { formatDate, formatDateTime } from '@/lib/utils';
 import Link from 'next/link';
+import TestAnalytics from '@/components/reports/TestAnalytics';
 
 interface Question {
   id: string;
@@ -74,6 +75,8 @@ interface CandidateOption {
 
 export default function ReportsPage() {
   const searchParams = useSearchParams();
+  const [viewMode, setViewMode] = useState<'candidate' | 'test'>('candidate');
+  const [selectedTestForAnalytics, setSelectedTestForAnalytics] = useState<string>('');
   const [assignments, setAssignments] = useState<Assignment[]>([]);
   const [tests, setTests] = useState<TestOption[]>([]);
   const [candidates, setCandidates] = useState<CandidateOption[]>([]);
@@ -267,142 +270,221 @@ export default function ReportsPage() {
           <h1 className="text-2xl font-bold text-gray-900">Reports</h1>
           <p className="text-gray-500 mt-1">View and analyze assessment results</p>
         </div>
-        <Button onClick={handleExport} variant="secondary">
-          Export CSV
-        </Button>
+        {viewMode === 'candidate' && (
+          <Button onClick={handleExport} variant="secondary">
+            Export CSV
+          </Button>
+        )}
       </div>
 
-      {/* Filters */}
-      <Card className="mb-6">
-        <div className="grid grid-cols-1 md:grid-cols-5 gap-4">
-          <Select
-            label="Candidate"
-            id="candidate"
-            options={[
-              { value: '', label: 'All Candidates' },
-              ...candidates.map((c) => ({ value: c.id, label: c.name })),
-            ]}
-            value={filters.candidateId}
-            onChange={(e) => setFilters({ ...filters, candidateId: e.target.value })}
-          />
-          <Select
-            label="Test"
-            id="test"
-            options={[
-              { value: '', label: 'All Tests' },
-              ...tests.map((t) => ({ value: t.id, label: t.title })),
-            ]}
-            value={filters.testId}
-            onChange={(e) => setFilters({ ...filters, testId: e.target.value })}
-          />
-          <Select
-            label="Status"
-            id="status"
-            options={statusOptions}
-            value={filters.status}
-            onChange={(e) => setFilters({ ...filters, status: e.target.value })}
-          />
-          <Input
-            label="From Date"
-            id="dateFrom"
-            type="date"
-            value={filters.dateFrom}
-            onChange={(e) => setFilters({ ...filters, dateFrom: e.target.value })}
-          />
-          <Input
-            label="To Date"
-            id="dateTo"
-            type="date"
-            value={filters.dateTo}
-            onChange={(e) => setFilters({ ...filters, dateTo: e.target.value })}
-          />
+      {/* View Mode Tabs */}
+      <div className="mb-6">
+        <div className="border-b border-gray-200">
+          <nav className="-mb-px flex space-x-8">
+            <button
+              onClick={() => setViewMode('candidate')}
+              className={`${
+                viewMode === 'candidate'
+                  ? 'border-blue-500 text-blue-600'
+                  : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+              } whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm transition-colors`}
+            >
+              By Candidate
+            </button>
+            <button
+              onClick={() => setViewMode('test')}
+              className={`${
+                viewMode === 'test'
+                  ? 'border-blue-500 text-blue-600'
+                  : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+              } whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm transition-colors`}
+            >
+              By Test
+            </button>
+          </nav>
         </div>
-      </Card>
+      </div>
 
-      {/* Results */}
-      {assignments.length === 0 ? (
-        <Card className="text-center py-12">
-          <svg
-            className="mx-auto h-12 w-12 text-gray-400"
-            fill="none"
-            stroke="currentColor"
-            viewBox="0 0 24 24"
-          >
-            <path
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              strokeWidth={2}
-              d="M9 17v-2m3 2v-4m3 4v-6m2 10H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"
-            />
-          </svg>
-          <h3 className="mt-4 text-lg font-medium text-gray-900">No results found</h3>
-          <p className="mt-2 text-gray-500">Try adjusting your filters or assign more tests.</p>
-        </Card>
-      ) : (
-        <Card className="p-0 overflow-hidden">
-          <Table>
-            <TableHeader>
-              <TableRow>
-                <TableHead>Candidate</TableHead>
-                <TableHead>Test</TableHead>
-                <TableHead>Status</TableHead>
-                <TableHead>Score</TableHead>
-                <TableHead>Completed</TableHead>
-                <TableHead className="text-right">Actions</TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {assignments.map((assignment) => (
-                <TableRow key={assignment.id}>
-                  <TableCell>
-                    <Link
-                      href={`/candidates/${assignment.candidate.id}`}
-                      className="text-blue-600 hover:underline font-medium"
-                    >
-                      {assignment.candidate.name}
-                    </Link>
-                    <p className="text-sm text-gray-500">{assignment.candidate.email}</p>
-                  </TableCell>
-                  <TableCell>{assignment.test.title}</TableCell>
-                  <TableCell>
-                    <Badge
-                      variant={
-                        assignment.status === 'completed'
-                          ? 'success'
-                          : assignment.status === 'in_progress'
-                          ? 'warning'
-                          : 'default'
-                      }
-                    >
-                      {assignment.status.replace('_', ' ')}
-                    </Badge>
-                  </TableCell>
-                  <TableCell>
-                    {assignment.status === 'completed' ? (
-                      <span className="font-medium">
-                        {assignment.score.earned}/{assignment.score.total} ({assignment.score.percentage}%)
-                      </span>
-                    ) : (
-                      '-'
-                    )}
-                  </TableCell>
-                  <TableCell>
-                    {assignment.completedAt ? formatDate(assignment.completedAt) : '-'}
-                  </TableCell>
-                  <TableCell className="text-right">
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      onClick={() => setSelectedAssignment(assignment)}
-                    >
-                      View Details
-                    </Button>
-                  </TableCell>
-                </TableRow>
-              ))}
-            </TableBody>
-          </Table>
-        </Card>
+      {/* Candidate View */}
+      {viewMode === 'candidate' && (
+        <>
+          {/* Filters */}
+          <Card className="mb-6">
+            <div className="grid grid-cols-1 md:grid-cols-5 gap-4">
+              <Select
+                label="Candidate"
+                id="candidate"
+                options={[
+                  { value: '', label: 'All Candidates' },
+                  ...candidates.map((c) => ({ value: c.id, label: c.name })),
+                ]}
+                value={filters.candidateId}
+                onChange={(e) => setFilters({ ...filters, candidateId: e.target.value })}
+              />
+              <Select
+                label="Test"
+                id="test"
+                options={[
+                  { value: '', label: 'All Tests' },
+                  ...tests.map((t) => ({ value: t.id, label: t.title })),
+                ]}
+                value={filters.testId}
+                onChange={(e) => setFilters({ ...filters, testId: e.target.value })}
+              />
+              <Select
+                label="Status"
+                id="status"
+                options={statusOptions}
+                value={filters.status}
+                onChange={(e) => setFilters({ ...filters, status: e.target.value })}
+              />
+              <Input
+                label="From Date"
+                id="dateFrom"
+                type="date"
+                value={filters.dateFrom}
+                onChange={(e) => setFilters({ ...filters, dateFrom: e.target.value })}
+              />
+              <Input
+                label="To Date"
+                id="dateTo"
+                type="date"
+                value={filters.dateTo}
+                onChange={(e) => setFilters({ ...filters, dateTo: e.target.value })}
+              />
+            </div>
+          </Card>
+
+          {/* Results */}
+          {assignments.length === 0 ? (
+            <Card className="text-center py-12">
+              <svg
+                className="mx-auto h-12 w-12 text-gray-400"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M9 17v-2m3 2v-4m3 4v-6m2 10H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"
+                />
+              </svg>
+              <h3 className="mt-4 text-lg font-medium text-gray-900">No results found</h3>
+              <p className="mt-2 text-gray-500">Try adjusting your filters or assign more tests.</p>
+            </Card>
+          ) : (
+            <Card className="p-0 overflow-hidden">
+              <Table>
+                <TableHeader>
+                  <TableRow>
+                    <TableHead>Candidate</TableHead>
+                    <TableHead>Test</TableHead>
+                    <TableHead>Status</TableHead>
+                    <TableHead>Score</TableHead>
+                    <TableHead>Completed</TableHead>
+                    <TableHead className="text-right">Actions</TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {assignments.map((assignment) => (
+                    <TableRow key={assignment.id}>
+                      <TableCell>
+                        <Link
+                          href={`/candidates/${assignment.candidate.id}`}
+                          className="text-blue-600 hover:underline font-medium"
+                        >
+                          {assignment.candidate.name}
+                        </Link>
+                        <p className="text-sm text-gray-500">{assignment.candidate.email}</p>
+                      </TableCell>
+                      <TableCell>{assignment.test.title}</TableCell>
+                      <TableCell>
+                        <Badge
+                          variant={
+                            assignment.status === 'completed'
+                              ? 'success'
+                              : assignment.status === 'in_progress'
+                              ? 'warning'
+                              : 'default'
+                          }
+                        >
+                          {assignment.status.replace('_', ' ')}
+                        </Badge>
+                      </TableCell>
+                      <TableCell>
+                        {assignment.status === 'completed' ? (
+                          <span className="font-medium">
+                            {assignment.score.earned}/{assignment.score.total} ({assignment.score.percentage}%)
+                          </span>
+                        ) : (
+                          '-'
+                        )}
+                      </TableCell>
+                      <TableCell>
+                        {assignment.completedAt ? formatDate(assignment.completedAt) : '-'}
+                      </TableCell>
+                      <TableCell className="text-right">
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          onClick={() => setSelectedAssignment(assignment)}
+                        >
+                          View Details
+                        </Button>
+                      </TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
+            </Card>
+          )}
+        </>
+      )}
+
+      {/* Test View */}
+      {viewMode === 'test' && (
+        <>
+          <Card className="mb-6">
+            <div className="max-w-md">
+              <Select
+                label="Select Test"
+                id="test-select"
+                options={[
+                  { value: '', label: 'Choose a test...' },
+                  ...tests.map((t) => ({ value: t.id, label: t.title })),
+                ]}
+                value={selectedTestForAnalytics}
+                onChange={(e) => setSelectedTestForAnalytics(e.target.value)}
+              />
+            </div>
+          </Card>
+
+          {selectedTestForAnalytics ? (
+            <TestAnalytics testId={selectedTestForAnalytics} />
+          ) : (
+            <Card className="text-center py-12">
+              <svg
+                className="mx-auto h-12 w-12 text-gray-400"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M9 17v-2m3 2v-4m3 4v-6m2 10H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"
+                />
+              </svg>
+              <h3 className="mt-4 text-lg font-medium text-gray-900">Select a test to view analytics</h3>
+              <p className="mt-2 text-gray-500">
+                Choose a test from the dropdown above to see detailed performance analytics.
+              </p>
+            </Card>
+          )}
+        </>
       )}
 
       {/* Detail Modal */}
