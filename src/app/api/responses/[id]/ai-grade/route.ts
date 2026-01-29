@@ -117,7 +117,7 @@ IMPORTANT: Return ONLY valid JSON. No markdown, no code blocks, no explanations 
 
     // Call Gemini API
     const aiResponse = await genai.models.generateContent({
-      model: 'gemini-2.0-flash-exp',
+      model: 'gemini-1.5-flash',
       contents: [
         {
           role: 'user',
