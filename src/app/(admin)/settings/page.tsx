@@ -14,9 +14,18 @@ interface User {
   role: string;
 }
 
+interface GeminiModel {
+  value: string;
+  label: string;
+  description: string;
+  category: string;
+}
+
 export default function SettingsPage() {
   const [geminiApiKey, setGeminiApiKey] = useState('');
   const [geminiModel, setGeminiModel] = useState('gemini-1.5-flash');
+  const [availableModels, setAvailableModels] = useState<GeminiModel[]>([]);
+  const [loadingModels, setLoadingModels] = useState(false);
   const [currentUser, setCurrentUser] = useState<User | null>(null);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
@@ -29,6 +38,13 @@ export default function SettingsPage() {
     fetchSettings();
     fetchCurrentUser();
   }, []);
+
+  useEffect(() => {
+    // Fetch models when API key is available
+    if (geminiApiKey) {
+      fetchAvailableModels();
+    }
+  }, [geminiApiKey]);
 
   const fetchSettings = async () => {
     try {
@@ -62,6 +78,64 @@ export default function SettingsPage() {
       }
     } catch (error) {
       console.error('Error fetching current user:', error);
+    }
+  };
+
+  const fetchAvailableModels = async () => {
+    setLoadingModels(true);
+    try {
+      const res = await fetch('/api/gemini/models');
+      if (res.ok) {
+        const data = await res.json();
+        setAvailableModels(data.models || []);
+      } else {
+        // Use fallback models if API fails
+        setAvailableModels([
+          {
+            value: 'gemini-1.5-flash',
+            label: 'Gemini 1.5 Flash',
+            description: 'Recommended - Best balance of speed and quality',
+            category: 'recommended',
+          },
+          {
+            value: 'gemini-1.5-flash-8b',
+            label: 'Gemini 1.5 Flash-8B',
+            description: 'Fastest and most cost-effective',
+            category: 'fast',
+          },
+          {
+            value: 'gemini-1.5-pro',
+            label: 'Gemini 1.5 Pro',
+            description: 'Highest quality for complex reasoning',
+            category: 'quality',
+          },
+        ]);
+      }
+    } catch (error) {
+      console.error('Error fetching available models:', error);
+      // Use fallback models on error
+      setAvailableModels([
+        {
+          value: 'gemini-1.5-flash',
+          label: 'Gemini 1.5 Flash',
+          description: 'Recommended - Best balance of speed and quality',
+          category: 'recommended',
+        },
+        {
+          value: 'gemini-1.5-flash-8b',
+          label: 'Gemini 1.5 Flash-8B',
+          description: 'Fastest and most cost-effective',
+          category: 'fast',
+        },
+        {
+          value: 'gemini-1.5-pro',
+          label: 'Gemini 1.5 Pro',
+          description: 'Highest quality for complex reasoning',
+          category: 'quality',
+        },
+      ]);
+    } finally {
+      setLoadingModels(false);
     }
   };
 
@@ -286,23 +360,48 @@ export default function SettingsPage() {
               <p className="text-sm text-gray-500 mb-3">
                 Select which Gemini model to use for AI grading and test generation
               </p>
-              <Select
-                id="gemini-model"
-                value={geminiModel}
-                onChange={(e) => setGeminiModel(e.target.value)}
-                options={[
-                  { value: 'gemini-1.5-flash', label: 'Gemini 1.5 Flash (Recommended - Fast & Efficient)' },
-                  { value: 'gemini-1.5-flash-8b', label: 'Gemini 1.5 Flash-8B (Faster, Lower Cost)' },
-                  { value: 'gemini-1.5-pro', label: 'Gemini 1.5 Pro (Highest Quality)' },
-                  { value: 'gemini-2.0-flash-exp', label: 'Gemini 2.0 Flash (Experimental)' },
-                ]}
-              />
-              <div className="mt-2 text-xs text-gray-500 space-y-1">
-                <p><strong>Flash:</strong> Best balance of speed and quality (default)</p>
-                <p><strong>Flash-8B:</strong> Fastest and most cost-effective</p>
-                <p><strong>Pro:</strong> Most capable for complex reasoning tasks</p>
-                <p><strong>2.0 Flash Exp:</strong> Latest experimental features (may be unstable)</p>
-              </div>
+              {loadingModels ? (
+                <div className="flex items-center gap-2 p-3 bg-gray-50 rounded border border-gray-200">
+                  <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-blue-600" />
+                  <span className="text-sm text-gray-600">Loading available models...</span>
+                </div>
+              ) : availableModels.length > 0 ? (
+                <>
+                  <Select
+                    id="gemini-model"
+                    value={geminiModel}
+                    onChange={(e) => setGeminiModel(e.target.value)}
+                    options={availableModels.map(model => ({
+                      value: model.value,
+                      label: `${model.label}${model.description ? ` - ${model.description}` : ''}`,
+                    }))}
+                  />
+                  <div className="mt-3 space-y-2">
+                    {availableModels.map((model) => (
+                      <div key={model.value} className="text-xs text-gray-600">
+                        <span className="font-semibold">{model.label}:</span> {model.description}
+                      </div>
+                    ))}
+                  </div>
+                  <div className="mt-3 flex items-center gap-2">
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={fetchAvailableModels}
+                      disabled={loadingModels}
+                    >
+                      Refresh Models
+                    </Button>
+                    <span className="text-xs text-gray-500">
+                      ({availableModels.length} models available)
+                    </span>
+                  </div>
+                </>
+              ) : (
+                <div className="p-3 bg-yellow-50 border border-yellow-200 rounded text-sm text-yellow-800">
+                  No models available. Please check your API key and try again.
+                </div>
+              )}
             </div>
 
             {saveError && (
