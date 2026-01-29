@@ -102,6 +102,9 @@ export default function ReportsPage() {
     fitAnalysis: string;
   } | null>(null);
   const [generatingAiGrade, setGeneratingAiGrade] = useState(false);
+  const [bulkAiGrades, setBulkAiGrades] = useState<any[]>([]);
+  const [generatingBulkGrades, setGeneratingBulkGrades] = useState(false);
+  const [savingBulkGrades, setSavingBulkGrades] = useState(false);
 
   useEffect(() => {
     fetchFiltersData();
@@ -234,6 +237,86 @@ export default function ReportsPage() {
       console.error('Error saving grade:', error);
     } finally {
       setSaving(false);
+    }
+  };
+
+  const generateBulkAiGrades = async () => {
+    if (!selectedAssignment) return;
+
+    setGeneratingBulkGrades(true);
+    setBulkAiGrades([]);
+
+    try {
+      const res = await fetch('/api/responses/bulk-ai-grade', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ assignmentId: selectedAssignment.id }),
+      });
+
+      const data = await res.json();
+
+      if (res.ok && data.success) {
+        setBulkAiGrades(data.results || []);
+
+        if (data.summary.successful === 0) {
+          alert('No gradable responses found (only freetext/timed questions with answers can be graded).');
+        } else if (data.summary.failed > 0) {
+          alert(
+            `Generated ${data.summary.successful} grades successfully. ${data.summary.failed} failed.`
+          );
+        }
+      } else {
+        alert(data.error || 'Failed to generate AI grades');
+      }
+    } catch (error) {
+      console.error('Error generating bulk AI grades:', error);
+      alert('Failed to generate AI grades');
+    } finally {
+      setGeneratingBulkGrades(false);
+    }
+  };
+
+  const acceptAllAiGrades = async () => {
+    const successfulGrades = bulkAiGrades.filter((g) => g.success);
+
+    if (successfulGrades.length === 0) {
+      alert('No AI grades to accept');
+      return;
+    }
+
+    if (!confirm(`Accept and save ${successfulGrades.length} AI-generated grades?`)) {
+      return;
+    }
+
+    setSavingBulkGrades(true);
+
+    try {
+      const grades = successfulGrades.map((g) => ({
+        responseId: g.responseId,
+        score: g.grade.suggestedScore,
+        graderNotes: `AI Assessment:\n\nStrengths:\n${g.grade.strengths}\n\nWeaknesses:\n${g.grade.weaknesses}\n\nFit Analysis:\n${g.grade.fitAnalysis}`,
+      }));
+
+      const res = await fetch('/api/responses/bulk-save-grades', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ grades }),
+      });
+
+      const data = await res.json();
+
+      if (res.ok && data.success) {
+        alert(`Successfully saved ${data.updated} grades!`);
+        setBulkAiGrades([]);
+        fetchReports();
+      } else {
+        alert(data.error || 'Failed to save grades');
+      }
+    } catch (error) {
+      console.error('Error saving bulk grades:', error);
+      alert('Failed to save grades');
+    } finally {
+      setSavingBulkGrades(false);
     }
   };
 
@@ -490,7 +573,10 @@ export default function ReportsPage() {
       {/* Detail Modal */}
       <Modal
         isOpen={!!selectedAssignment}
-        onClose={() => setSelectedAssignment(null)}
+        onClose={() => {
+          setSelectedAssignment(null);
+          setBulkAiGrades([]);
+        }}
         title="Assessment Details"
         className="max-w-4xl"
       >
@@ -527,6 +613,87 @@ export default function ReportsPage() {
                   {selectedAssignment.score.percentage}%)
                 </p>
               </div>
+            </div>
+
+            {/* Bulk AI Grading */}
+            <div className="border-t border-gray-200 pt-4">
+              <div className="flex items-center justify-between mb-3">
+                <div>
+                  <h3 className="font-semibold text-gray-900">AI Grading Assistant</h3>
+                  <p className="text-sm text-gray-500 mt-1">
+                    Generate and accept AI grades for all freetext/timed questions at once
+                  </p>
+                </div>
+                <div className="flex gap-2">
+                  <Button
+                    variant="secondary"
+                    onClick={generateBulkAiGrades}
+                    loading={generatingBulkGrades}
+                    disabled={bulkAiGrades.length > 0}
+                  >
+                    {bulkAiGrades.length > 0 ? '✓ Grades Generated' : '🤖 Generate All AI Grades'}
+                  </Button>
+                  {bulkAiGrades.length > 0 && (
+                    <Button
+                      onClick={acceptAllAiGrades}
+                      loading={savingBulkGrades}
+                    >
+                      Accept All ({bulkAiGrades.filter((g) => g.success).length})
+                    </Button>
+                  )}
+                </div>
+              </div>
+
+              {/* Bulk grading results */}
+              {bulkAiGrades.length > 0 && (
+                <div className="space-y-2">
+                  {bulkAiGrades.map((result, idx) => (
+                    <div
+                      key={result.responseId}
+                      className={`p-3 rounded-lg border ${
+                        result.success
+                          ? 'bg-green-50 border-green-200'
+                          : 'bg-red-50 border-red-200'
+                      }`}
+                    >
+                      {result.success ? (
+                        <div className="flex items-start justify-between">
+                          <div className="flex-1">
+                            <p className="text-sm font-medium text-green-900">
+                              Question: {result.questionContent}...
+                            </p>
+                            <div className="mt-2 grid grid-cols-1 md:grid-cols-3 gap-3 text-xs">
+                              <div>
+                                <span className="font-medium text-green-800">Score: </span>
+                                <span className="text-green-700">{result.grade.suggestedScore}</span>
+                              </div>
+                              <div>
+                                <span className="font-medium text-green-800">Strengths: </span>
+                                <span className="text-green-700">
+                                  {result.grade.strengths.substring(0, 50)}...
+                                </span>
+                              </div>
+                              <div>
+                                <span className="font-medium text-green-800">Weaknesses: </span>
+                                <span className="text-green-700">
+                                  {result.grade.weaknesses.substring(0, 50)}...
+                                </span>
+                              </div>
+                            </div>
+                          </div>
+                        </div>
+                      ) : (
+                        <div>
+                          <p className="text-sm font-medium text-red-900">
+                            Question: {result.questionContent}...
+                          </p>
+                          <p className="text-xs text-red-700 mt-1">Error: {result.error}</p>
+                        </div>
+                      )}
+                    </div>
+                  ))}
+                </div>
+              )}
             </div>
 
             {/* Responses */}
