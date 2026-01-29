@@ -40,11 +40,9 @@ export default function SettingsPage() {
   }, []);
 
   useEffect(() => {
-    // Fetch models when API key is available
-    if (geminiApiKey) {
-      fetchAvailableModels();
-    }
-  }, [geminiApiKey]);
+    // Fetch models list (static list from API)
+    fetchAvailableModels();
+  }, []);
 
   const fetchSettings = async () => {
     try {
@@ -383,23 +381,15 @@ export default function SettingsPage() {
                       </div>
                     ))}
                   </div>
-                  <div className="mt-3 flex items-center gap-2">
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      onClick={fetchAvailableModels}
-                      disabled={loadingModels}
-                    >
-                      Refresh Models
-                    </Button>
+                  <div className="mt-2">
                     <span className="text-xs text-gray-500">
-                      ({availableModels.length} models available)
+                      {availableModels.length} models available
                     </span>
                   </div>
                 </>
               ) : (
                 <div className="p-3 bg-yellow-50 border border-yellow-200 rounded text-sm text-yellow-800">
-                  No models available. Please check your API key and try again.
+                  Unable to load models. Using default model (gemini-1.5-flash).
                 </div>
               )}
             </div>
