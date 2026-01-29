@@ -15,7 +15,7 @@ export async function POST(request: NextRequest) {
 
     // Try to get API key and model from database first, then fall back to environment variable
     let apiKey: string | undefined;
-    let modelName = 'gemini-1.5-flash'; // default
+    let modelName = 'gemini-1.5-flash-latest'; // default
     try {
       const [apiKeySetting, modelSetting] = await Promise.all([
         prisma.setting.findUnique({ where: { key: 'gemini_api_key' } }),

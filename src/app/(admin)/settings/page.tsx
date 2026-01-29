@@ -23,7 +23,7 @@ interface GeminiModel {
 
 export default function SettingsPage() {
   const [geminiApiKey, setGeminiApiKey] = useState('');
-  const [geminiModel, setGeminiModel] = useState('gemini-1.5-flash');
+  const [geminiModel, setGeminiModel] = useState('gemini-1.5-flash-latest');
   const [availableModels, setAvailableModels] = useState<GeminiModel[]>([]);
   const [loadingModels, setLoadingModels] = useState(false);
   const [currentUser, setCurrentUser] = useState<User | null>(null);
@@ -58,7 +58,7 @@ export default function SettingsPage() {
 
       if (modelRes.ok) {
         const data = await modelRes.json();
-        setGeminiModel(data.value || 'gemini-1.5-flash');
+        setGeminiModel(data.value || 'gemini-1.5-flash-latest');
       }
     } catch (error) {
       console.error('Error fetching settings:', error);
@@ -90,21 +90,21 @@ export default function SettingsPage() {
         // Use fallback models if API fails
         setAvailableModels([
           {
-            value: 'gemini-1.5-flash',
+            value: 'gemini-1.5-flash-latest',
             label: 'Gemini 1.5 Flash',
             description: 'Recommended - Best balance of speed and quality',
             category: 'recommended',
           },
           {
-            value: 'gemini-1.5-flash-8b',
-            label: 'Gemini 1.5 Flash-8B',
-            description: 'Fastest and most cost-effective',
-            category: 'fast',
-          },
-          {
-            value: 'gemini-1.5-pro',
+            value: 'gemini-1.5-pro-latest',
             label: 'Gemini 1.5 Pro',
             description: 'Highest quality for complex reasoning',
+            category: 'quality',
+          },
+          {
+            value: 'gemini-pro',
+            label: 'Gemini Pro',
+            description: 'Production-ready general purpose model',
             category: 'quality',
           },
         ]);
@@ -114,21 +114,21 @@ export default function SettingsPage() {
       // Use fallback models on error
       setAvailableModels([
         {
-          value: 'gemini-1.5-flash',
+          value: 'gemini-1.5-flash-latest',
           label: 'Gemini 1.5 Flash',
           description: 'Recommended - Best balance of speed and quality',
           category: 'recommended',
         },
         {
-          value: 'gemini-1.5-flash-8b',
-          label: 'Gemini 1.5 Flash-8B',
-          description: 'Fastest and most cost-effective',
-          category: 'fast',
-        },
-        {
-          value: 'gemini-1.5-pro',
+          value: 'gemini-1.5-pro-latest',
           label: 'Gemini 1.5 Pro',
           description: 'Highest quality for complex reasoning',
+          category: 'quality',
+        },
+        {
+          value: 'gemini-pro',
+          label: 'Gemini Pro',
+          description: 'Production-ready general purpose model',
           category: 'quality',
         },
       ]);
