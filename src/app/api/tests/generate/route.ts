@@ -13,15 +13,20 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Try to get API key from database first, then fall back to environment variable
+    // Try to get API key and model from database first, then fall back to environment variable
     let apiKey: string | undefined;
+    let modelName = 'gemini-1.5-flash'; // default
     try {
-      const setting = await prisma.setting.findUnique({
-        where: { key: 'gemini_api_key' },
-      });
-      apiKey = setting?.value;
+      const [apiKeySetting, modelSetting] = await Promise.all([
+        prisma.setting.findUnique({ where: { key: 'gemini_api_key' } }),
+        prisma.setting.findUnique({ where: { key: 'gemini_model' } }),
+      ]);
+      apiKey = apiKeySetting?.value;
+      if (modelSetting?.value) {
+        modelName = modelSetting.value;
+      }
     } catch (error) {
-      console.error('Error fetching API key from database:', error);
+      console.error('Error fetching settings from database:', error);
     }
 
     // Fall back to environment variable if not in database
@@ -87,7 +92,7 @@ IMPORTANT: Return ONLY valid JSON. No markdown, no code blocks, no explanations.
 
     // Call Gemini API
     const response = await genai.models.generateContent({
-      model: 'gemini-2.0-flash-exp',
+      model: modelName,
       contents: [
         {
           role: 'user',

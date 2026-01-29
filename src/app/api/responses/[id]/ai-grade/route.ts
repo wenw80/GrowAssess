@@ -55,15 +55,20 @@ export async function POST(
       );
     }
 
-    // Get API key (from database first, then environment)
+    // Get API key and model (from database first, then environment)
     let apiKey: string | undefined;
+    let modelName = 'gemini-1.5-flash'; // default
     try {
-      const setting = await prisma.setting.findUnique({
-        where: { key: 'gemini_api_key' },
-      });
-      apiKey = setting?.value;
+      const [apiKeySetting, modelSetting] = await Promise.all([
+        prisma.setting.findUnique({ where: { key: 'gemini_api_key' } }),
+        prisma.setting.findUnique({ where: { key: 'gemini_model' } }),
+      ]);
+      apiKey = apiKeySetting?.value;
+      if (modelSetting?.value) {
+        modelName = modelSetting.value;
+      }
     } catch (error) {
-      console.error('Error fetching API key from database:', error);
+      console.error('Error fetching settings from database:', error);
     }
 
     if (!apiKey) {
@@ -117,7 +122,7 @@ IMPORTANT: Return ONLY valid JSON. No markdown, no code blocks, no explanations 
 
     // Call Gemini API
     const aiResponse = await genai.models.generateContent({
-      model: 'gemini-1.5-flash',
+      model: modelName,
       contents: [
         {
           role: 'user',

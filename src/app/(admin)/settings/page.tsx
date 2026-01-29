@@ -4,6 +4,7 @@ import { useEffect, useState } from 'react';
 import Button from '@/components/ui/Button';
 import Card from '@/components/ui/Card';
 import Input from '@/components/ui/Input';
+import Select from '@/components/ui/Select';
 import Badge from '@/components/ui/Badge';
 
 interface User {
@@ -15,6 +16,7 @@ interface User {
 
 export default function SettingsPage() {
   const [geminiApiKey, setGeminiApiKey] = useState('');
+  const [geminiModel, setGeminiModel] = useState('gemini-1.5-flash');
   const [currentUser, setCurrentUser] = useState<User | null>(null);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
@@ -30,10 +32,19 @@ export default function SettingsPage() {
 
   const fetchSettings = async () => {
     try {
-      const res = await fetch('/api/settings?key=gemini_api_key');
-      if (res.ok) {
-        const data = await res.json();
+      const [apiKeyRes, modelRes] = await Promise.all([
+        fetch('/api/settings?key=gemini_api_key'),
+        fetch('/api/settings?key=gemini_model'),
+      ]);
+
+      if (apiKeyRes.ok) {
+        const data = await apiKeyRes.json();
         setGeminiApiKey(data.value || '');
+      }
+
+      if (modelRes.ok) {
+        const data = await modelRes.json();
+        setGeminiModel(data.value || 'gemini-1.5-flash');
       }
     } catch (error) {
       console.error('Error fetching settings:', error);
@@ -60,25 +71,36 @@ export default function SettingsPage() {
     setSaveSuccess(false);
 
     try {
-      const res = await fetch('/api/settings', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          key: 'gemini_api_key',
-          value: geminiApiKey,
+      // Save both API key and model
+      const [apiKeyRes, modelRes] = await Promise.all([
+        fetch('/api/settings', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            key: 'gemini_api_key',
+            value: geminiApiKey,
+          }),
         }),
-      });
+        fetch('/api/settings', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            key: 'gemini_model',
+            value: geminiModel,
+          }),
+        }),
+      ]);
 
-      if (res.ok) {
+      if (apiKeyRes.ok && modelRes.ok) {
         setSaveSuccess(true);
         setTimeout(() => setSaveSuccess(false), 3000);
       } else {
-        const data = await res.json();
-        setSaveError(data.error || 'Failed to save API key');
+        const data = await (apiKeyRes.ok ? modelRes : apiKeyRes).json();
+        setSaveError(data.error || 'Failed to save settings');
       }
     } catch (error) {
       setSaveError('An error occurred while saving');
-      console.error('Error saving API key:', error);
+      console.error('Error saving settings:', error);
     } finally {
       setSaving(false);
     }
@@ -219,13 +241,13 @@ export default function SettingsPage() {
             )}
           </div>
 
-          <div className="border-t border-gray-200 pt-4">
-            <div className="mb-4">
+          <div className="border-t border-gray-200 pt-4 space-y-4">
+            <div>
               <label htmlFor="gemini-api-key" className="block text-sm font-medium text-gray-700 mb-2">
                 Google Gemini API Key
               </label>
               <p className="text-sm text-gray-500 mb-3">
-                Required for the "Generate from Prompt" feature. Get your free API key from{' '}
+                Required for AI-powered features. Get your free API key from{' '}
                 <a
                   href="https://ai.google.dev/"
                   target="_blank"
@@ -254,6 +276,32 @@ export default function SettingsPage() {
                 >
                   {showApiKey ? 'Hide' : 'Show'}
                 </Button>
+              </div>
+            </div>
+
+            <div>
+              <label htmlFor="gemini-model" className="block text-sm font-medium text-gray-700 mb-2">
+                Gemini Model
+              </label>
+              <p className="text-sm text-gray-500 mb-3">
+                Select which Gemini model to use for AI grading and test generation
+              </p>
+              <Select
+                id="gemini-model"
+                value={geminiModel}
+                onChange={(e) => setGeminiModel(e.target.value)}
+                options={[
+                  { value: 'gemini-1.5-flash', label: 'Gemini 1.5 Flash (Recommended - Fast & Efficient)' },
+                  { value: 'gemini-1.5-flash-8b', label: 'Gemini 1.5 Flash-8B (Faster, Lower Cost)' },
+                  { value: 'gemini-1.5-pro', label: 'Gemini 1.5 Pro (Highest Quality)' },
+                  { value: 'gemini-2.0-flash-exp', label: 'Gemini 2.0 Flash (Experimental)' },
+                ]}
+              />
+              <div className="mt-2 text-xs text-gray-500 space-y-1">
+                <p><strong>Flash:</strong> Best balance of speed and quality (default)</p>
+                <p><strong>Flash-8B:</strong> Fastest and most cost-effective</p>
+                <p><strong>Pro:</strong> Most capable for complex reasoning tasks</p>
+                <p><strong>2.0 Flash Exp:</strong> Latest experimental features (may be unstable)</p>
               </div>
             </div>
 
