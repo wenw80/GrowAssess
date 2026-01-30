@@ -59,84 +59,80 @@ export default function TagFilter({
   };
 
   return (
-    <div ref={containerRef} className="relative w-full">
+    <div ref={containerRef} className="relative w-full dropdown">
       {/* Selected tags and input */}
       <div
-        className="min-h-[42px] px-3 py-2 border border-gray-300 rounded-lg bg-white focus-within:ring-2 focus-within:ring-blue-500 focus-within:border-blue-500 cursor-text"
+        className="input input-bordered w-full min-h-[3rem] h-auto py-2 cursor-text flex flex-wrap gap-1.5 items-center"
         onClick={() => {
           setIsOpen(true);
           inputRef.current?.focus();
         }}
       >
-        <div className="flex flex-wrap gap-1.5 items-center">
-          {selectedTags.map((tag) => (
-            <Badge
-              key={tag}
-              variant="info"
-              className="flex items-center gap-1 pr-1"
-            >
-              {tag}
-              <button
-                type="button"
-                onClick={(e) => {
-                  e.stopPropagation();
-                  removeTag(tag);
-                }}
-                className="ml-1 hover:bg-blue-200 rounded-full p-0.5"
-              >
-                <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-                </svg>
-              </button>
-            </Badge>
-          ))}
-          <input
-            ref={inputRef}
-            type="text"
-            value={search}
-            onChange={(e) => setSearch(e.target.value)}
-            onFocus={() => setIsOpen(true)}
-            placeholder={selectedTags.length === 0 ? placeholder : ''}
-            className="flex-1 min-w-[120px] outline-none text-sm bg-transparent"
-          />
-          {selectedTags.length > 0 && (
+        {selectedTags.map((tag) => (
+          <Badge
+            key={tag}
+            variant="info"
+            className="flex items-center gap-1 pr-1"
+          >
+            {tag}
             <button
               type="button"
               onClick={(e) => {
                 e.stopPropagation();
-                clearAll();
+                removeTag(tag);
               }}
-              className="text-gray-400 hover:text-gray-600 p-1"
-              title="Clear all"
+              className="ml-1 hover:bg-info/20 rounded-full p-0.5"
             >
-              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
               </svg>
             </button>
-          )}
-        </div>
+          </Badge>
+        ))}
+        <input
+          ref={inputRef}
+          type="text"
+          value={search}
+          onChange={(e) => setSearch(e.target.value)}
+          onFocus={() => setIsOpen(true)}
+          placeholder={selectedTags.length === 0 ? placeholder : ''}
+          className="flex-1 min-w-[120px] outline-none text-sm bg-transparent"
+        />
+        {selectedTags.length > 0 && (
+          <button
+            type="button"
+            onClick={(e) => {
+              e.stopPropagation();
+              clearAll();
+            }}
+            className="btn btn-ghost btn-xs btn-circle"
+            title="Clear all"
+          >
+            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+            </svg>
+          </button>
+        )}
       </div>
 
       {/* Dropdown */}
       {isOpen && (
-        <div className="absolute z-50 mt-1 w-full bg-white border border-gray-200 rounded-lg shadow-lg max-h-60 overflow-y-auto">
+        <ul className="dropdown-content menu bg-base-100 rounded-box z-50 mt-1 w-full shadow-lg border border-base-200 max-h-60 overflow-y-auto">
           {filteredTags.length > 0 ? (
-            <ul className="py-1">
-              {filteredTags.map((tag) => (
-                <li key={tag}>
-                  <button
-                    type="button"
-                    onClick={() => toggleTag(tag)}
-                    className="w-full px-3 py-2 text-left text-sm hover:bg-gray-100 flex items-center justify-between"
-                  >
-                    <span>{tag}</span>
-                    <span className="text-gray-400 text-xs">Click to add</span>
-                  </button>
-                </li>
-              ))}
-            </ul>
+            filteredTags.map((tag) => (
+              <li key={tag}>
+                <button
+                  type="button"
+                  onClick={() => toggleTag(tag)}
+                  className="flex items-center justify-between"
+                >
+                  <span>{tag}</span>
+                  <span className="text-base-content/50 text-xs">Click to add</span>
+                </button>
+              </li>
+            ))
           ) : (
-            <div className="px-3 py-4 text-sm text-gray-500 text-center">
+            <li className="px-4 py-3 text-sm text-base-content/50 text-center">
               {search ? (
                 <>No tags matching "{search}"</>
               ) : tags.length === 0 ? (
@@ -144,30 +140,30 @@ export default function TagFilter({
               ) : (
                 <>All tags selected</>
               )}
-            </div>
+            </li>
           )}
 
           {/* Quick actions */}
           {tags.length > 0 && selectedTags.length < tags.length && (
-            <div className="border-t border-gray-100 px-3 py-2">
+            <li className="border-t border-base-200">
               <button
                 type="button"
                 onClick={() => {
                   onChange([...tags]);
                   setIsOpen(false);
                 }}
-                className="text-xs text-blue-600 hover:underline"
+                className="text-xs text-primary"
               >
                 Select all tags
               </button>
-            </div>
+            </li>
           )}
-        </div>
+        </ul>
       )}
 
       {/* Summary when closed */}
       {!isOpen && selectedTags.length > 0 && (
-        <p className="mt-1 text-xs text-gray-500">
+        <p className="mt-1 text-xs text-base-content/50">
           {selectedTags.length} tag{selectedTags.length !== 1 ? 's' : ''} selected
         </p>
       )}

@@ -4,40 +4,27 @@ import { HTMLAttributes, TdHTMLAttributes, ThHTMLAttributes } from 'react';
 export function Table({ className, ...props }: HTMLAttributes<HTMLTableElement>) {
   return (
     <div className="overflow-x-auto">
-      <table className={cn('min-w-full divide-y divide-gray-200', className)} {...props} />
+      <table className={cn('table table-zebra', className)} {...props} />
     </div>
   );
 }
 
 export function TableHeader({ className, ...props }: HTMLAttributes<HTMLTableSectionElement>) {
-  return <thead className={cn('bg-gray-50', className)} {...props} />;
+  return <thead className={cn('', className)} {...props} />;
 }
 
 export function TableBody({ className, ...props }: HTMLAttributes<HTMLTableSectionElement>) {
-  return <tbody className={cn('bg-white divide-y divide-gray-200', className)} {...props} />;
+  return <tbody className={cn('', className)} {...props} />;
 }
 
 export function TableRow({ className, ...props }: HTMLAttributes<HTMLTableRowElement>) {
-  return <tr className={cn('hover:bg-gray-50 transition-colors', className)} {...props} />;
+  return <tr className={cn('hover', className)} {...props} />;
 }
 
 export function TableHead({ className, ...props }: ThHTMLAttributes<HTMLTableCellElement>) {
-  return (
-    <th
-      className={cn(
-        'px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider',
-        className
-      )}
-      {...props}
-    />
-  );
+  return <th className={cn('', className)} {...props} />;
 }
 
 export function TableCell({ className, ...props }: TdHTMLAttributes<HTMLTableCellElement>) {
-  return (
-    <td
-      className={cn('px-6 py-4 whitespace-nowrap text-sm text-gray-900', className)}
-      {...props}
-    />
-  );
+  return <td className={cn('', className)} {...props} />;
 }
