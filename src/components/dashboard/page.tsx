@@ -3,7 +3,7 @@ import { ChartAreaInteractive } from "@/components/dashboard/chart-area-interact
 import { DataTable } from "@/components/dashboard/data-table"
 import { SectionCards } from "@/components/dashboard/section-cards"
 import { SiteHeader } from "@/components/dashboard/site-header"
-import { SidebarInset, SidebarProvider } from "@/components/ui/sidebar"
+import { SidebarInset, SidebarProvider } from "@/components/ui/Sidebar"
 
 import data from "./data.json"
 
