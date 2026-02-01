@@ -2,11 +2,11 @@
 
 import { useEffect, useState, use } from 'react';
 import Link from 'next/link';
-import Button from '@/components/ui/Button';
-import Card from '@/components/ui/Card';
-import Badge from '@/components/ui/Badge';
+import { Button } from '@/components/ui/Button';
+import { Card } from '@/components/ui/Card';
+import { Badge } from '@/components/ui/Badge';
 import Modal from '@/components/ui/Modal';
-import Select from '@/components/ui/Select';
+import Select from '@/components/ui/SelectSimple';
 import { formatDate, formatDateTime, calculateScore } from '@/lib/utils';
 
 interface Question {
@@ -312,7 +312,7 @@ export default function CandidateDetailPage({
                       </Link>
                     )}
                     <Button
-                      variant="danger"
+                      variant="destructive"
                       size="sm"
                       onClick={() => deleteAssignment(assignment.id)}
                     >
@@ -346,8 +346,8 @@ export default function CandidateDetailPage({
             <Button variant="secondary" onClick={() => setShowAssignModal(false)}>
               Cancel
             </Button>
-            <Button onClick={handleAssignTest} loading={assigning} disabled={!selectedTest}>
-              Assign Test
+            <Button onClick={handleAssignTest} disabled={assigning || !selectedTest}>
+              {assigning ? 'Assigning...' : 'Assign Test'}
             </Button>
           </div>
         </div>

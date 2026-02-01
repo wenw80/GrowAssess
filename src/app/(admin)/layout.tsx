@@ -1,9 +1,9 @@
 import { redirect } from 'next/navigation';
 import { isAuthenticated } from '@/lib/auth';
-import Link from 'next/link';
-import LogoutButton from '@/components/ui/LogoutButton';
-import MobileNav from '@/components/ui/MobileNav';
-import NavLinks from '@/components/ui/NavLinks';
+import { SidebarProvider, SidebarInset } from '@/components/ui/Sidebar';
+import { AppSidebar } from '@/components/ui/AppSidebar';
+import { SiteHeader } from '@/components/ui/SiteHeader';
+import { TooltipProvider } from '@/components/ui/tooltip';
 
 export default async function AdminLayout({
   children,
@@ -17,35 +17,25 @@ export default async function AdminLayout({
   }
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      <nav className="bg-white shadow-sm border-b border-gray-200 relative">
-        <div className="w-full px-4 sm:px-6 lg:px-8">
-          <div className="flex justify-between h-16">
-            <div className="flex items-center">
-              {/* Mobile hamburger menu */}
-              <MobileNav />
-
-              {/* Logo */}
-              <div className="flex-shrink-0 flex items-center ml-2 sm:ml-0">
-                <Link href="/tests" className="text-xl font-bold text-blue-600">
-                  GrowAssess
-                </Link>
+    <TooltipProvider>
+      <SidebarProvider
+        style={{
+          "--sidebar-width": "calc(var(--spacing) * 72)",
+          "--header-height": "calc(var(--spacing) * 12)",
+        } as React.CSSProperties}
+      >
+        <AppSidebar variant="inset" />
+        <SidebarInset>
+          <SiteHeader />
+          <div className="flex flex-1 flex-col">
+            <div className="@container/main flex flex-1 flex-col gap-2">
+              <div className="flex flex-col gap-4 py-4 md:gap-6 md:py-6">
+                {children}
               </div>
-
-              {/* Desktop navigation */}
-              <NavLinks />
-            </div>
-
-            <div className="flex items-center">
-              <LogoutButton />
             </div>
           </div>
-        </div>
-      </nav>
-
-      <main className="w-full py-6 px-4 sm:px-6 lg:px-8">
-        {children}
-      </main>
-    </div>
+        </SidebarInset>
+      </SidebarProvider>
+    </TooltipProvider>
   );
 }

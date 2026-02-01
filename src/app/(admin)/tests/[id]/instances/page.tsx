@@ -3,9 +3,9 @@
 import { useEffect, useState } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import Link from 'next/link';
-import Button from '@/components/ui/Button';
-import Card from '@/components/ui/Card';
-import Badge from '@/components/ui/Badge';
+import { Button } from '@/components/ui/Button';
+import { Card } from '@/components/ui/Card';
+import { Badge } from '@/components/ui/Badge';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/Table';
 import { formatDateTime } from '@/lib/utils';
 
@@ -235,12 +235,12 @@ export default function TestInstancesPage() {
                         </Button>
                       </Link>
                       <Button
-                        variant="danger"
+                        variant="destructive"
                         size="sm"
                         onClick={() => handleDelete(instance.id, instance.candidate.name)}
-                        loading={deleting === instance.id}
+                        disabled={deleting === instance.id}
                       >
-                        Delete
+                        {deleting === instance.id ? 'Deleting...' : 'Delete'}
                       </Button>
                     </div>
                   </TableCell>

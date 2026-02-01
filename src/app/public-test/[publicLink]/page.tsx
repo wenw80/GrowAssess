@@ -2,9 +2,9 @@
 
 import { use, useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
-import Button from '@/components/ui/Button';
-import Card from '@/components/ui/Card';
-import Input from '@/components/ui/Input';
+import { Button } from '@/components/ui/Button';
+import { Card } from '@/components/ui/Card';
+import { Input } from '@/components/ui/Input';
 
 export default function PublicTestPage({
   params,
@@ -147,11 +147,10 @@ export default function PublicTestPage({
 
           <Button
             type="submit"
-            loading={submitting}
-            disabled={!email.trim()}
+            disabled={submitting || !email.trim()}
             className="w-full"
           >
-            Start Assessment
+            {submitting ? 'Starting...' : 'Start Assessment'}
           </Button>
         </form>
       </Card>

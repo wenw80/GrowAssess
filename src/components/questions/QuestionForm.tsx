@@ -2,12 +2,12 @@
 
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
-import Button from '@/components/ui/Button';
-import Input from '@/components/ui/Input';
-import Textarea from '@/components/ui/Textarea';
-import Select from '@/components/ui/Select';
-import Card from '@/components/ui/Card';
-import Badge from '@/components/ui/Badge';
+import { Button } from '@/components/ui/Button';
+import { Input } from '@/components/ui/Input';
+import { Textarea } from '@/components/ui/Textarea';
+import Select from '@/components/ui/SelectSimple';
+import { Card } from '@/components/ui/Card';
+import { Badge } from '@/components/ui/Badge';
 import { MCQOption } from '@/types';
 
 interface QuestionFormProps {
@@ -233,7 +233,7 @@ export default function QuestionForm({ initialData }: QuestionFormProps) {
           <h2 className="text-lg font-semibold mb-4">Answer Options</h2>
           <div className="space-y-3">
             {options.map((option, index) => (
-              <div key={option.id} className="border rounded-lg p-4 space-y-3">
+              <div key={option.id} className="border border-border rounded-lg p-4 space-y-3">
                 <div className="flex items-center gap-3">
                   <input
                     type="radio"
@@ -278,7 +278,7 @@ export default function QuestionForm({ initialData }: QuestionFormProps) {
                     </Button>
                     <Button
                       type="button"
-                      variant="danger"
+                      variant="destructive"
                       size="sm"
                       onClick={() => removeOption(index)}
                       disabled={options.length <= 2}
@@ -305,8 +305,8 @@ export default function QuestionForm({ initialData }: QuestionFormProps) {
         <Button type="button" variant="secondary" onClick={() => router.back()}>
           Cancel
         </Button>
-        <Button type="submit" loading={saving}>
-          {initialData?.id ? 'Save Changes' : 'Create Question'}
+        <Button type="submit" disabled={saving}>
+          {saving ? 'Saving...' : initialData?.id ? 'Save Changes' : 'Create Question'}
         </Button>
       </div>
     </form>

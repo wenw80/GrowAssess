@@ -2,14 +2,14 @@
 
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
-import Button from '@/components/ui/Button';
-import Card from '@/components/ui/Card';
-import Badge from '@/components/ui/Badge';
-import Input from '@/components/ui/Input';
-import Select from '@/components/ui/Select';
+import { Button } from '@/components/ui/Button';
+import { Card } from '@/components/ui/Card';
+import { Badge } from '@/components/ui/Badge';
+import { Input } from '@/components/ui/Input';
+import Select from '@/components/ui/SelectSimple';
 import TagFilter from '@/components/ui/TagFilter';
 import Modal from '@/components/ui/Modal';
-import Textarea from '@/components/ui/Textarea';
+import { Textarea } from '@/components/ui/Textarea';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/Table';
 import BulkTagEditor from '@/components/questions/BulkTagEditor';
 
@@ -197,7 +197,7 @@ export default function QuestionsLibraryPage() {
   if (loading) {
     return (
       <div className="flex items-center justify-center h-64">
-        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600" />
+        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary" />
       </div>
     );
   }
@@ -206,8 +206,8 @@ export default function QuestionsLibraryPage() {
     <div className="px-4 sm:px-6 lg:px-8">
       <div className="sm:flex sm:items-center sm:justify-between mb-6">
         <div className="mb-4 sm:mb-0">
-          <h1 className="text-2xl font-bold text-gray-900">Questions Library</h1>
-          <p className="text-gray-500 mt-1">Browse and manage all questions across your tests</p>
+          <h1 className="text-2xl font-bold text-foreground">Questions Library</h1>
+          <p className="text-muted-foreground mt-1">Browse and manage all questions across your tests</p>
         </div>
         <Link href="/questions/new">
           <Button>Create Question</Button>
@@ -258,7 +258,7 @@ export default function QuestionsLibraryPage() {
       {filteredQuestions.length === 0 ? (
         <Card className="text-center py-12">
           <svg
-            className="mx-auto h-12 w-12 text-gray-400"
+            className="mx-auto h-12 w-12 text-muted-foreground"
             fill="none"
             stroke="currentColor"
             viewBox="0 0 24 24"
@@ -270,8 +270,8 @@ export default function QuestionsLibraryPage() {
               d="M8.228 9c.549-1.165 2.03-2 3.772-2 2.21 0 4 1.343 4 3 0 1.4-1.278 2.575-3.006 2.907-.542.104-.994.54-.994 1.093m0 3h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
             />
           </svg>
-          <h3 className="mt-4 text-lg font-medium text-gray-900">No questions found</h3>
-          <p className="mt-2 text-gray-500">
+          <h3 className="mt-4 text-lg font-medium text-foreground">No questions found</h3>
+          <p className="mt-2 text-muted-foreground">
             {hasActiveFilters
               ? 'Try adjusting your filters.'
               : 'Create your first question to get started.'}
@@ -288,15 +288,15 @@ export default function QuestionsLibraryPage() {
         <>
           {/* Bulk Actions Bar */}
           {selectedQuestionIds.size > 0 && (
-            <Card className="mb-4 bg-blue-50 border-blue-200">
+            <Card className="mb-4 bg-primary/10 border-primary/20">
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-4">
-                  <span className="text-sm font-medium text-blue-900">
+                  <span className="text-sm font-medium text-primary">
                     {selectedQuestionIds.size} question{selectedQuestionIds.size !== 1 ? 's' : ''} selected
                   </span>
                   <button
                     onClick={deselectAll}
-                    className="text-sm text-blue-600 hover:text-blue-800 underline"
+                    className="text-sm text-primary hover:text-primary/80 underline"
                   >
                     Deselect all
                   </button>
@@ -310,7 +310,7 @@ export default function QuestionsLibraryPage() {
                     Edit Tags
                   </Button>
                   <Button
-                    variant="danger"
+                    variant="destructive"
                     size="sm"
                     onClick={handleBulkDelete}
                   >
@@ -362,13 +362,13 @@ export default function QuestionsLibraryPage() {
                       <TableCell className="w-[35%]">
                         <button
                           onClick={() => setSelectedQuestion(question)}
-                          className="text-left hover:text-blue-600 transition-colors w-full"
+                          className="text-left hover:text-primary transition-colors w-full"
                         >
                           <p className="font-medium line-clamp-1" title={question.content}>
                             {question.content}
                           </p>
                           {question.type === 'mcq' && question.correctAnswer && (
-                            <p className="text-sm text-gray-500 mt-1 truncate">
+                            <p className="text-sm text-muted-foreground mt-1 truncate">
                               Correct: {getOptionText(question.options, question.correctAnswer)}
                             </p>
                           )}
@@ -388,11 +388,11 @@ export default function QuestionsLibraryPage() {
                               </Badge>
                             ))}
                             {question.tags.length > 3 && (
-                              <span className="text-xs text-gray-500">+{question.tags.length - 3}</span>
+                              <span className="text-xs text-muted-foreground">+{question.tags.length - 3}</span>
                             )}
                           </div>
                         ) : (
-                          <span className="text-gray-400">-</span>
+                          <span className="text-muted-foreground">-</span>
                         )}
                       </TableCell>
                       <TableCell className="w-[8%]">{question.points}</TableCell>
@@ -400,12 +400,12 @@ export default function QuestionsLibraryPage() {
                         {question._count.tests > 0 ? (
                           <button
                             onClick={() => setQuestionForTests(question)}
-                            className="text-sm text-blue-600 hover:text-blue-800 hover:underline whitespace-nowrap"
+                            className="text-sm text-primary hover:text-primary/80 hover:underline whitespace-nowrap"
                           >
                             {question._count.tests} test{question._count.tests !== 1 ? 's' : ''}
                           </button>
                         ) : (
-                          <span className="text-sm text-gray-400 whitespace-nowrap">0 tests</span>
+                          <span className="text-sm text-muted-foreground whitespace-nowrap">0 tests</span>
                         )}
                       </TableCell>
                       <TableCell className="w-[15%] text-right">
@@ -416,12 +416,12 @@ export default function QuestionsLibraryPage() {
                             </Button>
                           </Link>
                           <Button
-                            variant="danger"
+                            variant="destructive"
                             size="sm"
                             onClick={() => handleDelete(question.id)}
-                            loading={deleting === question.id}
+                            disabled={deleting === question.id}
                           >
-                            Delete
+                            {deleting === question.id ? 'Deleting...' : 'Delete'}
                           </Button>
                         </div>
                       </TableCell>
@@ -453,7 +453,7 @@ export default function QuestionsLibraryPage() {
         {selectedQuestion && (
           <div className="space-y-4">
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">Type</label>
+              <label className="block text-sm font-medium text-foreground mb-2">Type</label>
               <Badge variant="default">
                 {selectedQuestion.type === 'mcq'
                   ? 'Multiple Choice'
@@ -464,21 +464,21 @@ export default function QuestionsLibraryPage() {
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">Question</label>
-              <p className="text-gray-900 whitespace-pre-wrap">{selectedQuestion.content}</p>
+              <label className="block text-sm font-medium text-foreground mb-2">Question</label>
+              <p className="text-foreground whitespace-pre-wrap">{selectedQuestion.content}</p>
             </div>
 
             {selectedQuestion.type === 'mcq' && selectedQuestion.options && (
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">Options</label>
+                <label className="block text-sm font-medium text-foreground mb-2">Options</label>
                 <div className="space-y-2">
                   {JSON.parse(selectedQuestion.options).map((opt: { id: string; text: string; points?: number }, idx: number) => (
                     <div
                       key={opt.id}
                       className={`p-2 rounded ${
                         opt.id === selectedQuestion.correctAnswer
-                          ? 'bg-green-50 border border-green-200'
-                          : 'bg-gray-50'
+                          ? 'bg-green-500/10 border border-green-500/20'
+                          : 'bg-muted'
                       }`}
                     >
                       <span className="font-medium">
@@ -486,7 +486,7 @@ export default function QuestionsLibraryPage() {
                       </span>{' '}
                       {opt.text}
                       {opt.points !== undefined && (
-                        <span className="ml-2 text-sm text-gray-600">({opt.points} pts)</span>
+                        <span className="ml-2 text-sm text-muted-foreground">({opt.points} pts)</span>
                       )}
                       {opt.id === selectedQuestion.correctAnswer && (
                         <span className="ml-2 text-green-600 text-sm">✓ Correct</span>
@@ -499,19 +499,19 @@ export default function QuestionsLibraryPage() {
 
             <div className="grid grid-cols-2 gap-4">
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">Points</label>
-                <p className="text-gray-900">{selectedQuestion.points}</p>
+                <label className="block text-sm font-medium text-foreground mb-2">Points</label>
+                <p className="text-foreground">{selectedQuestion.points}</p>
               </div>
               {selectedQuestion.timeLimitSeconds && (
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">Time Limit</label>
-                  <p className="text-gray-900">{selectedQuestion.timeLimitSeconds} seconds</p>
+                  <label className="block text-sm font-medium text-foreground mb-2">Time Limit</label>
+                  <p className="text-foreground">{selectedQuestion.timeLimitSeconds} seconds</p>
                 </div>
               )}
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">Tags</label>
+              <label className="block text-sm font-medium text-foreground mb-2">Tags</label>
               {selectedQuestion.tags.length > 0 ? (
                 <div className="flex flex-wrap gap-2">
                   {selectedQuestion.tags.map((tag, idx) => (
@@ -521,28 +521,28 @@ export default function QuestionsLibraryPage() {
                   ))}
                 </div>
               ) : (
-                <p className="text-gray-500">No tags</p>
+                <p className="text-muted-foreground">No tags</p>
               )}
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">Usage</label>
+              <label className="block text-sm font-medium text-foreground mb-2">Usage</label>
               {selectedQuestion._count.tests > 0 ? (
                 <button
                   onClick={() => {
                     setQuestionForTests(selectedQuestion);
                     setSelectedQuestion(null);
                   }}
-                  className="text-sm text-blue-600 hover:text-blue-800 hover:underline"
+                  className="text-sm text-primary hover:text-primary/80 hover:underline"
                 >
                   Used in {selectedQuestion._count.tests} test{selectedQuestion._count.tests !== 1 ? 's' : ''} - Click to view
                 </button>
               ) : (
-                <p className="text-gray-600 text-sm">Not used in any tests yet</p>
+                <p className="text-muted-foreground text-sm">Not used in any tests yet</p>
               )}
             </div>
 
-            <div className="flex justify-end gap-3 pt-4 border-t">
+            <div className="flex justify-end gap-3 pt-4 border-t border-border">
               <Button variant="secondary" onClick={() => setSelectedQuestion(null)}>
                 Close
               </Button>
@@ -563,29 +563,29 @@ export default function QuestionsLibraryPage() {
       >
         {questionForTests && (
           <div className="space-y-4">
-            <div className="bg-gray-50 p-4 rounded-lg">
-              <p className="text-sm text-gray-600 mb-1">Question:</p>
+            <div className="bg-muted p-4 rounded-lg">
+              <p className="text-sm text-muted-foreground mb-1">Question:</p>
               <p className="font-medium line-clamp-2">{questionForTests.content}</p>
             </div>
 
             <div>
-              <p className="text-sm text-gray-600 mb-3">
+              <p className="text-sm text-muted-foreground mb-3">
                 This question is used in {questionForTests._count.tests} test{questionForTests._count.tests !== 1 ? 's' : ''}:
               </p>
 
               {questionForTests.tests.length === 0 ? (
-                <p className="text-center text-gray-500 py-8">No tests use this question</p>
+                <p className="text-center text-muted-foreground py-8">No tests use this question</p>
               ) : (
                 <div className="space-y-2">
                   {questionForTests.tests.map((testQuestion) => (
                     <Link
                       key={testQuestion.test.id}
                       href={`/tests/${testQuestion.test.id}`}
-                      className="block p-4 border rounded-lg hover:border-blue-300 hover:bg-blue-50 transition-colors"
+                      className="block p-4 border border-border rounded-lg hover:border-primary/30 hover:bg-primary/5 transition-colors"
                     >
                       <div className="flex items-start justify-between">
                         <div className="flex-1 min-w-0">
-                          <h3 className="font-medium text-gray-900 hover:text-blue-600">
+                          <h3 className="font-medium text-foreground hover:text-primary">
                             {testQuestion.test.title}
                           </h3>
                           {testQuestion.test.tags.length > 0 && (
@@ -597,12 +597,12 @@ export default function QuestionsLibraryPage() {
                               ))}
                             </div>
                           )}
-                          <p className="text-xs text-gray-500 mt-2">
+                          <p className="text-xs text-muted-foreground mt-2">
                             Created {new Date(testQuestion.test.createdAt).toLocaleDateString()}
                           </p>
                         </div>
                         <svg
-                          className="w-5 h-5 text-gray-400 ml-3 flex-shrink-0"
+                          className="w-5 h-5 text-muted-foreground ml-3 flex-shrink-0"
                           fill="none"
                           stroke="currentColor"
                           viewBox="0 0 24 24"
@@ -621,7 +621,7 @@ export default function QuestionsLibraryPage() {
               )}
             </div>
 
-            <div className="flex justify-end pt-4 border-t">
+            <div className="flex justify-end pt-4 border-t border-border">
               <Button variant="secondary" onClick={() => setQuestionForTests(null)}>
                 Close
               </Button>

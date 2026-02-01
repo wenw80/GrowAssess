@@ -2,13 +2,13 @@
 
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
-import Button from '@/components/ui/Button';
-import Input from '@/components/ui/Input';
-import Select from '@/components/ui/Select';
-import Card from '@/components/ui/Card';
-import Badge from '@/components/ui/Badge';
+import { Button } from '@/components/ui/Button';
+import { Input } from '@/components/ui/Input';
+import Select from '@/components/ui/SelectSimple';
+import { Card } from '@/components/ui/Card';
+import { Badge } from '@/components/ui/Badge';
 import Modal from '@/components/ui/Modal';
-import Textarea from '@/components/ui/Textarea';
+import { Textarea } from '@/components/ui/Textarea';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/Table';
 import { formatDate } from '@/lib/utils';
 
@@ -150,7 +150,7 @@ export default function CandidatesPage() {
   if (loading) {
     return (
       <div className="flex items-center justify-center h-64">
-        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600" />
+        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary" />
       </div>
     );
   }
@@ -159,22 +159,22 @@ export default function CandidatesPage() {
     <div className="px-4 sm:px-0">
       <div className="flex justify-between items-center mb-6">
         <div>
-          <h1 className="text-2xl font-bold text-gray-900">Candidates</h1>
-          <p className="text-gray-500 mt-1">Manage applicants and track their assessments</p>
+          <h1 className="text-2xl font-bold text-foreground">Candidates</h1>
+          <p className="text-muted-foreground mt-1">Manage applicants and track their assessments</p>
         </div>
         <Button onClick={openCreateModal}>Add Candidate</Button>
       </div>
 
       {/* View Tabs */}
       <div className="mb-6">
-        <div className="border-b border-gray-200">
+        <div className="border-b border-border">
           <nav className="-mb-px flex space-x-8">
             <button
               onClick={() => setViewFilter('all')}
               className={`py-4 px-1 border-b-2 font-medium text-sm transition-colors ${
                 viewFilter === 'all'
-                  ? 'border-blue-500 text-blue-600'
-                  : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+                  ? 'border-primary text-primary'
+                  : 'border-transparent text-muted-foreground hover:text-foreground hover:border-border'
               }`}
             >
               All Candidates
@@ -183,8 +183,8 @@ export default function CandidatesPage() {
               onClick={() => setViewFilter('my')}
               className={`py-4 px-1 border-b-2 font-medium text-sm transition-colors ${
                 viewFilter === 'my'
-                  ? 'border-blue-500 text-blue-600'
-                  : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+                  ? 'border-primary text-primary'
+                  : 'border-transparent text-muted-foreground hover:text-foreground hover:border-border'
               }`}
             >
               My Candidates
@@ -213,7 +213,7 @@ export default function CandidatesPage() {
       {candidates.length === 0 ? (
         <Card className="text-center py-12">
           <svg
-            className="mx-auto h-12 w-12 text-gray-400"
+            className="mx-auto h-12 w-12 text-muted-foreground"
             fill="none"
             stroke="currentColor"
             viewBox="0 0 24 24"
@@ -225,8 +225,8 @@ export default function CandidatesPage() {
               d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0z"
             />
           </svg>
-          <h3 className="mt-4 text-lg font-medium text-gray-900">No candidates found</h3>
-          <p className="mt-2 text-gray-500">
+          <h3 className="mt-4 text-lg font-medium text-foreground">No candidates found</h3>
+          <p className="mt-2 text-muted-foreground">
             {search || statusFilter !== 'all'
               ? 'Try adjusting your filters.'
               : 'Get started by adding your first candidate.'}
@@ -259,11 +259,11 @@ export default function CandidatesPage() {
                   <TableCell>
                     <Link
                       href={`/candidates/${candidate.id}`}
-                      className="text-blue-600 hover:underline font-medium"
+                      className="text-primary hover:underline font-medium"
                     >
                       {candidate.name}
                     </Link>
-                    <p className="text-sm text-gray-500">{candidate.email}</p>
+                    <p className="text-sm text-muted-foreground">{candidate.email}</p>
                   </TableCell>
                   <TableCell>{candidate.position || '-'}</TableCell>
                   <TableCell>
@@ -292,18 +292,18 @@ export default function CandidatesPage() {
                           </div>
                         ))}
                         {candidate.assignments.length > 2 && (
-                          <span className="text-xs text-gray-500">
+                          <span className="text-xs text-muted-foreground">
                             +{candidate.assignments.length - 2} more
                           </span>
                         )}
                       </div>
                     ) : (
-                      <span className="text-gray-400">None</span>
+                      <span className="text-muted-foreground">None</span>
                     )}
                   </TableCell>
                   {viewFilter === 'all' && (
                     <TableCell>
-                      {candidate.user ? candidate.user.name : <span className="text-gray-400">-</span>}
+                      {candidate.user ? candidate.user.name : <span className="text-muted-foreground">-</span>}
                     </TableCell>
                   )}
                   <TableCell>{formatDate(candidate.createdAt)}</TableCell>
@@ -316,7 +316,7 @@ export default function CandidatesPage() {
                         Edit
                       </Button>
                       <Button
-                        variant="danger"
+                        variant="destructive"
                         size="sm"
                         onClick={() => handleDelete(candidate.id)}
                       >
@@ -382,8 +382,8 @@ export default function CandidatesPage() {
             <Button type="button" variant="secondary" onClick={() => setShowModal(false)}>
               Cancel
             </Button>
-            <Button type="submit" loading={saving}>
-              {editingCandidate ? 'Save Changes' : 'Add Candidate'}
+            <Button type="submit" disabled={saving}>
+              {saving ? 'Saving...' : editingCandidate ? 'Save Changes' : 'Add Candidate'}
             </Button>
           </div>
         </form>

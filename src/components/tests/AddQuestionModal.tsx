@@ -2,11 +2,11 @@
 
 import { useState, useEffect } from 'react';
 import Modal from '@/components/ui/Modal';
-import Button from '@/components/ui/Button';
-import Input from '@/components/ui/Input';
-import Textarea from '@/components/ui/Textarea';
-import Select from '@/components/ui/Select';
-import Badge from '@/components/ui/Badge';
+import { Button } from '@/components/ui/Button';
+import { Input } from '@/components/ui/Input';
+import { Textarea } from '@/components/ui/Textarea';
+import Select from '@/components/ui/SelectSimple';
+import { Badge } from '@/components/ui/Badge';
 import { QuestionFormData, MCQOption } from '@/types';
 
 interface Test {
@@ -277,14 +277,14 @@ export default function AddQuestionModal({
     >
       <div className="space-y-4">
         {/* Tabs */}
-        <div className="border-b border-gray-200">
+        <div className="border-b border-border">
           <nav className="-mb-px flex space-x-8">
             <button
               onClick={() => setActiveTab('new')}
               className={`py-4 px-1 border-b-2 font-medium text-sm transition-colors ${
                 activeTab === 'new'
-                  ? 'border-blue-500 text-blue-600'
-                  : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+                  ? 'border-primary text-primary'
+                  : 'border-transparent text-muted-foreground hover:text-foreground hover:border-border'
               }`}
             >
               Create New
@@ -293,8 +293,8 @@ export default function AddQuestionModal({
               onClick={() => setActiveTab('library')}
               className={`py-4 px-1 border-b-2 font-medium text-sm transition-colors ${
                 activeTab === 'library'
-                  ? 'border-blue-500 text-blue-600'
-                  : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+                  ? 'border-primary text-primary'
+                  : 'border-transparent text-muted-foreground hover:text-foreground hover:border-border'
               }`}
             >
               From Library
@@ -303,8 +303,8 @@ export default function AddQuestionModal({
               onClick={() => setActiveTab('import')}
               className={`py-4 px-1 border-b-2 font-medium text-sm transition-colors ${
                 activeTab === 'import'
-                  ? 'border-blue-500 text-blue-600'
-                  : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+                  ? 'border-primary text-primary'
+                  : 'border-transparent text-muted-foreground hover:text-foreground hover:border-border'
               }`}
             >
               Import JSON
@@ -315,7 +315,7 @@ export default function AddQuestionModal({
         {/* Tab Content */}
         {activeTab === 'new' && (
           <div className="space-y-4 py-4">
-            <p className="text-sm text-gray-600">
+            <p className="text-sm text-muted-foreground">
               Select the type of question you want to create:
             </p>
             <Select
@@ -329,7 +329,7 @@ export default function AddQuestionModal({
               value={questionType}
               onChange={(e) => setQuestionType(e.target.value as 'mcq' | 'freetext' | 'timed')}
             />
-            <div className="flex justify-end gap-3 pt-4 border-t">
+            <div className="flex justify-end gap-3 pt-4 border-t border-border">
               <Button type="button" variant="secondary" onClick={onClose}>
                 Cancel
               </Button>
@@ -362,20 +362,20 @@ export default function AddQuestionModal({
 
             {loadingQuestions ? (
               <div className="flex justify-center py-8">
-                <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600" />
+                <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary" />
               </div>
             ) : (
               <div className="max-h-96 overflow-y-auto space-y-2">
                 {filteredQuestions.length === 0 ? (
-                  <p className="text-center text-gray-500 py-8">No questions found</p>
+                  <p className="text-center text-muted-foreground py-8">No questions found</p>
                 ) : (
                   filteredQuestions.map((q) => (
                     <div
                       key={q.id}
                       className={`p-3 border rounded-lg cursor-pointer transition-colors ${
                         selectedQuestionIds.has(q.id)
-                          ? 'border-blue-500 bg-blue-50'
-                          : 'border-gray-200 hover:border-gray-300'
+                          ? 'border-primary bg-primary/10'
+                          : 'border-border hover:border-border/80'
                       }`}
                       onClick={() => toggleQuestionSelection(q.id)}
                     >
@@ -389,10 +389,10 @@ export default function AddQuestionModal({
                         <div className="flex-1 min-w-0">
                           <div className="flex items-center gap-2 mb-1">
                             <Badge variant="default">{q.type}</Badge>
-                            <span className="text-sm text-gray-600">{q.points} pts</span>
-                            <span className="text-xs text-gray-500">from: {q.test.title}</span>
+                            <span className="text-sm text-muted-foreground">{q.points} pts</span>
+                            <span className="text-xs text-muted-foreground">from: {q.test.title}</span>
                           </div>
-                          <p className="text-sm text-gray-900 line-clamp-2">{q.content}</p>
+                          <p className="text-sm text-foreground line-clamp-2">{q.content}</p>
                         </div>
                       </div>
                     </div>
@@ -401,8 +401,8 @@ export default function AddQuestionModal({
               </div>
             )}
 
-            <div className="flex justify-between items-center pt-4 border-t">
-              <span className="text-sm text-gray-600">
+            <div className="flex justify-between items-center pt-4 border-t border-border">
+              <span className="text-sm text-muted-foreground">
                 {selectedQuestionIds.size} question{selectedQuestionIds.size !== 1 ? 's' : ''} selected
               </span>
               <div className="flex gap-3">
@@ -423,12 +423,12 @@ export default function AddQuestionModal({
 
         {activeTab === 'import' && (
           <div className="space-y-4 py-4">
-            <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
-              <h4 className="font-medium text-blue-900 mb-2">JSON Format</h4>
-              <p className="text-sm text-blue-700 mb-2">
+            <div className="bg-primary/10 border border-primary/20 rounded-lg p-4">
+              <h4 className="font-medium text-foreground mb-2">JSON Format</h4>
+              <p className="text-sm text-muted-foreground mb-2">
                 Paste an array of question objects in the same format as test import:
               </p>
-              <pre className="text-xs bg-blue-100 p-2 rounded overflow-x-auto">
+              <pre className="text-xs bg-primary/5 p-2 rounded overflow-x-auto">
 {`[
   {
     "type": "mcq",
@@ -459,12 +459,12 @@ export default function AddQuestionModal({
             />
 
             {importError && (
-              <div className="p-3 bg-red-50 border border-red-200 rounded-lg text-red-700 text-sm">
+              <div className="p-3 bg-destructive/10 border border-destructive/20 rounded-lg text-destructive text-sm">
                 {importError}
               </div>
             )}
 
-            <div className="flex justify-end gap-3 pt-4 border-t">
+            <div className="flex justify-end gap-3 pt-4 border-t border-border">
               <Button type="button" variant="secondary" onClick={onClose}>
                 Cancel
               </Button>

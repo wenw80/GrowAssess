@@ -1,9 +1,9 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import Card from '@/components/ui/Card';
-import Badge from '@/components/ui/Badge';
-import Button from '@/components/ui/Button';
+import { Card } from '@/components/ui/Card';
+import { Badge } from '@/components/ui/Badge';
+import { Button } from '@/components/ui/Button';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/Table';
 import { formatDate } from '@/lib/utils';
 
@@ -132,7 +132,7 @@ export default function TestAnalytics({ testId }: TestAnalyticsProps) {
   if (loading) {
     return (
       <div className="flex items-center justify-center h-64">
-        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600" />
+        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary" />
       </div>
     );
   }
@@ -140,7 +140,7 @@ export default function TestAnalytics({ testId }: TestAnalyticsProps) {
   if (!data) {
     return (
       <Card className="text-center py-12">
-        <p className="text-gray-500">Failed to load test analytics</p>
+        <p className="text-muted-foreground">Failed to load test analytics</p>
       </Card>
     );
   }
@@ -149,7 +149,7 @@ export default function TestAnalytics({ testId }: TestAnalyticsProps) {
     return (
       <Card className="text-center py-12">
         <svg
-          className="mx-auto h-12 w-12 text-gray-400"
+          className="mx-auto h-12 w-12 text-muted-foreground"
           fill="none"
           stroke="currentColor"
           viewBox="0 0 24 24"
@@ -161,8 +161,8 @@ export default function TestAnalytics({ testId }: TestAnalyticsProps) {
             d="M9 17v-2m3 2v-4m3 4v-6m2 10H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"
           />
         </svg>
-        <h3 className="mt-4 text-lg font-medium text-gray-900">No completed assessments yet</h3>
-        <p className="mt-2 text-gray-500">
+        <h3 className="mt-4 text-lg font-medium text-foreground">No completed assessments yet</h3>
+        <p className="mt-2 text-muted-foreground">
           This test hasn't been completed by any candidates yet.
         </p>
       </Card>
@@ -173,10 +173,10 @@ export default function TestAnalytics({ testId }: TestAnalyticsProps) {
     <div className="space-y-6">
       {/* Test Header */}
       <Card>
-        <div className="border-b border-gray-200 pb-4 mb-4">
-          <h2 className="text-2xl font-bold text-gray-900">{data.test.title}</h2>
+        <div className="border-b border-border pb-4 mb-4">
+          <h2 className="text-2xl font-bold text-foreground">{data.test.title}</h2>
           {data.test.description && (
-            <p className="text-gray-600 mt-2">{data.test.description}</p>
+            <p className="text-muted-foreground mt-2">{data.test.description}</p>
           )}
           <div className="flex items-center gap-4 mt-3">
             {data.test.tags && data.test.tags.length > 0 && (
@@ -189,7 +189,7 @@ export default function TestAnalytics({ testId }: TestAnalyticsProps) {
               </div>
             )}
             {data.test.durationMinutes && (
-              <span className="text-sm text-gray-500">
+              <span className="text-sm text-muted-foreground">
                 Duration: {data.test.durationMinutes} min
               </span>
             )}
@@ -198,32 +198,32 @@ export default function TestAnalytics({ testId }: TestAnalyticsProps) {
 
         {/* Overall Statistics */}
         <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
-          <div className="p-4 bg-blue-50 rounded-lg">
-            <p className="text-sm text-blue-600 font-medium">Total Candidates</p>
-            <p className="text-2xl font-bold text-blue-900">{data.totalCandidates}</p>
+          <div className="p-4 bg-primary/10 rounded-lg">
+            <p className="text-sm text-primary font-medium">Total Candidates</p>
+            <p className="text-2xl font-bold text-foreground">{data.totalCandidates}</p>
           </div>
-          <div className="p-4 bg-green-50 rounded-lg">
-            <p className="text-sm text-green-600 font-medium">Average Score</p>
-            <p className="text-2xl font-bold text-green-900">{data.overallStats.averageScore}%</p>
+          <div className="p-4 bg-green-500/10 rounded-lg">
+            <p className="text-sm text-green-700 font-medium">Average Score</p>
+            <p className="text-2xl font-bold text-foreground">{data.overallStats.averageScore}%</p>
           </div>
-          <div className="p-4 bg-purple-50 rounded-lg">
-            <p className="text-sm text-purple-600 font-medium">Highest Score</p>
-            <p className="text-2xl font-bold text-purple-900">{data.overallStats.highestScore}%</p>
+          <div className="p-4 bg-purple-500/10 rounded-lg">
+            <p className="text-sm text-purple-700 font-medium">Highest Score</p>
+            <p className="text-2xl font-bold text-foreground">{data.overallStats.highestScore}%</p>
           </div>
-          <div className="p-4 bg-orange-50 rounded-lg">
-            <p className="text-sm text-orange-600 font-medium">Lowest Score</p>
-            <p className="text-2xl font-bold text-orange-900">{data.overallStats.lowestScore}%</p>
+          <div className="p-4 bg-amber-500/10 rounded-lg">
+            <p className="text-sm text-amber-700 font-medium">Lowest Score</p>
+            <p className="text-2xl font-bold text-foreground">{data.overallStats.lowestScore}%</p>
           </div>
-          <div className="p-4 bg-gray-50 rounded-lg">
-            <p className="text-sm text-gray-600 font-medium">Completion Rate</p>
-            <p className="text-2xl font-bold text-gray-900">{data.overallStats.completionRate}%</p>
+          <div className="p-4 bg-muted rounded-lg">
+            <p className="text-sm text-muted-foreground font-medium">Completion Rate</p>
+            <p className="text-2xl font-bold text-foreground">{data.overallStats.completionRate}%</p>
           </div>
         </div>
       </Card>
 
       {/* Candidate Rankings */}
       <Card>
-        <h3 className="text-lg font-semibold text-gray-900 mb-4">Candidate Performance</h3>
+        <h3 className="text-lg font-semibold text-foreground mb-4">Candidate Performance</h3>
         <div className="overflow-x-auto">
           <Table>
             <TableHeader>
@@ -249,8 +249,8 @@ export default function TestAnalytics({ testId }: TestAnalyticsProps) {
                     </div>
                   </TableCell>
                   <TableCell className="font-medium">{result.candidate.name}</TableCell>
-                  <TableCell className="text-gray-600">{result.candidate.email}</TableCell>
-                  <TableCell className="text-gray-600">{result.candidate.position || '-'}</TableCell>
+                  <TableCell className="text-muted-foreground">{result.candidate.email}</TableCell>
+                  <TableCell className="text-muted-foreground">{result.candidate.position || '-'}</TableCell>
                   <TableCell>
                     <span className="font-medium">
                       {result.score.earned}/{result.score.total}
@@ -269,7 +269,7 @@ export default function TestAnalytics({ testId }: TestAnalyticsProps) {
                       {result.score.percentage}%
                     </Badge>
                   </TableCell>
-                  <TableCell className="text-gray-600">
+                  <TableCell className="text-muted-foreground">
                     {result.completedAt ? formatDate(result.completedAt) : '-'}
                   </TableCell>
                 </TableRow>
@@ -281,7 +281,7 @@ export default function TestAnalytics({ testId }: TestAnalyticsProps) {
 
       {/* Question-by-Question Analysis */}
       <div className="space-y-4">
-        <h3 className="text-lg font-semibold text-gray-900">Question Analysis</h3>
+        <h3 className="text-lg font-semibold text-foreground">Question Analysis</h3>
         {data.questionAnalytics.map((qa, index) => {
           const isExpanded = expandedQuestions.has(qa.question.id);
 
@@ -289,19 +289,19 @@ export default function TestAnalytics({ testId }: TestAnalyticsProps) {
             <Card key={qa.question.id} className="overflow-hidden">
               {/* Question Header */}
               <div
-                className="cursor-pointer hover:bg-gray-50 transition-colors"
+                className="cursor-pointer hover:bg-muted/50 transition-colors"
                 onClick={() => toggleQuestion(qa.question.id)}
               >
                 <div className="flex items-start justify-between">
                   <div className="flex-1">
                     <div className="flex items-center gap-3 mb-2">
-                      <span className="text-sm font-medium text-gray-500">
+                      <span className="text-sm font-medium text-muted-foreground">
                         Question {index + 1}
                       </span>
                       <Badge variant="default">{qa.question.type}</Badge>
-                      <span className="text-sm text-gray-500">{qa.question.points} pts</span>
+                      <span className="text-sm text-muted-foreground">{qa.question.points} pts</span>
                     </div>
-                    <p className="text-gray-900 font-medium">{qa.question.content}</p>
+                    <p className="text-foreground font-medium">{qa.question.content}</p>
                   </div>
                   <Button variant="ghost" size="sm">
                     {isExpanded ? '▼' : '▶'}
@@ -310,39 +310,39 @@ export default function TestAnalytics({ testId }: TestAnalyticsProps) {
 
                 {/* Quick Stats */}
                 <div className="grid grid-cols-2 md:grid-cols-6 gap-3 mt-4">
-                  <div className="p-3 bg-blue-50 rounded text-center">
-                    <p className="text-xs text-blue-600 font-medium">Avg Score</p>
-                    <p className="text-lg font-bold text-blue-900">{qa.stats.averageScore}</p>
-                    <p className="text-xs text-blue-600">/ {qa.question.points}</p>
+                  <div className="p-3 bg-primary/10 rounded text-center">
+                    <p className="text-xs text-primary font-medium">Avg Score</p>
+                    <p className="text-lg font-bold text-foreground">{qa.stats.averageScore}</p>
+                    <p className="text-xs text-primary">/ {qa.question.points}</p>
                   </div>
-                  <div className="p-3 bg-green-50 rounded text-center">
-                    <p className="text-xs text-green-600 font-medium">Avg %</p>
-                    <p className="text-lg font-bold text-green-900">{qa.stats.averagePercentage}%</p>
+                  <div className="p-3 bg-green-500/10 rounded text-center">
+                    <p className="text-xs text-green-700 font-medium">Avg %</p>
+                    <p className="text-lg font-bold text-foreground">{qa.stats.averagePercentage}%</p>
                   </div>
-                  <div className="p-3 bg-purple-50 rounded text-center">
-                    <p className="text-xs text-purple-600 font-medium">Max</p>
-                    <p className="text-lg font-bold text-purple-900">{qa.stats.maxScore}</p>
+                  <div className="p-3 bg-purple-500/10 rounded text-center">
+                    <p className="text-xs text-purple-700 font-medium">Max</p>
+                    <p className="text-lg font-bold text-foreground">{qa.stats.maxScore}</p>
                   </div>
-                  <div className="p-3 bg-orange-50 rounded text-center">
-                    <p className="text-xs text-orange-600 font-medium">Min</p>
-                    <p className="text-lg font-bold text-orange-900">{qa.stats.minScore}</p>
+                  <div className="p-3 bg-amber-500/10 rounded text-center">
+                    <p className="text-xs text-amber-700 font-medium">Min</p>
+                    <p className="text-lg font-bold text-foreground">{qa.stats.minScore}</p>
                   </div>
                   {qa.question.type === 'mcq' && (
                     <>
-                      <div className="p-3 bg-green-100 rounded text-center">
+                      <div className="p-3 bg-green-500/20 rounded text-center">
                         <p className="text-xs text-green-700 font-medium">Correct</p>
-                        <p className="text-lg font-bold text-green-800">{qa.stats.correctCount}</p>
+                        <p className="text-lg font-bold text-foreground">{qa.stats.correctCount}</p>
                       </div>
-                      <div className="p-3 bg-red-100 rounded text-center">
-                        <p className="text-xs text-red-700 font-medium">Incorrect</p>
-                        <p className="text-lg font-bold text-red-800">{qa.stats.incorrectCount}</p>
+                      <div className="p-3 bg-destructive/10 rounded text-center">
+                        <p className="text-xs text-destructive font-medium">Incorrect</p>
+                        <p className="text-lg font-bold text-foreground">{qa.stats.incorrectCount}</p>
                       </div>
                     </>
                   )}
                   {qa.stats.averageTimeSeconds > 0 && (
-                    <div className="p-3 bg-gray-50 rounded text-center">
-                      <p className="text-xs text-gray-600 font-medium">Avg Time</p>
-                      <p className="text-lg font-bold text-gray-900">{qa.stats.averageTimeSeconds}s</p>
+                    <div className="p-3 bg-muted rounded text-center">
+                      <p className="text-xs text-muted-foreground font-medium">Avg Time</p>
+                      <p className="text-lg font-bold text-foreground">{qa.stats.averageTimeSeconds}s</p>
                     </div>
                   )}
                 </div>
@@ -350,17 +350,17 @@ export default function TestAnalytics({ testId }: TestAnalyticsProps) {
 
               {/* Expanded Details */}
               {isExpanded && (
-                <div className="border-t border-gray-200 mt-4 pt-4">
+                <div className="border-t border-border mt-4 pt-4">
                   {qa.question.type === 'mcq' && qa.question.correctAnswer && (
-                    <div className="mb-4 p-3 bg-green-50 border border-green-200 rounded">
-                      <p className="text-sm font-medium text-green-900 mb-1">Correct Answer:</p>
-                      <p className="text-sm text-green-800">
+                    <div className="mb-4 p-3 bg-green-500/10 border border-green-500/20 rounded">
+                      <p className="text-sm font-medium text-green-700 mb-1">Correct Answer:</p>
+                      <p className="text-sm text-foreground">
                         {getOptionText(qa.question.options, qa.question.correctAnswer)}
                       </p>
                     </div>
                   )}
 
-                  <h4 className="text-sm font-semibold text-gray-900 mb-3">
+                  <h4 className="text-sm font-semibold text-foreground mb-3">
                     Individual Responses ({qa.candidateResponses.length} candidates)
                   </h4>
                   <div className="overflow-x-auto">
@@ -393,7 +393,7 @@ export default function TestAnalytics({ testId }: TestAnalyticsProps) {
                                   </div>
                                 )
                               ) : (
-                                <span className="text-gray-400">No answer</span>
+                                <span className="text-muted-foreground">No answer</span>
                               )}
                             </TableCell>
                             <TableCell>
@@ -418,7 +418,7 @@ export default function TestAnalytics({ testId }: TestAnalyticsProps) {
                             {qa.candidateResponses.some((r) => r.graderNotes) && (
                               <TableCell className="max-w-xs">
                                 {response.graderNotes ? (
-                                  <div className="text-xs text-gray-600 truncate" title={response.graderNotes}>
+                                  <div className="text-xs text-muted-foreground truncate" title={response.graderNotes}>
                                     {response.graderNotes}
                                   </div>
                                 ) : (

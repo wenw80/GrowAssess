@@ -2,13 +2,13 @@
 
 import { useEffect, useState } from 'react';
 import { useSearchParams } from 'next/navigation';
-import Button from '@/components/ui/Button';
-import Input from '@/components/ui/Input';
-import Select from '@/components/ui/Select';
-import Card from '@/components/ui/Card';
-import Badge from '@/components/ui/Badge';
+import { Button } from '@/components/ui/Button';
+import { Input } from '@/components/ui/Input';
+import Select from '@/components/ui/SelectSimple';
+import { Card } from '@/components/ui/Card';
+import { Badge } from '@/components/ui/Badge';
 import Modal from '@/components/ui/Modal';
-import Textarea from '@/components/ui/Textarea';
+import { Textarea } from '@/components/ui/Textarea';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/Table';
 import { formatDate, formatDateTime } from '@/lib/utils';
 import Link from 'next/link';
@@ -341,7 +341,7 @@ export default function ReportsPage() {
   if (loading && assignments.length === 0) {
     return (
       <div className="flex items-center justify-center h-64">
-        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600" />
+        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary" />
       </div>
     );
   }
@@ -350,8 +350,8 @@ export default function ReportsPage() {
     <div className="px-4 sm:px-0">
       <div className="flex justify-between items-center mb-6">
         <div>
-          <h1 className="text-2xl font-bold text-gray-900">Reports</h1>
-          <p className="text-gray-500 mt-1">View and analyze assessment results</p>
+          <h1 className="text-2xl font-bold text-foreground">Reports</h1>
+          <p className="text-muted-foreground mt-1">View and analyze assessment results</p>
         </div>
         {viewMode === 'candidate' && (
           <Button onClick={handleExport} variant="secondary">
@@ -362,14 +362,14 @@ export default function ReportsPage() {
 
       {/* View Mode Tabs */}
       <div className="mb-6">
-        <div className="border-b border-gray-200">
+        <div className="border-b border-border">
           <nav className="-mb-px flex space-x-8">
             <button
               onClick={() => setViewMode('candidate')}
               className={`${
                 viewMode === 'candidate'
-                  ? 'border-blue-500 text-blue-600'
-                  : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+                  ? 'border-primary text-primary'
+                  : 'border-transparent text-muted-foreground hover:text-foreground hover:border-border'
               } whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm transition-colors`}
             >
               By Candidate
@@ -378,8 +378,8 @@ export default function ReportsPage() {
               onClick={() => setViewMode('test')}
               className={`${
                 viewMode === 'test'
-                  ? 'border-blue-500 text-blue-600'
-                  : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+                  ? 'border-primary text-primary'
+                  : 'border-transparent text-muted-foreground hover:text-foreground hover:border-border'
               } whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm transition-colors`}
             >
               By Test
@@ -442,7 +442,7 @@ export default function ReportsPage() {
           {assignments.length === 0 ? (
             <Card className="text-center py-12">
               <svg
-                className="mx-auto h-12 w-12 text-gray-400"
+                className="mx-auto h-12 w-12 text-muted-foreground"
                 fill="none"
                 stroke="currentColor"
                 viewBox="0 0 24 24"
@@ -454,8 +454,8 @@ export default function ReportsPage() {
                   d="M9 17v-2m3 2v-4m3 4v-6m2 10H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"
                 />
               </svg>
-              <h3 className="mt-4 text-lg font-medium text-gray-900">No results found</h3>
-              <p className="mt-2 text-gray-500">Try adjusting your filters or assign more tests.</p>
+              <h3 className="mt-4 text-lg font-medium text-foreground">No results found</h3>
+              <p className="mt-2 text-muted-foreground">Try adjusting your filters or assign more tests.</p>
             </Card>
           ) : (
             <Card className="p-0 overflow-hidden">
@@ -476,11 +476,11 @@ export default function ReportsPage() {
                       <TableCell>
                         <Link
                           href={`/candidates/${assignment.candidate.id}`}
-                          className="text-blue-600 hover:underline font-medium"
+                          className="text-primary hover:underline font-medium"
                         >
                           {assignment.candidate.name}
                         </Link>
-                        <p className="text-sm text-gray-500">{assignment.candidate.email}</p>
+                        <p className="text-sm text-muted-foreground">{assignment.candidate.email}</p>
                       </TableCell>
                       <TableCell>{assignment.test.title}</TableCell>
                       <TableCell>
@@ -549,7 +549,7 @@ export default function ReportsPage() {
           ) : (
             <Card className="text-center py-12">
               <svg
-                className="mx-auto h-12 w-12 text-gray-400"
+                className="mx-auto h-12 w-12 text-muted-foreground"
                 fill="none"
                 stroke="currentColor"
                 viewBox="0 0 24 24"
@@ -561,8 +561,8 @@ export default function ReportsPage() {
                   d="M9 17v-2m3 2v-4m3 4v-6m2 10H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"
                 />
               </svg>
-              <h3 className="mt-4 text-lg font-medium text-gray-900">Select a test to view analytics</h3>
-              <p className="mt-2 text-gray-500">
+              <h3 className="mt-4 text-lg font-medium text-foreground">Select a test to view analytics</h3>
+              <p className="mt-2 text-muted-foreground">
                 Choose a test from the dropdown above to see detailed performance analytics.
               </p>
             </Card>
@@ -583,17 +583,17 @@ export default function ReportsPage() {
         {selectedAssignment && (
           <div className="space-y-6 max-h-[70vh] overflow-y-auto">
             {/* Summary */}
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-4 p-4 bg-gray-50 rounded-lg">
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-4 p-4 bg-muted rounded-lg">
               <div>
-                <p className="text-sm text-gray-500">Candidate</p>
+                <p className="text-sm text-muted-foreground">Candidate</p>
                 <p className="font-medium">{selectedAssignment.candidate.name}</p>
               </div>
               <div>
-                <p className="text-sm text-gray-500">Test</p>
+                <p className="text-sm text-muted-foreground">Test</p>
                 <p className="font-medium">{selectedAssignment.test.title}</p>
               </div>
               <div>
-                <p className="text-sm text-gray-500">Status</p>
+                <p className="text-sm text-muted-foreground">Status</p>
                 <Badge
                   variant={
                     selectedAssignment.status === 'completed'
@@ -607,7 +607,7 @@ export default function ReportsPage() {
                 </Badge>
               </div>
               <div>
-                <p className="text-sm text-gray-500">Score</p>
+                <p className="text-sm text-muted-foreground">Score</p>
                 <p className="font-medium">
                   {selectedAssignment.score.earned}/{selectedAssignment.score.total} (
                   {selectedAssignment.score.percentage}%)
@@ -616,11 +616,11 @@ export default function ReportsPage() {
             </div>
 
             {/* Bulk AI Grading */}
-            <div className="border-t border-gray-200 pt-4">
+            <div className="border-t border-border pt-4">
               <div className="flex items-center justify-between mb-3">
                 <div>
-                  <h3 className="font-semibold text-gray-900">AI Grading Assistant</h3>
-                  <p className="text-sm text-gray-500 mt-1">
+                  <h3 className="font-semibold text-foreground">AI Grading Assistant</h3>
+                  <p className="text-sm text-muted-foreground mt-1">
                     Generate and accept AI grades for all freetext/timed questions at once
                   </p>
                 </div>
@@ -628,17 +628,16 @@ export default function ReportsPage() {
                   <Button
                     variant="secondary"
                     onClick={generateBulkAiGrades}
-                    loading={generatingBulkGrades}
-                    disabled={bulkAiGrades.length > 0}
+                    disabled={generatingBulkGrades || bulkAiGrades.length > 0}
                   >
-                    {bulkAiGrades.length > 0 ? '✓ Grades Generated' : '🤖 Generate All AI Grades'}
+                    {generatingBulkGrades ? 'Generating...' : bulkAiGrades.length > 0 ? '✓ Grades Generated' : '🤖 Generate All AI Grades'}
                   </Button>
                   {bulkAiGrades.length > 0 && (
                     <Button
                       onClick={acceptAllAiGrades}
-                      loading={savingBulkGrades}
+                      disabled={savingBulkGrades}
                     >
-                      Accept All ({bulkAiGrades.filter((g) => g.success).length})
+                      {savingBulkGrades ? 'Saving...' : `Accept All (${bulkAiGrades.filter((g) => g.success).length})`}
                     </Button>
                   )}
                 </div>
@@ -652,14 +651,14 @@ export default function ReportsPage() {
                       key={result.responseId}
                       className={`p-3 rounded-lg border ${
                         result.success
-                          ? 'bg-green-50 border-green-200'
-                          : 'bg-red-50 border-red-200'
+                          ? 'bg-green-500/10 border-green-500/20'
+                          : 'bg-destructive/10 border-destructive/20'
                       }`}
                     >
                       {result.success ? (
                         <div className="flex items-start justify-between">
                           <div className="flex-1">
-                            <p className="text-sm font-medium text-green-900">
+                            <p className="text-sm font-medium text-green-700">
                               Question: {result.questionContent}...
                             </p>
                             <div className="mt-2 grid grid-cols-1 md:grid-cols-3 gap-3 text-xs">
@@ -684,10 +683,10 @@ export default function ReportsPage() {
                         </div>
                       ) : (
                         <div>
-                          <p className="text-sm font-medium text-red-900">
+                          <p className="text-sm font-medium text-destructive">
                             Question: {result.questionContent}...
                           </p>
-                          <p className="text-xs text-red-700 mt-1">Error: {result.error}</p>
+                          <p className="text-xs text-destructive mt-1">Error: {result.error}</p>
                         </div>
                       )}
                     </div>
@@ -705,32 +704,32 @@ export default function ReportsPage() {
                 );
 
                 return (
-                  <Card key={question.id} className="bg-gray-50">
+                  <Card key={question.id} className="bg-muted">
                     <div className="flex items-start justify-between mb-2">
-                      <span className="text-sm font-medium text-gray-500">
+                      <span className="text-sm font-medium text-muted-foreground">
                         Question {index + 1} ({question.type})
                       </span>
-                      <span className="text-sm text-gray-500">{question.points} pts</span>
+                      <span className="text-sm text-muted-foreground">{question.points} pts</span>
                     </div>
 
-                    <p className="text-gray-900 mb-4 whitespace-pre-wrap">{question.content}</p>
+                    <p className="text-foreground mb-4 whitespace-pre-wrap">{question.content}</p>
 
-                    <div className="border-t border-gray-200 pt-4">
+                    <div className="border-t border-border pt-4">
                       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                         <div>
-                          <p className="text-sm text-gray-500 mb-1">Answer</p>
-                          <p className="text-gray-900">
+                          <p className="text-sm text-muted-foreground mb-1">Answer</p>
+                          <p className="text-foreground">
                             {response?.answer
                               ? question.type === 'mcq'
                                 ? getOptionText(question.options, response.answer)
                                 : response.answer
-                              : <span className="text-gray-400">No answer</span>}
+                              : <span className="text-muted-foreground">No answer</span>}
                           </p>
                         </div>
 
                         {question.type === 'mcq' && question.correctAnswer && (
                           <div>
-                            <p className="text-sm text-gray-500 mb-1">Correct Answer</p>
+                            <p className="text-sm text-muted-foreground mb-1">Correct Answer</p>
                             <p className="text-green-600">
                               {getOptionText(question.options, question.correctAnswer)}
                             </p>
@@ -739,7 +738,7 @@ export default function ReportsPage() {
                       </div>
 
                       {response && (
-                        <div className="flex items-center justify-between mt-4 pt-4 border-t border-gray-200">
+                        <div className="flex items-center justify-between mt-4 pt-4 border-t border-border">
                           <div className="flex items-center gap-4">
                             {response.isCorrect !== null && (
                               <Badge variant={response.isCorrect ? 'success' : 'danger'}>
@@ -752,7 +751,7 @@ export default function ReportsPage() {
                               </span>
                             )}
                             {response.timeTakenSeconds !== null && (
-                              <span className="text-sm text-gray-500">
+                              <span className="text-sm text-muted-foreground">
                                 Time: {response.timeTakenSeconds}s
                               </span>
                             )}
@@ -771,7 +770,7 @@ export default function ReportsPage() {
                       )}
 
                       {response?.graderNotes && (
-                        <div className="mt-3 p-3 bg-yellow-50 rounded text-sm">
+                        <div className="mt-3 p-3 bg-amber-500/10 rounded text-sm">
                           <span className="font-medium">Grader Notes:</span> {response.graderNotes}
                         </div>
                       )}
@@ -799,16 +798,16 @@ export default function ReportsPage() {
           <div className="space-y-4">
             {/* Question and Answer Context */}
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div className="p-4 bg-gray-50 rounded-lg">
-                <p className="text-sm font-medium text-gray-700 mb-2">Question</p>
-                <p className="text-gray-900 whitespace-pre-wrap text-sm">
+              <div className="p-4 bg-muted rounded-lg">
+                <p className="text-sm font-medium text-foreground mb-2">Question</p>
+                <p className="text-foreground whitespace-pre-wrap text-sm">
                   {gradingQuestion.content}
                 </p>
               </div>
 
-              <div className="p-4 bg-blue-50 rounded-lg">
-                <p className="text-sm font-medium text-gray-700 mb-2">Candidate Answer</p>
-                <p className="text-gray-900 whitespace-pre-wrap text-sm">
+              <div className="p-4 bg-primary/10 rounded-lg">
+                <p className="text-sm font-medium text-foreground mb-2">Candidate Answer</p>
+                <p className="text-foreground whitespace-pre-wrap text-sm">
                   {gradingResponse.answer || 'No answer provided'}
                 </p>
               </div>
@@ -819,19 +818,18 @@ export default function ReportsPage() {
               <Button
                 variant="secondary"
                 onClick={generateAiGrade}
-                loading={generatingAiGrade}
-                disabled={!!aiGrade}
+                disabled={generatingAiGrade || !!aiGrade}
               >
-                {aiGrade ? '✓ AI Grade Generated' : '🤖 Generate AI Grade'}
+                {generatingAiGrade ? 'Generating...' : aiGrade ? '✓ AI Grade Generated' : '🤖 Generate AI Grade'}
               </Button>
             </div>
 
             {/* Side-by-Side Layout: AI Suggestions + Human Grading */}
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 pt-4 border-t">
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 pt-4 border-t border-border">
               {/* AI Suggestions Panel */}
               <div className="space-y-4">
                 <div className="flex items-center justify-between">
-                  <h3 className="text-lg font-semibold text-gray-900">AI Suggestions</h3>
+                  <h3 className="text-lg font-semibold text-foreground">AI Suggestions</h3>
                   {aiGrade && (
                     <Button
                       variant="ghost"
@@ -845,39 +843,39 @@ export default function ReportsPage() {
 
                 {aiGrade ? (
                   <div className="space-y-3">
-                    <div className="p-3 bg-green-50 border border-green-200 rounded-lg">
-                      <p className="text-sm font-medium text-green-900 mb-1">Suggested Score</p>
+                    <div className="p-3 bg-green-500/10 border border-green-500/20 rounded-lg">
+                      <p className="text-sm font-medium text-green-700 mb-1">Suggested Score</p>
                       <p className="text-2xl font-bold text-green-700">
                         {aiGrade.suggestedScore} / {gradingQuestion.points}
                       </p>
                     </div>
 
-                    <div className="p-3 bg-blue-50 border border-blue-200 rounded-lg">
-                      <p className="text-sm font-medium text-blue-900 mb-2">Strengths</p>
-                      <p className="text-sm text-blue-800 whitespace-pre-wrap">
+                    <div className="p-3 bg-primary/10 border border-primary/20 rounded-lg">
+                      <p className="text-sm font-medium text-primary mb-2">Strengths</p>
+                      <p className="text-sm text-foreground whitespace-pre-wrap">
                         {aiGrade.strengths}
                       </p>
                     </div>
 
-                    <div className="p-3 bg-orange-50 border border-orange-200 rounded-lg">
-                      <p className="text-sm font-medium text-orange-900 mb-2">Weaknesses</p>
-                      <p className="text-sm text-orange-800 whitespace-pre-wrap">
+                    <div className="p-3 bg-amber-500/10 border border-amber-500/20 rounded-lg">
+                      <p className="text-sm font-medium text-amber-700 mb-2">Weaknesses</p>
+                      <p className="text-sm text-foreground whitespace-pre-wrap">
                         {aiGrade.weaknesses}
                       </p>
                     </div>
 
-                    <div className="p-3 bg-purple-50 border border-purple-200 rounded-lg">
-                      <p className="text-sm font-medium text-purple-900 mb-2">Fit Analysis</p>
-                      <p className="text-sm text-purple-800 whitespace-pre-wrap">
+                    <div className="p-3 bg-purple-500/10 border border-purple-500/20 rounded-lg">
+                      <p className="text-sm font-medium text-purple-700 mb-2">Fit Analysis</p>
+                      <p className="text-sm text-foreground whitespace-pre-wrap">
                         {aiGrade.fitAnalysis}
                       </p>
                     </div>
                   </div>
                 ) : (
-                  <div className="flex items-center justify-center h-64 bg-gray-50 rounded-lg border-2 border-dashed border-gray-300">
+                  <div className="flex items-center justify-center h-64 bg-muted rounded-lg border-2 border-dashed border-border">
                     <div className="text-center px-4">
                       <svg
-                        className="mx-auto h-12 w-12 text-gray-400"
+                        className="mx-auto h-12 w-12 text-muted-foreground"
                         fill="none"
                         stroke="currentColor"
                         viewBox="0 0 24 24"
@@ -889,7 +887,7 @@ export default function ReportsPage() {
                           d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z"
                         />
                       </svg>
-                      <p className="mt-2 text-sm text-gray-600">
+                      <p className="mt-2 text-sm text-muted-foreground">
                         Click "Generate AI Grade" to get AI-powered grading suggestions
                       </p>
                     </div>
@@ -899,7 +897,7 @@ export default function ReportsPage() {
 
               {/* Human Grading Panel */}
               <div className="space-y-4">
-                <h3 className="text-lg font-semibold text-gray-900">Your Grade</h3>
+                <h3 className="text-lg font-semibold text-foreground">Your Grade</h3>
 
                 <Input
                   label={`Score (max ${gradingQuestion.points})`}
@@ -920,7 +918,7 @@ export default function ReportsPage() {
                   placeholder="Enter your feedback, including strengths, weaknesses, and fit analysis..."
                 />
 
-                <div className="flex justify-end gap-3 pt-4 border-t">
+                <div className="flex justify-end gap-3 pt-4 border-t border-border">
                   <Button
                     variant="secondary"
                     onClick={() => {
@@ -931,8 +929,8 @@ export default function ReportsPage() {
                   >
                     Cancel
                   </Button>
-                  <Button onClick={handleGrade} loading={saving}>
-                    Save Grade
+                  <Button onClick={handleGrade} disabled={saving}>
+                    {saving ? 'Saving...' : 'Save Grade'}
                   </Button>
                 </div>
               </div>

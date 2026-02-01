@@ -3,6 +3,7 @@
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
+import { cn } from '@/lib/utils';
 
 const baseNavItems = [
   { href: '/tests', label: 'Tests' },
@@ -21,7 +22,6 @@ export default function NavLinks() {
   const [isAdmin, setIsAdmin] = useState(false);
 
   useEffect(() => {
-    // Check if current user is admin
     fetch('/api/auth/me')
       .then((res) => res.json())
       .then((data) => {
@@ -35,20 +35,24 @@ export default function NavLinks() {
   const navItems = isAdmin ? [...baseNavItems, ...adminNavItems] : baseNavItems;
 
   return (
-    <ul className="menu menu-horizontal hidden sm:flex sm:ml-8">
+    <nav className="hidden sm:ml-8 sm:flex sm:gap-1">
       {navItems.map((item) => {
         const isActive = pathname.startsWith(item.href);
         return (
-          <li key={item.href}>
-            <Link
-              href={item.href}
-              className={isActive ? 'active' : ''}
-            >
-              {item.label}
-            </Link>
-          </li>
+          <Link
+            key={item.href}
+            href={item.href}
+            className={cn(
+              'rounded-md px-3 py-2 text-sm font-medium transition-colors',
+              isActive
+                ? 'bg-primary/10 text-primary'
+                : 'text-muted-foreground hover:bg-muted hover:text-foreground'
+            )}
+          >
+            {item.label}
+          </Link>
         );
       })}
-    </ul>
+    </nav>
   );
 }

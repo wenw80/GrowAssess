@@ -2,16 +2,17 @@
 
 import { useEffect, useState, useRef, useMemo } from 'react';
 import Link from 'next/link';
-import Button from '@/components/ui/Button';
-import Card from '@/components/ui/Card';
-import Badge from '@/components/ui/Badge';
+import { Button } from '@/components/ui/Button';
+import { Card } from '@/components/ui/Card';
+import { Badge } from '@/components/ui/Badge';
 import Modal from '@/components/ui/Modal';
-import Select from '@/components/ui/Select';
-import Input from '@/components/ui/Input';
-import Textarea from '@/components/ui/Textarea';
+import Select from '@/components/ui/SelectSimple';
+import { Input } from '@/components/ui/Input';
+import { Textarea } from '@/components/ui/Textarea';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/Table';
 import TagFilter from '@/components/ui/TagFilter';
 import { formatDate } from '@/lib/utils';
+import { AssessmentSectionCards } from '@/components/dashboard/assessment-section-cards';
 
 interface Test {
   id: string;
@@ -42,19 +43,16 @@ export default function TestsPage() {
   const [importSuccess, setImportSuccess] = useState<string | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
-  // Generate from prompt states
   const [showGenerateModal, setShowGenerateModal] = useState(false);
   const [generatePrompt, setGeneratePrompt] = useState('');
   const [generating, setGenerating] = useState(false);
   const [generateError, setGenerateError] = useState<string | null>(null);
   const [generatedTest, setGeneratedTest] = useState<any>(null);
 
-  // Admin reassignment states
   const [currentUser, setCurrentUser] = useState<any>(null);
   const [allUsers, setAllUsers] = useState<any[]>([]);
   const [reassigningTest, setReassigningTest] = useState<string | null>(null);
 
-  // Filter states
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedTags, setSelectedTags] = useState<string[]>([]);
   const [durationFilter, setDurationFilter] = useState('all');
@@ -72,7 +70,6 @@ export default function TestsPage() {
         const data = await res.json();
         setCurrentUser(data.user);
 
-        // Fetch all users if admin
         if (data.user.role === 'admin') {
           const usersRes = await fetch('/api/users');
           if (usersRes.ok) {
@@ -86,7 +83,6 @@ export default function TestsPage() {
     }
   };
 
-  // Refetch tests when page becomes visible (e.g., after navigating back from /tests/new)
   useEffect(() => {
     const handleVisibilityChange = () => {
       if (!document.hidden) {
@@ -120,7 +116,6 @@ export default function TestsPage() {
     }
   };
 
-  // Extract unique tags from all tests
   const allTags = useMemo(() => {
     const tagSet = new Set<string>();
     tests.forEach(test => {
@@ -129,10 +124,8 @@ export default function TestsPage() {
     return Array.from(tagSet).sort();
   }, [tests]);
 
-  // Filter tests based on search and filters
   const filteredTests = useMemo(() => {
     return tests.filter(test => {
-      // Search filter
       if (searchQuery) {
         const query = searchQuery.toLowerCase();
         const matchesSearch =
@@ -142,13 +135,11 @@ export default function TestsPage() {
         if (!matchesSearch) return false;
       }
 
-      // Tag filter (match if test has ANY of the selected tags)
       if (selectedTags.length > 0) {
         const hasMatchingTag = test.tags.some(tag => selectedTags.includes(tag));
         if (!hasMatchingTag) return false;
       }
 
-      // Duration filter
       if (durationFilter !== 'all') {
         const duration = test.durationMinutes || 0;
         switch (durationFilter) {
@@ -350,7 +341,6 @@ export default function TestsPage() {
       });
 
       if (res.ok) {
-        // Refresh tests to show updated owner
         fetchTests();
       } else {
         const data = await res.json();
@@ -370,17 +360,21 @@ export default function TestsPage() {
   if (loading) {
     return (
       <div className="flex items-center justify-center h-64">
-        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600" />
+        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary" />
       </div>
     );
   }
 
   return (
-    <div className="px-4 sm:px-6 lg:px-8">
+    <>
+      {/* Dashboard Stats */}
+      <AssessmentSectionCards />
+
+      <div className="px-4 lg:px-6">
       <div className="sm:flex sm:items-center sm:justify-between mb-6">
         <div className="mb-4 sm:mb-0">
-          <h1 className="text-2xl font-bold text-gray-900">Test Library</h1>
-          <p className="text-gray-500 mt-1">Manage your cognitive tests and assessments</p>
+          <h1 className="text-2xl font-bold text-foreground">Test Library</h1>
+          <p className="text-muted-foreground mt-1">Manage your cognitive tests and assessments</p>
         </div>
         <div className="flex flex-col sm:flex-row gap-2 sm:gap-3">
           <Button variant="secondary" onClick={openGenerateModal} className="w-full sm:w-auto">
@@ -397,14 +391,14 @@ export default function TestsPage() {
 
       {/* View Tabs */}
       <div className="mb-6">
-        <div className="border-b border-gray-200">
+        <div className="border-b border-border">
           <nav className="-mb-px flex space-x-8">
             <button
               onClick={() => setViewFilter('all')}
               className={`py-4 px-1 border-b-2 font-medium text-sm transition-colors ${
                 viewFilter === 'all'
-                  ? 'border-blue-500 text-blue-600'
-                  : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+                  ? 'border-primary text-primary'
+                  : 'border-transparent text-muted-foreground hover:text-foreground hover:border-border'
               }`}
             >
               All Tests
@@ -413,8 +407,8 @@ export default function TestsPage() {
               onClick={() => setViewFilter('my')}
               className={`py-4 px-1 border-b-2 font-medium text-sm transition-colors ${
                 viewFilter === 'my'
-                  ? 'border-blue-500 text-blue-600'
-                  : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+                  ? 'border-primary text-primary'
+                  : 'border-transparent text-muted-foreground hover:text-foreground hover:border-border'
               }`}
             >
               My Tests
@@ -425,7 +419,7 @@ export default function TestsPage() {
 
       {/* Filters */}
       {tests.length > 0 && (
-        <Card className="mb-6">
+        <Card className="mb-6 p-4">
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
             <Input
               placeholder="Search tests..."
@@ -461,7 +455,7 @@ export default function TestsPage() {
             )}
           </div>
           {hasActiveFilters && (
-            <div className="mt-3 text-sm text-gray-600">
+            <div className="mt-3 text-sm text-muted-foreground">
               Showing {filteredTests.length} of {tests.length} tests
             </div>
           )}
@@ -471,7 +465,7 @@ export default function TestsPage() {
       {tests.length === 0 ? (
         <Card className="text-center py-12">
           <svg
-            className="mx-auto h-12 w-12 text-gray-400"
+            className="mx-auto h-12 w-12 text-muted-foreground"
             fill="none"
             stroke="currentColor"
             viewBox="0 0 24 24"
@@ -483,8 +477,8 @@ export default function TestsPage() {
               d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"
             />
           </svg>
-          <h3 className="mt-4 text-lg font-medium text-gray-900">No tests yet</h3>
-          <p className="mt-2 text-gray-500">Get started by creating a test manually, generating one with AI, or importing from JSON.</p>
+          <h3 className="mt-4 text-lg font-medium text-foreground">No tests yet</h3>
+          <p className="mt-2 text-muted-foreground">Get started by creating a test manually, generating one with AI, or importing from JSON.</p>
           <div className="mt-6 flex flex-col sm:flex-row justify-center gap-3">
             <Button variant="secondary" onClick={openGenerateModal}>
               Generate from Prompt
@@ -500,7 +494,7 @@ export default function TestsPage() {
       ) : filteredTests.length === 0 ? (
         <Card className="text-center py-12">
           <svg
-            className="mx-auto h-12 w-12 text-gray-400"
+            className="mx-auto h-12 w-12 text-muted-foreground"
             fill="none"
             stroke="currentColor"
             viewBox="0 0 24 24"
@@ -512,8 +506,8 @@ export default function TestsPage() {
               d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"
             />
           </svg>
-          <h3 className="mt-4 text-lg font-medium text-gray-900">No tests found</h3>
-          <p className="mt-2 text-gray-500">Try adjusting your search or filters.</p>
+          <h3 className="mt-4 text-lg font-medium text-foreground">No tests found</h3>
+          <p className="mt-2 text-muted-foreground">Try adjusting your search or filters.</p>
           <div className="mt-6">
             <Button variant="secondary" onClick={clearFilters}>
               Clear Filters
@@ -522,101 +516,99 @@ export default function TestsPage() {
         </Card>
       ) : (
         <Card className="p-0 overflow-hidden">
-          <div className="overflow-x-auto">
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead className="min-w-[200px]">Title</TableHead>
-                  <TableHead className="min-w-[150px]">Tags</TableHead>
-                  <TableHead className="min-w-[100px]">Questions</TableHead>
-                  <TableHead className="min-w-[120px]">Assignments</TableHead>
-                  <TableHead className="min-w-[100px]">Duration</TableHead>
-                  {viewFilter === 'all' && (
-                    <TableHead className="min-w-[150px]">Created By</TableHead>
-                  )}
-                  <TableHead className="min-w-[120px]">Created</TableHead>
-                  <TableHead className="min-w-[200px] text-right">Actions</TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {filteredTests.map((test) => (
-                  <TableRow key={test.id}>
-                    <TableCell className="min-w-[200px]">
-                      <Link href={`/tests/${test.id}`} className="text-blue-600 hover:underline font-medium block">
-                        {test.title}
-                      </Link>
-                      {test.description && (
-                        <p className="text-sm text-gray-500 truncate max-w-xs mt-1">{test.description}</p>
-                      )}
-                    </TableCell>
-                    <TableCell>
-                      {test.tags.length > 0 ? (
-                        <div className="flex flex-wrap gap-1">
-                          {test.tags.map((tag, idx) => (
-                            <Badge key={idx} variant="info">{tag}</Badge>
-                          ))}
-                        </div>
-                      ) : (
-                        <span className="text-gray-400">-</span>
-                      )}
-                    </TableCell>
-                    <TableCell>{test._count.questions}</TableCell>
-                    <TableCell>
-                      {test._count.assignments > 0 ? (
-                        <Link
-                          href={`/tests/${test.id}/instances`}
-                          className="text-blue-600 hover:underline font-medium"
-                        >
-                          {test._count.assignments}
-                        </Link>
-                      ) : (
-                        <span className="text-gray-400">0</span>
-                      )}
-                    </TableCell>
-                    <TableCell>
-                      {test.durationMinutes ? `${test.durationMinutes} min` : '-'}
-                    </TableCell>
-                    {viewFilter === 'all' && (
-                      <TableCell className="whitespace-nowrap">
-                        {test.user ? test.user.name : <span className="text-gray-400">-</span>}
-                      </TableCell>
+          <Table>
+            <TableHeader>
+              <TableRow>
+                <TableHead className="min-w-[200px]">Title</TableHead>
+                <TableHead className="min-w-[150px]">Tags</TableHead>
+                <TableHead className="min-w-[100px]">Questions</TableHead>
+                <TableHead className="min-w-[120px]">Assignments</TableHead>
+                <TableHead className="min-w-[100px]">Duration</TableHead>
+                {viewFilter === 'all' && (
+                  <TableHead className="min-w-[150px]">Created By</TableHead>
+                )}
+                <TableHead className="min-w-[120px]">Created</TableHead>
+                <TableHead className="min-w-[200px] text-right">Actions</TableHead>
+              </TableRow>
+            </TableHeader>
+            <TableBody>
+              {filteredTests.map((test) => (
+                <TableRow key={test.id}>
+                  <TableCell className="min-w-[200px]">
+                    <Link href={`/tests/${test.id}`} className="text-primary hover:underline font-medium block">
+                      {test.title}
+                    </Link>
+                    {test.description && (
+                      <p className="text-sm text-muted-foreground truncate max-w-xs mt-1">{test.description}</p>
                     )}
-                    <TableCell className="whitespace-nowrap">{formatDate(test.createdAt)}</TableCell>
-                    <TableCell className="text-right">
-                      <div className="flex justify-end gap-2 items-center flex-wrap">
-                        {isAdmin && viewFilter === 'all' && (
-                          <Select
-                            options={[
-                              { value: '', label: '(No Owner)' },
-                              ...allUsers.map(u => ({ value: u.id, label: u.name }))
-                            ]}
-                            value={test.user?.id || ''}
-                            onChange={(e) => handleReassignTest(test.id, e.target.value)}
-                            disabled={reassigningTest === test.id}
-                            className="text-sm w-36"
-                          />
-                        )}
-                        <a href={`/api/tests/${test.id}/export`} download>
-                          <Button variant="ghost" size="sm">Export</Button>
-                        </a>
-                        <Link href={`/tests/${test.id}`}>
-                          <Button variant="ghost" size="sm">Edit</Button>
-                        </Link>
-                        <Button
-                          variant="danger"
-                          size="sm"
-                          onClick={() => handleDelete(test.id)}
-                          loading={deleting === test.id}
-                        >
-                          Delete
-                        </Button>
+                  </TableCell>
+                  <TableCell>
+                    {test.tags.length > 0 ? (
+                      <div className="flex flex-wrap gap-1">
+                        {test.tags.map((tag, idx) => (
+                          <Badge key={idx} variant="secondary">{tag}</Badge>
+                        ))}
                       </div>
+                    ) : (
+                      <span className="text-muted-foreground">-</span>
+                    )}
+                  </TableCell>
+                  <TableCell>{test._count.questions}</TableCell>
+                  <TableCell>
+                    {test._count.assignments > 0 ? (
+                      <Link
+                        href={`/tests/${test.id}/instances`}
+                        className="text-primary hover:underline font-medium"
+                      >
+                        {test._count.assignments}
+                      </Link>
+                    ) : (
+                      <span className="text-muted-foreground">0</span>
+                    )}
+                  </TableCell>
+                  <TableCell>
+                    {test.durationMinutes ? `${test.durationMinutes} min` : '-'}
+                  </TableCell>
+                  {viewFilter === 'all' && (
+                    <TableCell className="whitespace-nowrap">
+                      {test.user ? test.user.name : <span className="text-muted-foreground">-</span>}
                     </TableCell>
-                  </TableRow>
-                ))}
-              </TableBody>
-            </Table>
-          </div>
+                  )}
+                  <TableCell className="whitespace-nowrap">{formatDate(test.createdAt)}</TableCell>
+                  <TableCell className="text-right">
+                    <div className="flex justify-end gap-2 items-center flex-wrap">
+                      {isAdmin && viewFilter === 'all' && (
+                        <Select
+                          options={[
+                            { value: '', label: '(No Owner)' },
+                            ...allUsers.map(u => ({ value: u.id, label: u.name }))
+                          ]}
+                          value={test.user?.id || ''}
+                          onChange={(e) => handleReassignTest(test.id, e.target.value)}
+                          disabled={reassigningTest === test.id}
+                          className="text-sm w-36"
+                        />
+                      )}
+                      <a href={`/api/tests/${test.id}/export`} download>
+                        <Button variant="ghost" size="sm">Export</Button>
+                      </a>
+                      <Link href={`/tests/${test.id}`}>
+                        <Button variant="ghost" size="sm">Edit</Button>
+                      </Link>
+                      <Button
+                        variant="destructive"
+                        size="sm"
+                        onClick={() => handleDelete(test.id)}
+                        disabled={deleting === test.id}
+                      >
+                        {deleting === test.id ? 'Deleting...' : 'Delete'}
+                      </Button>
+                    </div>
+                  </TableCell>
+                </TableRow>
+              ))}
+            </TableBody>
+          </Table>
         </Card>
       )}
 
@@ -628,9 +620,9 @@ export default function TestsPage() {
         className="max-w-2xl"
       >
         <div className="space-y-4">
-          <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
-            <h4 className="font-medium text-blue-900 mb-2">JSON Format</h4>
-            <p className="text-sm text-blue-700 mb-3">
+          <div className="bg-primary/10 border border-primary/20 rounded-lg p-4">
+            <h4 className="font-medium text-foreground mb-2">JSON Format</h4>
+            <p className="text-sm text-muted-foreground mb-3">
               Upload a JSON file or paste JSON content below. The format supports multiple choice,
               free text, and timed questions. Multiple choice questions can assign different point values
               to each answer option for partial credit and nuanced scoring.
@@ -639,16 +631,16 @@ export default function TestsPage() {
               <a
                 href="/sample-test.json"
                 download
-                className="text-blue-600 hover:underline font-medium"
+                className="text-primary hover:underline font-medium"
               >
                 Download Sample JSON
               </a>
-              <span className="text-blue-400">|</span>
+              <span className="text-muted-foreground">|</span>
               <a
                 href="/test-format.md"
                 target="_blank"
                 rel="noopener noreferrer"
-                className="text-blue-600 hover:underline font-medium"
+                className="text-primary hover:underline font-medium"
               >
                 View Format Specification
               </a>
@@ -716,23 +708,23 @@ export default function TestsPage() {
           </div>
 
           {importError && (
-            <div className="p-3 bg-red-50 border border-red-200 rounded-lg text-red-700 text-sm">
+            <div className="p-3 bg-destructive/10 border border-destructive/20 rounded-lg text-destructive text-sm">
               {importError}
             </div>
           )}
 
           {importSuccess && (
-            <div className="p-3 bg-green-50 border border-green-200 rounded-lg text-green-700 text-sm">
+            <div className="p-3 bg-green-500/10 border border-green-500/20 rounded-lg text-green-700 dark:text-green-400 text-sm">
               {importSuccess}
             </div>
           )}
 
-          <div className="flex flex-col sm:flex-row justify-end gap-3 pt-4 border-t">
+          <div className="flex flex-col sm:flex-row justify-end gap-3 pt-4 border-t border-border">
             <Button variant="secondary" onClick={() => setShowImportModal(false)} className="w-full sm:w-auto">
               Cancel
             </Button>
-            <Button onClick={handleImport} loading={importing} disabled={!jsonInput.trim()} className="w-full sm:w-auto">
-              Import Test
+            <Button onClick={handleImport} disabled={importing || !jsonInput.trim()} className="w-full sm:w-auto">
+              {importing ? 'Importing...' : 'Import Test'}
             </Button>
           </div>
         </div>
@@ -746,12 +738,12 @@ export default function TestsPage() {
         className="max-w-3xl"
       >
         <div className="space-y-4">
-          <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
-            <h4 className="font-medium text-blue-900 mb-2">AI Test Generation</h4>
-            <p className="text-sm text-blue-700 mb-2">
+          <div className="bg-primary/10 border border-primary/20 rounded-lg p-4">
+            <h4 className="font-medium text-foreground mb-2">AI Test Generation</h4>
+            <p className="text-sm text-muted-foreground mb-2">
               Describe the test you want to create and our AI will generate it for you. Be specific about:
             </p>
-            <ul className="text-sm text-blue-700 list-disc list-inside space-y-1">
+            <ul className="text-sm text-muted-foreground list-disc list-inside space-y-1">
               <li>The topic or skills to assess</li>
               <li>Target role or candidate level</li>
               <li>Number and types of questions desired</li>
@@ -762,7 +754,7 @@ export default function TestsPage() {
           {!generatedTest ? (
             <>
               <div>
-                <label htmlFor="generate-prompt" className="block text-sm font-medium text-gray-700 mb-2">
+                <label htmlFor="generate-prompt" className="block text-sm font-medium text-foreground mb-2">
                   Describe your test
                 </label>
                 <Textarea
@@ -779,12 +771,12 @@ export default function TestsPage() {
               </div>
 
               {generateError && (
-                <div className="p-3 bg-red-50 border border-red-200 rounded-lg text-red-700 text-sm">
+                <div className="p-3 bg-destructive/10 border border-destructive/20 rounded-lg text-destructive text-sm">
                   {generateError}
                 </div>
               )}
 
-              <div className="flex flex-col sm:flex-row justify-end gap-3 pt-4 border-t">
+              <div className="flex flex-col sm:flex-row justify-end gap-3 pt-4 border-t border-border">
                 <Button
                   variant="secondary"
                   onClick={() => setShowGenerateModal(false)}
@@ -794,8 +786,7 @@ export default function TestsPage() {
                 </Button>
                 <Button
                   onClick={handleGenerate}
-                  loading={generating}
-                  disabled={!generatePrompt.trim()}
+                  disabled={generating || !generatePrompt.trim()}
                   className="w-full sm:w-auto"
                 >
                   {generating ? 'Generating...' : 'Generate Test'}
@@ -804,19 +795,19 @@ export default function TestsPage() {
             </>
           ) : (
             <>
-              <div className="bg-green-50 border border-green-200 rounded-lg p-4">
-                <h4 className="font-medium text-green-900 mb-2">Test Generated Successfully!</h4>
-                <p className="text-sm text-green-700">
+              <div className="bg-green-500/10 border border-green-500/20 rounded-lg p-4">
+                <h4 className="font-medium text-green-700 dark:text-green-400 mb-2">Test Generated Successfully!</h4>
+                <p className="text-sm text-green-600 dark:text-green-500">
                   Review the generated test below. You can import it directly or close this dialog and try again.
                 </p>
               </div>
 
-              <div className="bg-gray-50 border border-gray-200 rounded-lg p-4 max-h-96 overflow-y-auto">
-                <h5 className="font-semibold text-gray-900 mb-2">{generatedTest.title}</h5>
+              <div className="bg-muted border border-border rounded-lg p-4 max-h-96 overflow-y-auto">
+                <h5 className="font-semibold text-foreground mb-2">{generatedTest.title}</h5>
                 {generatedTest.description && (
-                  <p className="text-sm text-gray-600 mb-3">{generatedTest.description}</p>
+                  <p className="text-sm text-muted-foreground mb-3">{generatedTest.description}</p>
                 )}
-                <div className="flex gap-4 text-sm text-gray-600 mb-4">
+                <div className="flex gap-4 text-sm text-muted-foreground mb-4">
                   {generatedTest.category && (
                     <span><strong>Category:</strong> {generatedTest.category}</span>
                   )}
@@ -827,44 +818,44 @@ export default function TestsPage() {
                 </div>
                 <div className="space-y-3">
                   {generatedTest.questions.map((q: any, idx: number) => (
-                    <div key={idx} className="bg-white p-3 rounded border border-gray-200">
+                    <div key={idx} className="bg-card p-3 rounded border border-border">
                       <div className="flex justify-between items-start mb-2">
-                        <span className="text-sm font-medium text-gray-900">Q{idx + 1}. {q.content}</span>
-                        <Badge variant={q.type === 'mcq' ? 'info' : q.type === 'timed' ? 'warning' : 'default'}>
+                        <span className="text-sm font-medium text-foreground">Q{idx + 1}. {q.content}</span>
+                        <Badge variant={q.type === 'mcq' ? 'secondary' : q.type === 'timed' ? 'outline' : 'default'}>
                           {q.type}
                         </Badge>
                       </div>
                       {q.type === 'mcq' && q.options && (
-                        <ul className="text-sm text-gray-600 list-disc list-inside ml-2">
+                        <ul className="text-sm text-muted-foreground list-disc list-inside ml-2">
                           {q.options.map((opt: string, i: number) => (
-                            <li key={i} className={i === q.correctAnswer ? 'text-green-700 font-medium' : ''}>
+                            <li key={i} className={i === q.correctAnswer ? 'text-green-600 dark:text-green-400 font-medium' : ''}>
                               {opt} {i === q.correctAnswer && '✓'}
                             </li>
                           ))}
                         </ul>
                       )}
                       {q.type === 'timed' && q.timeLimitSeconds && (
-                        <p className="text-sm text-gray-600">Time limit: {q.timeLimitSeconds}s</p>
+                        <p className="text-sm text-muted-foreground">Time limit: {q.timeLimitSeconds}s</p>
                       )}
-                      <p className="text-xs text-gray-500 mt-1">Points: {q.points || 1}</p>
+                      <p className="text-xs text-muted-foreground mt-1">Points: {q.points || 1}</p>
                     </div>
                   ))}
                 </div>
               </div>
 
               {generateError && (
-                <div className="p-3 bg-red-50 border border-red-200 rounded-lg text-red-700 text-sm">
+                <div className="p-3 bg-destructive/10 border border-destructive/20 rounded-lg text-destructive text-sm">
                   {generateError}
                 </div>
               )}
 
               {importSuccess && (
-                <div className="p-3 bg-green-50 border border-green-200 rounded-lg text-green-700 text-sm">
+                <div className="p-3 bg-green-500/10 border border-green-500/20 rounded-lg text-green-700 dark:text-green-400 text-sm">
                   {importSuccess}
                 </div>
               )}
 
-              <div className="flex flex-col sm:flex-row justify-end gap-3 pt-4 border-t">
+              <div className="flex flex-col sm:flex-row justify-end gap-3 pt-4 border-t border-border">
                 <Button
                   variant="secondary"
                   onClick={() => {
@@ -886,16 +877,17 @@ export default function TestsPage() {
                 </Button>
                 <Button
                   onClick={handleImportGenerated}
-                  loading={importing}
+                  disabled={importing}
                   className="w-full sm:w-auto"
                 >
-                  Import This Test
+                  {importing ? 'Importing...' : 'Import This Test'}
                 </Button>
               </div>
             </>
           )}
         </div>
       </Modal>
-    </div>
+      </div>
+    </>
   );
 }

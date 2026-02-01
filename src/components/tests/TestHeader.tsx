@@ -2,9 +2,9 @@
 
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
-import Button from '@/components/ui/Button';
+import { Button } from '@/components/ui/Button';
 import Modal from '@/components/ui/Modal';
-import Input from '@/components/ui/Input';
+import { Input } from '@/components/ui/Input';
 
 interface TestHeaderProps {
   testId: string;
@@ -141,9 +141,9 @@ export default function TestHeader({ testId, testTitle }: TestHeaderProps) {
             <Button
               variant="secondary"
               onClick={handleExport}
-              loading={exporting}
+              disabled={exporting}
             >
-              Export JSON
+              {exporting ? 'Exporting...' : 'Export JSON'}
             </Button>
           </div>
         </div>
@@ -197,7 +197,7 @@ export default function TestHeader({ testId, testTitle }: TestHeaderProps) {
 
               <div className="flex justify-between pt-4 border-t">
                 <Button
-                  variant="danger"
+                  variant="destructive"
                   onClick={deletePublicLink}
                 >
                   Disable Public Link

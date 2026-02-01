@@ -1,9 +1,13 @@
 'use client';
 
 import { useEffect, useState, useCallback } from 'react';
-import Card from '@/components/ui/Card';
-import Badge from '@/components/ui/Badge';
-import Button from '@/components/ui/Button';
+import { Card } from '@/components/ui/Card';
+import { Badge } from '@/components/ui/Badge';
+import { Button } from '@/components/ui/Button';
+import { Input } from '@/components/ui/Input';
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/Table';
+import Modal from '@/components/ui/Modal';
+import Select from '@/components/ui/SelectSimple';
 
 interface User {
   id: string;
@@ -210,7 +214,7 @@ export default function UsersPage() {
   if (loading) {
     return (
       <div className="flex justify-center items-center min-h-[400px]">
-        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary"></div>
       </div>
     );
   }
@@ -219,8 +223,8 @@ export default function UsersPage() {
     return (
       <Card>
         <div className="text-center py-12">
-          <h2 className="text-xl font-semibold text-red-600 mb-2">Access Denied</h2>
-          <p className="text-gray-600">{error}</p>
+          <h2 className="text-xl font-semibold text-destructive mb-2">Access Denied</h2>
+          <p className="text-muted-foreground">{error}</p>
         </div>
       </Card>
     );
@@ -230,152 +234,125 @@ export default function UsersPage() {
     <div className="space-y-6">
       <div className="flex justify-between items-center">
         <div>
-          <h1 className="text-2xl font-bold text-gray-900">User Management</h1>
-          <p className="text-gray-600 mt-1">
+          <h1 className="text-2xl font-bold text-foreground">User Management</h1>
+          <p className="text-muted-foreground mt-1">
             Manage user accounts and roles ({users.length} users)
           </p>
         </div>
       </div>
 
-      <Card>
-        <div className="overflow-x-auto">
-          <table className="min-w-full divide-y divide-gray-200">
-            <thead className="bg-gray-50">
-              <tr>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  User
-                </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Role
-                </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Stats
-                </th>
-                <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Actions
-                </th>
-              </tr>
-            </thead>
-            <tbody className="bg-white divide-y divide-gray-200">
-              {users.map((user) => (
-                <tr key={user.id} className="hover:bg-gray-50">
-                  <td className="px-6 py-4 whitespace-nowrap">
-                    <div>
-                      <div className="text-sm font-medium text-gray-900">
-                        {user.name || 'No name'}
-                      </div>
-                      <div className="text-sm text-gray-500">{user.email}</div>
+      <Card className="p-0 overflow-hidden">
+        <Table>
+          <TableHeader>
+            <TableRow>
+              <TableHead>User</TableHead>
+              <TableHead>Role</TableHead>
+              <TableHead>Stats</TableHead>
+              <TableHead className="text-right">Actions</TableHead>
+            </TableRow>
+          </TableHeader>
+          <TableBody>
+            {users.map((user) => (
+              <TableRow key={user.id}>
+                <TableCell>
+                  <div>
+                    <div className="text-sm font-medium text-foreground">
+                      {user.name || 'No name'}
                     </div>
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap">
-                    <Badge variant={user.role === 'admin' ? 'success' : 'default'}>
-                      {user.role}
-                    </Badge>
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                    {user._count ? (
-                      <>
-                        {user._count.tests} tests, {user._count.candidates} candidates
-                      </>
-                    ) : (
-                      '-'
-                    )}
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-right text-sm space-x-2">
-                    {user._count && user._count.tests > 0 && (
-                      <Button
-                        variant="secondary"
-                        size="sm"
-                        onClick={() => openTestsModal(user)}
-                      >
-                        Tests ({user._count.tests})
-                      </Button>
-                    )}
+                    <div className="text-sm text-muted-foreground">{user.email}</div>
+                  </div>
+                </TableCell>
+                <TableCell>
+                  <Badge variant={user.role === 'admin' ? 'success' : 'default'}>
+                    {user.role}
+                  </Badge>
+                </TableCell>
+                <TableCell className="text-sm text-muted-foreground">
+                  {user._count ? (
+                    <>
+                      {user._count.tests} tests, {user._count.candidates} candidates
+                    </>
+                  ) : (
+                    '-'
+                  )}
+                </TableCell>
+                <TableCell className="text-right space-x-2">
+                  {user._count && user._count.tests > 0 && (
                     <Button
                       variant="secondary"
                       size="sm"
-                      onClick={() => openEditModal(user)}
+                      onClick={() => openTestsModal(user)}
                     >
-                      Edit
+                      Tests ({user._count.tests})
                     </Button>
-                    <Button
-                      variant="danger"
-                      size="sm"
-                      onClick={() => handleDelete(user)}
-                    >
-                      Delete
-                    </Button>
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
+                  )}
+                  <Button
+                    variant="secondary"
+                    size="sm"
+                    onClick={() => openEditModal(user)}
+                  >
+                    Edit
+                  </Button>
+                  <Button
+                    variant="destructive"
+                    size="sm"
+                    onClick={() => handleDelete(user)}
+                  >
+                    Delete
+                  </Button>
+                </TableCell>
+              </TableRow>
+            ))}
+          </TableBody>
+        </Table>
       </Card>
 
       {/* Edit User Modal */}
-      {editingUser && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-          <div className="bg-white rounded-lg shadow-xl max-w-md w-full mx-4">
-            <div className="px-6 py-4 border-b border-gray-200">
-              <h3 className="text-lg font-semibold text-gray-900">Edit User</h3>
-            </div>
-            <div className="px-6 py-4 space-y-4">
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Name
-                </label>
-                <input
-                  type="text"
-                  value={editForm.name}
-                  onChange={(e) => setEditForm({ ...editForm, name: e.target.value })}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                />
+      <Modal
+        isOpen={!!editingUser}
+        onClose={closeEditModal}
+        title="Edit User"
+      >
+        {editingUser && (
+          <div className="space-y-4">
+            <Input
+              label="Name"
+              id="name"
+              value={editForm.name}
+              onChange={(e) => setEditForm({ ...editForm, name: e.target.value })}
+            />
+            <Input
+              label="Email"
+              id="email"
+              type="email"
+              value={editForm.email}
+              onChange={(e) => setEditForm({ ...editForm, email: e.target.value })}
+            />
+            <Select
+              label="Role"
+              id="role"
+              options={[
+                { value: 'user', label: 'User' },
+                { value: 'admin', label: 'Admin' },
+              ]}
+              value={editForm.role}
+              onChange={(e) => setEditForm({ ...editForm, role: e.target.value })}
+            />
+            <Input
+              label="New Password (leave blank to keep current)"
+              id="password"
+              type="password"
+              value={editForm.password}
+              onChange={(e) => setEditForm({ ...editForm, password: e.target.value })}
+              placeholder="Enter new password..."
+            />
+            {editingUser._count && (
+              <div className="text-sm text-muted-foreground bg-muted p-3 rounded-lg">
+                <p>Tests created: {editingUser._count.tests}</p>
+                <p>Candidates created: {editingUser._count.candidates}</p>
               </div>
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Email
-                </label>
-                <input
-                  type="email"
-                  value={editForm.email}
-                  onChange={(e) => setEditForm({ ...editForm, email: e.target.value })}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                />
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Role
-                </label>
-                <select
-                  value={editForm.role}
-                  onChange={(e) => setEditForm({ ...editForm, role: e.target.value })}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                >
-                  <option value="user">User</option>
-                  <option value="admin">Admin</option>
-                </select>
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
-                  New Password (leave blank to keep current)
-                </label>
-                <input
-                  type="password"
-                  value={editForm.password}
-                  onChange={(e) => setEditForm({ ...editForm, password: e.target.value })}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                  placeholder="Enter new password..."
-                />
-              </div>
-              {editingUser._count && (
-                <div className="text-sm text-gray-500 bg-gray-50 p-3 rounded-lg">
-                  <p>Tests created: {editingUser._count.tests}</p>
-                  <p>Candidates created: {editingUser._count.candidates}</p>
-                </div>
-              )}
-            </div>
-            <div className="px-6 py-4 border-t border-gray-200 flex justify-end gap-3">
+            )}
+            <div className="flex justify-end gap-3 pt-4 border-t border-border">
               <Button variant="secondary" onClick={closeEditModal} disabled={saving}>
                 Cancel
               </Button>
@@ -384,105 +361,101 @@ export default function UsersPage() {
               </Button>
             </div>
           </div>
-        </div>
-      )}
+        )}
+      </Modal>
 
       {/* View Tests Modal */}
-      {viewingTestsUser && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-          <div className="bg-white rounded-lg shadow-xl max-w-2xl w-full mx-4 max-h-[80vh] flex flex-col">
-            <div className="px-6 py-4 border-b border-gray-200">
-              <h3 className="text-lg font-semibold text-gray-900">
-                Tests by {viewingTestsUser.name || viewingTestsUser.email}
-              </h3>
+      <Modal
+        isOpen={!!viewingTestsUser}
+        onClose={closeTestsModal}
+        title={`Tests by ${viewingTestsUser?.name || viewingTestsUser?.email || ''}`}
+        className="max-w-2xl"
+      >
+        <div className="max-h-[60vh] overflow-y-auto">
+          {loadingTests ? (
+            <div className="flex justify-center py-8">
+              <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
             </div>
-            <div className="px-6 py-4 overflow-y-auto flex-1">
-              {loadingTests ? (
-                <div className="flex justify-center py-8">
-                  <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
-                </div>
-              ) : userTests.length === 0 ? (
-                <p className="text-gray-500 text-center py-8">No tests found</p>
-              ) : (
-                <div className="space-y-3">
-                  {userTests.map((test) => (
-                    <div
-                      key={test.id}
-                      className="border border-gray-200 rounded-lg p-4"
-                    >
-                      <div className="flex justify-between items-start">
-                        <div className="flex-1">
-                          <h4 className="font-medium text-gray-900">{test.title}</h4>
-                          <div className="flex flex-wrap gap-1 mt-1">
-                            {test.tags.map((tag) => (
-                              <Badge key={tag} variant="default" className="text-xs">
-                                {tag}
-                              </Badge>
-                            ))}
-                          </div>
-                          <p className="text-sm text-gray-500 mt-1">
-                            {test._count.questions} questions, {test._count.assignments} assignments
-                          </p>
-                        </div>
-                        <div className="ml-4">
-                          {reassignTestId === test.id ? (
-                            <div className="flex items-center gap-2">
-                              <select
-                                value={reassignUserId}
-                                onChange={(e) => setReassignUserId(e.target.value)}
-                                className="text-sm border border-gray-300 rounded px-2 py-1"
-                              >
-                                <option value="">Select user...</option>
-                                {users
-                                  .filter((u) => u.id !== viewingTestsUser.id)
-                                  .map((u) => (
-                                    <option key={u.id} value={u.id}>
-                                      {u.name || u.email}
-                                    </option>
-                                  ))}
-                              </select>
-                              <Button
-                                size="sm"
-                                onClick={() => handleReassignTest(test.id)}
-                                disabled={!reassignUserId}
-                              >
-                                Assign
-                              </Button>
-                              <Button
-                                variant="secondary"
-                                size="sm"
-                                onClick={() => {
-                                  setReassignTestId(null);
-                                  setReassignUserId('');
-                                }}
-                              >
-                                Cancel
-                              </Button>
-                            </div>
-                          ) : (
-                            <Button
-                              variant="secondary"
-                              size="sm"
-                              onClick={() => setReassignTestId(test.id)}
-                            >
-                              Reassign
-                            </Button>
-                          )}
-                        </div>
+          ) : userTests.length === 0 ? (
+            <p className="text-muted-foreground text-center py-8">No tests found</p>
+          ) : (
+            <div className="space-y-3">
+              {userTests.map((test) => (
+                <div
+                  key={test.id}
+                  className="border border-border rounded-lg p-4"
+                >
+                  <div className="flex justify-between items-start">
+                    <div className="flex-1">
+                      <h4 className="font-medium text-foreground">{test.title}</h4>
+                      <div className="flex flex-wrap gap-1 mt-1">
+                        {test.tags.map((tag) => (
+                          <Badge key={tag} variant="default" className="text-xs">
+                            {tag}
+                          </Badge>
+                        ))}
                       </div>
+                      <p className="text-sm text-muted-foreground mt-1">
+                        {test._count.questions} questions, {test._count.assignments} assignments
+                      </p>
                     </div>
-                  ))}
+                    <div className="ml-4">
+                      {reassignTestId === test.id ? (
+                        <div className="flex items-center gap-2">
+                          <select
+                            value={reassignUserId}
+                            onChange={(e) => setReassignUserId(e.target.value)}
+                            className="text-sm border border-input rounded px-2 py-1 bg-background"
+                          >
+                            <option value="">Select user...</option>
+                            {users
+                              .filter((u) => u.id !== viewingTestsUser?.id)
+                              .map((u) => (
+                                <option key={u.id} value={u.id}>
+                                  {u.name || u.email}
+                                </option>
+                              ))}
+                          </select>
+                          <Button
+                            size="sm"
+                            onClick={() => handleReassignTest(test.id)}
+                            disabled={!reassignUserId}
+                          >
+                            Assign
+                          </Button>
+                          <Button
+                            variant="secondary"
+                            size="sm"
+                            onClick={() => {
+                              setReassignTestId(null);
+                              setReassignUserId('');
+                            }}
+                          >
+                            Cancel
+                          </Button>
+                        </div>
+                      ) : (
+                        <Button
+                          variant="secondary"
+                          size="sm"
+                          onClick={() => setReassignTestId(test.id)}
+                        >
+                          Reassign
+                        </Button>
+                      )}
+                    </div>
+                  </div>
                 </div>
-              )}
+              ))}
             </div>
-            <div className="px-6 py-4 border-t border-gray-200 flex justify-end">
-              <Button variant="secondary" onClick={closeTestsModal}>
-                Close
-              </Button>
-            </div>
-          </div>
+          )}
         </div>
-      )}
+        <div className="flex justify-end pt-4 border-t border-border mt-4">
+          <Button variant="secondary" onClick={closeTestsModal}>
+            Close
+          </Button>
+        </div>
+      </Modal>
     </div>
   );
 }

@@ -1,7 +1,9 @@
 'use client';
 
 import { useState, useRef, useEffect } from 'react';
-import Badge from './Badge';
+import { XIcon } from 'lucide-react';
+import { Badge } from '@/components/ui/Badge';
+import { cn } from '@/lib/utils';
 
 interface TagFilterProps {
   tags: string[];
@@ -21,14 +23,12 @@ export default function TagFilter({
   const containerRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
 
-  // Filter tags based on search
   const filteredTags = tags.filter(
     (tag) =>
       tag.toLowerCase().includes(search.toLowerCase()) &&
       !selectedTags.includes(tag)
   );
 
-  // Close dropdown when clicking outside
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
       if (containerRef.current && !containerRef.current.contains(event.target as Node)) {
@@ -59,10 +59,14 @@ export default function TagFilter({
   };
 
   return (
-    <div ref={containerRef} className="relative w-full dropdown">
-      {/* Selected tags and input */}
+    <div ref={containerRef} className="relative w-full">
       <div
-        className="input input-bordered w-full min-h-[3rem] h-auto py-2 cursor-text flex flex-wrap gap-1.5 items-center"
+        className={cn(
+          'bg-background border border-input rounded-md w-full min-h-9 py-1.5 px-3 cursor-text',
+          'flex flex-wrap gap-1.5 items-center',
+          'focus-within:ring-2 focus-within:ring-ring focus-within:ring-offset-2',
+          'transition-colors'
+        )}
         onClick={() => {
           setIsOpen(true);
           inputRef.current?.focus();
@@ -71,7 +75,7 @@ export default function TagFilter({
         {selectedTags.map((tag) => (
           <Badge
             key={tag}
-            variant="info"
+            variant="secondary"
             className="flex items-center gap-1 pr-1"
           >
             {tag}
@@ -81,11 +85,9 @@ export default function TagFilter({
                 e.stopPropagation();
                 removeTag(tag);
               }}
-              className="ml-1 hover:bg-info/20 rounded-full p-0.5"
+              className="ml-0.5 rounded-full p-0.5 hover:bg-muted-foreground/20 transition-colors"
             >
-              <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-              </svg>
+              <XIcon className="size-3" />
             </button>
           </Badge>
         ))}
@@ -96,7 +98,7 @@ export default function TagFilter({
           onChange={(e) => setSearch(e.target.value)}
           onFocus={() => setIsOpen(true)}
           placeholder={selectedTags.length === 0 ? placeholder : ''}
-          className="flex-1 min-w-[120px] outline-none text-sm bg-transparent"
+          className="flex-1 min-w-[120px] outline-none text-sm bg-transparent text-foreground placeholder:text-muted-foreground"
         />
         {selectedTags.length > 0 && (
           <button
@@ -105,36 +107,33 @@ export default function TagFilter({
               e.stopPropagation();
               clearAll();
             }}
-            className="btn btn-ghost btn-xs btn-circle"
+            className="rounded-full p-1 hover:bg-muted transition-colors"
             title="Clear all"
           >
-            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-            </svg>
+            <XIcon className="size-4 text-muted-foreground" />
           </button>
         )}
       </div>
 
-      {/* Dropdown */}
       {isOpen && (
-        <ul className="dropdown-content menu bg-base-100 rounded-box z-50 mt-1 w-full shadow-lg border border-base-200 max-h-60 overflow-y-auto">
+        <ul className="absolute z-50 mt-1 w-full rounded-md border border-border bg-popover text-popover-foreground shadow-md max-h-60 overflow-y-auto">
           {filteredTags.length > 0 ? (
             filteredTags.map((tag) => (
               <li key={tag}>
                 <button
                   type="button"
                   onClick={() => toggleTag(tag)}
-                  className="flex items-center justify-between"
+                  className="flex w-full items-center justify-between px-3 py-2 text-sm hover:bg-muted transition-colors"
                 >
                   <span>{tag}</span>
-                  <span className="text-base-content/50 text-xs">Click to add</span>
+                  <span className="text-muted-foreground text-xs">Click to add</span>
                 </button>
               </li>
             ))
           ) : (
-            <li className="px-4 py-3 text-sm text-base-content/50 text-center">
+            <li className="px-3 py-3 text-sm text-muted-foreground text-center">
               {search ? (
-                <>No tags matching "{search}"</>
+                <>No tags matching &quot;{search}&quot;</>
               ) : tags.length === 0 ? (
                 <>No tags available</>
               ) : (
@@ -143,16 +142,15 @@ export default function TagFilter({
             </li>
           )}
 
-          {/* Quick actions */}
           {tags.length > 0 && selectedTags.length < tags.length && (
-            <li className="border-t border-base-200">
+            <li className="border-t border-border">
               <button
                 type="button"
                 onClick={() => {
                   onChange([...tags]);
                   setIsOpen(false);
                 }}
-                className="text-xs text-primary"
+                className="w-full px-3 py-2 text-xs text-primary hover:bg-muted transition-colors"
               >
                 Select all tags
               </button>
@@ -161,9 +159,8 @@ export default function TagFilter({
         </ul>
       )}
 
-      {/* Summary when closed */}
       {!isOpen && selectedTags.length > 0 && (
-        <p className="mt-1 text-xs text-base-content/50">
+        <p className="mt-1 text-xs text-muted-foreground">
           {selectedTags.length} tag{selectedTags.length !== 1 ? 's' : ''} selected
         </p>
       )}

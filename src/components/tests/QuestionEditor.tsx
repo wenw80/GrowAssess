@@ -1,11 +1,11 @@
 'use client';
 
 import { useState } from 'react';
-import Button from '@/components/ui/Button';
-import Input from '@/components/ui/Input';
-import Textarea from '@/components/ui/Textarea';
-import Select from '@/components/ui/Select';
-import Card from '@/components/ui/Card';
+import { Button } from '@/components/ui/Button';
+import { Input } from '@/components/ui/Input';
+import { Textarea } from '@/components/ui/Textarea';
+import Select from '@/components/ui/SelectSimple';
+import { Card } from '@/components/ui/Card';
 import { QuestionFormData, MCQOption, QuestionType } from '@/types';
 
 interface QuestionEditorProps {
@@ -92,7 +92,7 @@ export default function QuestionEditor({
   };
 
   return (
-    <Card className="border-l-4 border-l-blue-500">
+    <Card className="border-l-4 border-l-primary">
       <div className="flex items-center justify-between mb-4">
         <button
           type="button"
@@ -108,7 +108,7 @@ export default function QuestionEditor({
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
           </svg>
           <span className="font-medium">Question {index + 1}</span>
-          <span className="text-sm text-gray-500">
+          <span className="text-sm text-muted-foreground">
             ({questionTypes.find((t) => t.value === question.type)?.label})
           </span>
         </button>
@@ -131,7 +131,7 @@ export default function QuestionEditor({
           >
             ↓
           </Button>
-          <Button type="button" variant="danger" size="sm" onClick={() => onDelete(index)}>
+          <Button type="button" variant="destructive" size="sm" onClick={() => onDelete(index)}>
             Delete
           </Button>
         </div>
@@ -181,7 +181,7 @@ export default function QuestionEditor({
 
           {question.type === 'mcq' && (
             <div className="space-y-3">
-              <label className="block text-sm font-medium text-gray-700">
+              <label className="block text-sm font-medium text-foreground">
                 Options (select the correct answer and assign points)
               </label>
               {question.options?.map((option, optionIndex) => {
@@ -216,7 +216,7 @@ export default function QuestionEditor({
                     name={`q-${question.id || index}-correct`}
                     checked={question.correctAnswer === option.id}
                     onChange={() => updateField('correctAnswer', option.id)}
-                    className="h-4 w-4 text-blue-600"
+                    className="h-4 w-4 text-primary"
                   />
                   <Input
                     value={option.text}
@@ -253,7 +253,7 @@ export default function QuestionEditor({
           )}
 
           {question.type === 'freetext' && (
-            <p className="text-sm text-gray-500">
+            <p className="text-sm text-muted-foreground">
               Free text responses will require manual scoring.
             </p>
           )}

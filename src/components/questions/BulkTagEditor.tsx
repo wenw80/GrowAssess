@@ -2,9 +2,9 @@
 
 import { useState } from 'react';
 import Modal from '@/components/ui/Modal';
-import Button from '@/components/ui/Button';
-import Input from '@/components/ui/Input';
-import Badge from '@/components/ui/Badge';
+import { Button } from '@/components/ui/Button';
+import { Input } from '@/components/ui/Input';
+import { Badge } from '@/components/ui/Badge';
 
 interface BulkTagEditorProps {
   isOpen: boolean;
@@ -94,7 +94,7 @@ export default function BulkTagEditor({
       <div className="space-y-6">
         {/* Add Tags Section */}
         <div>
-          <h3 className="text-sm font-medium text-gray-900 mb-3">Add Tags</h3>
+          <h3 className="text-sm font-medium text-foreground mb-3">Add Tags</h3>
 
           {/* Create new tag */}
           <div className="flex gap-2 mb-3">
@@ -121,10 +121,10 @@ export default function BulkTagEditor({
 
           {/* Existing tags to add */}
           <div className="mb-3">
-            <p className="text-xs text-gray-500 mb-2">Or select from existing tags:</p>
+            <p className="text-xs text-muted-foreground mb-2">Or select from existing tags:</p>
             <div className="flex flex-wrap gap-2">
               {existingTags.length === 0 ? (
-                <p className="text-sm text-gray-400">No existing tags</p>
+                <p className="text-sm text-muted-foreground">No existing tags</p>
               ) : (
                 existingTags.map((tag) => (
                   <button
@@ -134,10 +134,10 @@ export default function BulkTagEditor({
                     disabled={tagsToAdd.includes(tag) || tagsToRemove.includes(tag)}
                     className={`px-3 py-1 rounded-full text-sm transition-colors ${
                       tagsToAdd.includes(tag)
-                        ? 'bg-green-100 text-green-800 border border-green-300 cursor-not-allowed'
+                        ? 'bg-green-500/10 text-green-700 border border-green-500/30 cursor-not-allowed'
                         : tagsToRemove.includes(tag)
-                        ? 'bg-gray-100 text-gray-400 border border-gray-200 cursor-not-allowed'
-                        : 'bg-gray-100 text-gray-700 border border-gray-300 hover:bg-gray-200'
+                        ? 'bg-muted text-muted-foreground border border-border cursor-not-allowed'
+                        : 'bg-muted text-foreground border border-border hover:bg-muted/80'
                     }`}
                   >
                     {tag}
@@ -151,7 +151,7 @@ export default function BulkTagEditor({
           {/* Tags to be added */}
           {tagsToAdd.length > 0 && (
             <div>
-              <p className="text-xs text-gray-500 mb-2">Will add these tags:</p>
+              <p className="text-xs text-muted-foreground mb-2">Will add these tags:</p>
               <div className="flex flex-wrap gap-2">
                 {tagsToAdd.map((tag) => (
                   <Badge key={tag} variant="success">
@@ -159,7 +159,7 @@ export default function BulkTagEditor({
                     <button
                       type="button"
                       onClick={() => setTagsToAdd(tagsToAdd.filter(t => t !== tag))}
-                      className="ml-2 hover:text-red-600"
+                      className="ml-2 hover:text-destructive"
                     >
                       ×
                     </button>
@@ -171,12 +171,12 @@ export default function BulkTagEditor({
         </div>
 
         {/* Remove Tags Section */}
-        <div className="border-t pt-6">
-          <h3 className="text-sm font-medium text-gray-900 mb-3">Remove Tags</h3>
-          <p className="text-xs text-gray-500 mb-2">Select tags to remove from all selected questions:</p>
+        <div className="border-t border-border pt-6">
+          <h3 className="text-sm font-medium text-foreground mb-3">Remove Tags</h3>
+          <p className="text-xs text-muted-foreground mb-2">Select tags to remove from all selected questions:</p>
           <div className="flex flex-wrap gap-2 mb-3">
             {existingTags.length === 0 ? (
-              <p className="text-sm text-gray-400">No existing tags</p>
+              <p className="text-sm text-muted-foreground">No existing tags</p>
             ) : (
               existingTags.map((tag) => (
                 <button
@@ -186,10 +186,10 @@ export default function BulkTagEditor({
                   disabled={tagsToRemove.includes(tag) || tagsToAdd.includes(tag)}
                   className={`px-3 py-1 rounded-full text-sm transition-colors ${
                     tagsToRemove.includes(tag)
-                      ? 'bg-red-100 text-red-800 border border-red-300 cursor-not-allowed'
+                      ? 'bg-destructive/10 text-destructive border border-destructive/30 cursor-not-allowed'
                       : tagsToAdd.includes(tag)
-                      ? 'bg-gray-100 text-gray-400 border border-gray-200 cursor-not-allowed'
-                      : 'bg-gray-100 text-gray-700 border border-gray-300 hover:bg-red-50'
+                      ? 'bg-muted text-muted-foreground border border-border cursor-not-allowed'
+                      : 'bg-muted text-foreground border border-border hover:bg-destructive/10'
                   }`}
                 >
                   {tag}
@@ -202,7 +202,7 @@ export default function BulkTagEditor({
           {/* Tags to be removed */}
           {tagsToRemove.length > 0 && (
             <div>
-              <p className="text-xs text-gray-500 mb-2">Will remove these tags:</p>
+              <p className="text-xs text-muted-foreground mb-2">Will remove these tags:</p>
               <div className="flex flex-wrap gap-2">
                 {tagsToRemove.map((tag) => (
                   <Badge key={tag} variant="danger">
@@ -210,7 +210,7 @@ export default function BulkTagEditor({
                     <button
                       type="button"
                       onClick={() => setTagsToRemove(tagsToRemove.filter(t => t !== tag))}
-                      className="ml-2 hover:text-gray-600"
+                      className="ml-2 hover:text-muted-foreground"
                     >
                       ×
                     </button>
@@ -222,8 +222,8 @@ export default function BulkTagEditor({
         </div>
 
         {/* Action Buttons */}
-        <div className="flex justify-between items-center pt-4 border-t">
-          <div className="text-sm text-gray-600">
+        <div className="flex justify-between items-center pt-4 border-t border-border">
+          <div className="text-sm text-muted-foreground">
             {tagsToAdd.length + tagsToRemove.length === 0 ? (
               'No changes to apply'
             ) : (
@@ -241,10 +241,9 @@ export default function BulkTagEditor({
             <Button
               type="button"
               onClick={handleSave}
-              loading={saving}
-              disabled={tagsToAdd.length === 0 && tagsToRemove.length === 0}
+              disabled={saving || (tagsToAdd.length === 0 && tagsToRemove.length === 0)}
             >
-              Apply Changes
+              {saving ? 'Saving...' : 'Apply Changes'}
             </Button>
           </div>
         </div>

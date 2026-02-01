@@ -2,9 +2,9 @@
 
 import { useEffect, useState, useCallback, use } from 'react';
 import { useRouter } from 'next/navigation';
-import Button from '@/components/ui/Button';
-import Card from '@/components/ui/Card';
-import Textarea from '@/components/ui/Textarea';
+import { Button } from '@/components/ui/Button';
+import { Card } from '@/components/ui/Card';
+import { Textarea } from '@/components/ui/Textarea';
 import { formatDuration } from '@/lib/utils';
 
 interface MCQOption {
@@ -226,8 +226,8 @@ export default function TestTakingPage({
 
   if (loading || !assignment || !currentQuestion) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-gray-50">
-        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600" />
+      <div className="min-h-screen flex items-center justify-center bg-background">
+        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary" />
       </div>
     );
   }
@@ -237,19 +237,19 @@ export default function TestTakingPage({
     : [];
 
   return (
-    <div className="min-h-screen bg-gray-50 py-8 px-4">
+    <div className="min-h-screen bg-background py-8 px-4">
       <div className="max-w-3xl mx-auto">
         {/* Header */}
         <div className="flex items-center justify-between mb-6">
-          <h1 className="text-xl font-bold text-gray-900">{assignment.test.title}</h1>
+          <h1 className="text-xl font-bold text-foreground">{assignment.test.title}</h1>
           <div className="flex items-center gap-4">
             {saving && (
-              <span className="text-sm text-gray-500">Saving...</span>
+              <span className="text-sm text-muted-foreground">Saving...</span>
             )}
             {timeLeft !== null && (
               <div
                 className={`px-4 py-2 rounded-lg font-mono font-bold ${
-                  timeLeft <= 10 ? 'bg-red-100 text-red-700' : 'bg-blue-100 text-blue-700'
+                  timeLeft <= 10 ? 'bg-destructive/10 text-destructive' : 'bg-primary/10 text-primary'
                 }`}
               >
                 {formatDuration(timeLeft)}
@@ -260,32 +260,32 @@ export default function TestTakingPage({
 
         {/* Progress bar */}
         <div className="mb-6">
-          <div className="flex justify-between text-sm text-gray-500 mb-2">
+          <div className="flex justify-between text-sm text-muted-foreground mb-2">
             <span>Question {currentIndex + 1} of {totalQuestions}</span>
             <span>{Math.round(((currentIndex + 1) / totalQuestions) * 100)}% complete</span>
           </div>
-          <div className="h-2 bg-gray-200 rounded-full">
+          <div className="h-2 bg-muted rounded-full">
             <div
-              className="h-2 bg-blue-600 rounded-full transition-all"
+              className="h-2 bg-primary rounded-full transition-all"
               style={{ width: `${((currentIndex + 1) / totalQuestions) * 100}%` }}
             />
           </div>
         </div>
 
         {/* Question card */}
-        <Card className="mb-6">
+        <Card className="mb-6 p-6">
           <div className="flex items-start justify-between mb-4">
-            <span className="text-sm font-medium text-gray-500">
+            <span className="text-sm font-medium text-muted-foreground">
               {currentQuestion.type === 'mcq'
                 ? 'Multiple Choice'
                 : currentQuestion.type === 'timed'
                 ? 'Timed Task'
                 : 'Free Response'}
             </span>
-            <span className="text-sm text-gray-500">{currentQuestion.points} point{currentQuestion.points !== 1 ? 's' : ''}</span>
+            <span className="text-sm text-muted-foreground">{currentQuestion.points} point{currentQuestion.points !== 1 ? 's' : ''}</span>
           </div>
 
-          <p className="text-lg text-gray-900 mb-6 whitespace-pre-wrap">
+          <p className="text-lg text-foreground mb-6 whitespace-pre-wrap">
             {currentQuestion.content}
           </p>
 
@@ -296,8 +296,8 @@ export default function TestTakingPage({
                   key={option.id}
                   className={`flex items-center p-4 rounded-lg border-2 cursor-pointer transition-colors ${
                     answers[currentQuestion.id] === option.id
-                      ? 'border-blue-500 bg-blue-50'
-                      : 'border-gray-200 hover:border-gray-300'
+                      ? 'border-primary bg-primary/10'
+                      : 'border-border hover:border-border/80'
                   }`}
                 >
                   <input
@@ -310,15 +310,15 @@ export default function TestTakingPage({
                   <div
                     className={`w-5 h-5 rounded-full border-2 mr-3 flex items-center justify-center ${
                       answers[currentQuestion.id] === option.id
-                        ? 'border-blue-500 bg-blue-500'
-                        : 'border-gray-300'
+                        ? 'border-primary bg-primary'
+                        : 'border-muted-foreground'
                     }`}
                   >
                     {answers[currentQuestion.id] === option.id && (
                       <div className="w-2 h-2 rounded-full bg-white" />
                     )}
                   </div>
-                  <span className="text-gray-900">{option.text}</span>
+                  <span className="text-foreground">{option.text}</span>
                 </label>
               ))}
             </div>
@@ -363,18 +363,18 @@ export default function TestTakingPage({
                 }}
                 className={`w-3 h-3 rounded-full transition-colors ${
                   i === currentIndex
-                    ? 'bg-blue-600'
+                    ? 'bg-primary'
                     : answers[q.id]
                     ? 'bg-green-500'
-                    : 'bg-gray-300'
+                    : 'bg-muted-foreground/30'
                 }`}
               />
             ))}
           </div>
 
           {currentIndex === totalQuestions - 1 ? (
-            <Button onClick={handleSubmit} loading={submitting}>
-              Submit Test
+            <Button onClick={handleSubmit} disabled={submitting}>
+              {submitting ? 'Submitting...' : 'Submit Test'}
             </Button>
           ) : (
             <Button onClick={handleNext}>Next</Button>

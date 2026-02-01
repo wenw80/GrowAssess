@@ -2,10 +2,10 @@
 
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
-import Button from '@/components/ui/Button';
-import Input from '@/components/ui/Input';
-import Textarea from '@/components/ui/Textarea';
-import Card from '@/components/ui/Card';
+import { Button } from '@/components/ui/Button';
+import { Input } from '@/components/ui/Input';
+import { Textarea } from '@/components/ui/Textarea';
+import { Card } from '@/components/ui/Card';
 import QuestionEditor from './QuestionEditor';
 import AddQuestionModal from './AddQuestionModal';
 import { QuestionFormData, MCQOption } from '@/types';
@@ -256,7 +256,7 @@ export default function TestForm({ initialData }: TestFormProps) {
         </div>
 
         {questions.length === 0 ? (
-          <Card className="text-center py-12 text-gray-500">
+          <Card className="text-center py-12 text-muted-foreground">
             No questions yet. Add your first question using the buttons above.
           </Card>
         ) : (
@@ -280,8 +280,8 @@ export default function TestForm({ initialData }: TestFormProps) {
         <Button type="button" variant="secondary" onClick={() => router.back()}>
           Cancel
         </Button>
-        <Button type="submit" loading={saving}>
-          {initialData?.id ? 'Save Changes' : 'Create Test'}
+        <Button type="submit" disabled={saving}>
+          {saving ? 'Saving...' : initialData?.id ? 'Save Changes' : 'Create Test'}
         </Button>
       </div>
 
