@@ -214,7 +214,7 @@ export default function CandidateDetailPage({
               )}
               <div>
                 <p className="text-xs text-muted-foreground">Added</p>
-                <p className="text-sm font-medium">{formatDate(candidate.createdAt)}</p>
+                <p className="text-xs font-medium">{formatDate(candidate.createdAt)}</p>
               </div>
             </div>
             {candidate.notes && (

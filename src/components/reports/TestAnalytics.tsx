@@ -236,7 +236,6 @@ export default function TestAnalytics({ testId }: TestAnalyticsProps) {
                 <TableHead>Email</TableHead>
                 <TableHead>Position</TableHead>
                 <TableHead>Score</TableHead>
-                <TableHead>Percentage</TableHead>
                 <TableHead>Completed</TableHead>
               </TableRow>
             </TableHeader>
@@ -255,24 +254,43 @@ export default function TestAnalytics({ testId }: TestAnalyticsProps) {
                   <TableCell className="text-muted-foreground">{result.candidate.email}</TableCell>
                   <TableCell className="text-muted-foreground">{result.candidate.position || '-'}</TableCell>
                   <TableCell>
-                    <span className="font-medium">
-                      {result.score.earned}/{result.score.total}
-                    </span>
+                    <div className="flex items-center gap-2">
+                      <div className="w-16 h-2 bg-muted rounded-full overflow-hidden">
+                        <div
+                          className={`h-full transition-all ${
+                            result.score.percentage > 90
+                              ? 'bg-green-500'
+                              : result.score.percentage >= 80
+                              ? 'bg-yellow-500'
+                              : result.score.percentage >= 70
+                              ? 'bg-orange-500'
+                              : 'bg-red-500'
+                          }`}
+                          style={{ width: `${result.score.percentage}%` }}
+                        />
+                      </div>
+                      <Badge
+                        variant={
+                          result.score.percentage > 90
+                            ? 'success'
+                            : result.score.percentage >= 80
+                            ? 'warning'
+                            : 'danger'
+                        }
+                        className={`text-xs font-medium min-w-[3rem] justify-center ${
+                          result.score.percentage >= 70 && result.score.percentage < 80
+                            ? 'bg-orange-500 text-white'
+                            : ''
+                        }`}
+                      >
+                        {result.score.percentage}%
+                      </Badge>
+                      <span className="text-xs text-muted-foreground">
+                        {result.score.earned}/{result.score.total}
+                      </span>
+                    </div>
                   </TableCell>
-                  <TableCell>
-                    <Badge
-                      variant={
-                        result.score.percentage >= 80
-                          ? 'success'
-                          : result.score.percentage >= 60
-                          ? 'warning'
-                          : 'danger'
-                      }
-                    >
-                      {result.score.percentage}%
-                    </Badge>
-                  </TableCell>
-                  <TableCell className="text-muted-foreground">
+                  <TableCell className="text-xs text-muted-foreground">
                     {result.completedAt ? formatDate(result.completedAt) : '-'}
                   </TableCell>
                 </TableRow>
@@ -316,40 +334,39 @@ export default function TestAnalytics({ testId }: TestAnalyticsProps) {
                 </div>
 
                 {/* Quick Stats */}
-                <div className="grid grid-cols-2 md:grid-cols-6 gap-3 mt-4">
-                  <div className="p-3 bg-primary/10 rounded text-center">
-                    <p className="text-xs text-primary font-medium">Avg Score</p>
-                    <p className="text-lg font-bold text-foreground">{qa.stats.averageScore}</p>
-                    <p className="text-xs text-primary">/ {qa.question.points}</p>
+                <div className="grid grid-cols-3 md:grid-cols-6 gap-2 mt-3">
+                  <div className="px-2 py-1.5 bg-primary/10 rounded text-center">
+                    <p className="text-[10px] text-primary font-medium">Avg Score</p>
+                    <p className="text-sm font-bold text-foreground">{qa.stats.averageScore}/{qa.question.points}</p>
                   </div>
-                  <div className="p-3 bg-green-500/10 rounded text-center">
-                    <p className="text-xs text-green-700 font-medium">Avg %</p>
-                    <p className="text-lg font-bold text-foreground">{qa.stats.averagePercentage}%</p>
+                  <div className="px-2 py-1.5 bg-green-500/10 rounded text-center">
+                    <p className="text-[10px] text-green-700 font-medium">Avg %</p>
+                    <p className="text-sm font-bold text-foreground">{qa.stats.averagePercentage}%</p>
                   </div>
-                  <div className="p-3 bg-purple-500/10 rounded text-center">
-                    <p className="text-xs text-purple-700 font-medium">Max</p>
-                    <p className="text-lg font-bold text-foreground">{qa.stats.maxScore}</p>
+                  <div className="px-2 py-1.5 bg-purple-500/10 rounded text-center">
+                    <p className="text-[10px] text-purple-700 font-medium">Max</p>
+                    <p className="text-sm font-bold text-foreground">{qa.stats.maxScore}</p>
                   </div>
-                  <div className="p-3 bg-amber-500/10 rounded text-center">
-                    <p className="text-xs text-amber-700 font-medium">Min</p>
-                    <p className="text-lg font-bold text-foreground">{qa.stats.minScore}</p>
+                  <div className="px-2 py-1.5 bg-amber-500/10 rounded text-center">
+                    <p className="text-[10px] text-amber-700 font-medium">Min</p>
+                    <p className="text-sm font-bold text-foreground">{qa.stats.minScore}</p>
                   </div>
                   {qa.question.type === 'mcq' && (
                     <>
-                      <div className="p-3 bg-green-500/20 rounded text-center">
-                        <p className="text-xs text-green-700 font-medium">Correct</p>
-                        <p className="text-lg font-bold text-foreground">{qa.stats.correctCount}</p>
+                      <div className="px-2 py-1.5 bg-green-500/20 rounded text-center">
+                        <p className="text-[10px] text-green-700 font-medium">Correct</p>
+                        <p className="text-sm font-bold text-foreground">{qa.stats.correctCount}</p>
                       </div>
-                      <div className="p-3 bg-destructive/10 rounded text-center">
-                        <p className="text-xs text-destructive font-medium">Incorrect</p>
-                        <p className="text-lg font-bold text-foreground">{qa.stats.incorrectCount}</p>
+                      <div className="px-2 py-1.5 bg-destructive/10 rounded text-center">
+                        <p className="text-[10px] text-destructive font-medium">Incorrect</p>
+                        <p className="text-sm font-bold text-foreground">{qa.stats.incorrectCount}</p>
                       </div>
                     </>
                   )}
                   {qa.stats.averageTimeSeconds > 0 && (
-                    <div className="p-3 bg-muted rounded text-center">
-                      <p className="text-xs text-muted-foreground font-medium">Avg Time</p>
-                      <p className="text-lg font-bold text-foreground">{qa.stats.averageTimeSeconds}s</p>
+                    <div className="px-2 py-1.5 bg-muted rounded text-center">
+                      <p className="text-[10px] text-muted-foreground font-medium">Avg Time</p>
+                      <p className="text-sm font-bold text-foreground">{qa.stats.averageTimeSeconds}s</p>
                     </div>
                   )}
                 </div>

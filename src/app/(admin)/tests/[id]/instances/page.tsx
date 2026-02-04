@@ -223,13 +223,13 @@ export default function TestInstancesPage() {
                       </span>
                     </div>
                   </TableCell>
-                  <TableCell className="text-sm text-muted-foreground">
+                  <TableCell className="text-xs text-muted-foreground">
                     {formatDateTime(instance.assignedAt)}
                   </TableCell>
-                  <TableCell className="text-sm text-muted-foreground">
+                  <TableCell className="text-xs text-muted-foreground">
                     {instance.startedAt ? formatDateTime(instance.startedAt) : '-'}
                   </TableCell>
-                  <TableCell className="text-sm text-muted-foreground">
+                  <TableCell className="text-xs text-muted-foreground">
                     {instance.completedAt ? formatDateTime(instance.completedAt) : '-'}
                   </TableCell>
                   <TableCell className="text-right">

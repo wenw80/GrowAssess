@@ -517,14 +517,43 @@ export default function ReportsPage() {
                       </TableCell>
                       <TableCell>
                         {assignment.status === 'completed' ? (
-                          <span className="font-medium">
-                            {assignment.score.earned}/{assignment.score.total} ({assignment.score.percentage}%)
-                          </span>
+                          <div className="flex items-center gap-2">
+                            <div className="w-16 h-2 bg-muted rounded-full overflow-hidden">
+                              <div
+                                className={`h-full transition-all ${
+                                  assignment.score.percentage > 90
+                                    ? 'bg-green-500'
+                                    : assignment.score.percentage >= 80
+                                    ? 'bg-yellow-500'
+                                    : assignment.score.percentage >= 70
+                                    ? 'bg-orange-500'
+                                    : 'bg-red-500'
+                                }`}
+                                style={{ width: `${assignment.score.percentage}%` }}
+                              />
+                            </div>
+                            <Badge
+                              variant={
+                                assignment.score.percentage > 90
+                                  ? 'success'
+                                  : assignment.score.percentage >= 80
+                                  ? 'warning'
+                                  : 'danger'
+                              }
+                              className={`text-xs font-medium min-w-[3rem] justify-center ${
+                                assignment.score.percentage >= 70 && assignment.score.percentage < 80
+                                  ? 'bg-orange-500 text-white'
+                                  : ''
+                              }`}
+                            >
+                              {assignment.score.percentage}%
+                            </Badge>
+                          </div>
                         ) : (
-                          '-'
+                          <span className="text-muted-foreground">-</span>
                         )}
                       </TableCell>
-                      <TableCell>
+                      <TableCell className="text-xs text-muted-foreground">
                         {assignment.completedAt ? formatDate(assignment.completedAt) : '-'}
                       </TableCell>
                       <TableCell className="text-right">
@@ -712,10 +741,24 @@ export default function ReportsPage() {
                 </div>
                 <div>
                   <p className="text-xs text-muted-foreground">Score</p>
-                  <p className="text-sm font-medium">
-                    {selectedAssignment.score.earned}/{selectedAssignment.score.total} (
-                    {selectedAssignment.score.percentage}%)
-                  </p>
+                  <div className="flex items-center gap-2 mt-1">
+                    <div
+                      className={`w-10 h-10 rounded-full flex items-center justify-center text-sm font-bold text-white ${
+                        selectedAssignment.score.percentage > 90
+                          ? 'bg-green-500'
+                          : selectedAssignment.score.percentage >= 80
+                          ? 'bg-yellow-500'
+                          : selectedAssignment.score.percentage >= 70
+                          ? 'bg-orange-500'
+                          : 'bg-red-500'
+                      }`}
+                    >
+                      {selectedAssignment.score.percentage}%
+                    </div>
+                    <span className="text-xs text-muted-foreground">
+                      {selectedAssignment.score.earned}/{selectedAssignment.score.total}
+                    </span>
+                  </div>
                 </div>
               </div>
             </div>

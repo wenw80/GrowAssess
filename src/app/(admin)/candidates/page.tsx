@@ -292,32 +292,34 @@ export default function CandidatesPage() {
                   </TableCell>
                   <TableCell>
                     {candidate.assignments.length > 0 ? (
-                      <div className="space-y-1">
-                        {candidate.assignments.slice(0, 2).map((a) => (
-                          <div key={a.id} className="text-sm">
-                            <span>{a.test.title}</span>
-                            <Badge
-                              variant={
-                                a.status === 'completed'
-                                  ? 'success'
-                                  : a.status === 'in_progress'
-                                  ? 'warning'
-                                  : 'default'
-                              }
-                              className="ml-2"
-                            >
-                              {a.status.replace('_', ' ')}
-                            </Badge>
-                          </div>
-                        ))}
-                        {candidate.assignments.length > 2 && (
-                          <span className="text-xs text-muted-foreground">
-                            +{candidate.assignments.length - 2} more
-                          </span>
-                        )}
+                      <div className="flex flex-wrap gap-1">
+                        {(() => {
+                          const completed = candidate.assignments.filter(a => a.status === 'completed').length;
+                          const inProgress = candidate.assignments.filter(a => a.status === 'in_progress').length;
+                          const notStarted = candidate.assignments.filter(a => a.status === 'not_started').length;
+                          return (
+                            <>
+                              {completed > 0 && (
+                                <Badge variant="success" className="text-xs">
+                                  {completed} done
+                                </Badge>
+                              )}
+                              {inProgress > 0 && (
+                                <Badge variant="warning" className="text-xs">
+                                  {inProgress} active
+                                </Badge>
+                              )}
+                              {notStarted > 0 && (
+                                <Badge variant="default" className="text-xs">
+                                  {notStarted} pending
+                                </Badge>
+                              )}
+                            </>
+                          );
+                        })()}
                       </div>
                     ) : (
-                      <span className="text-muted-foreground">None</span>
+                      <span className="text-muted-foreground">-</span>
                     )}
                   </TableCell>
                   {viewFilter === 'all' && (
@@ -325,7 +327,7 @@ export default function CandidatesPage() {
                       {candidate.user ? candidate.user.name : <span className="text-muted-foreground">-</span>}
                     </TableCell>
                   )}
-                  <TableCell>{formatDate(candidate.createdAt)}</TableCell>
+                  <TableCell className="text-xs text-muted-foreground">{formatDate(candidate.createdAt)}</TableCell>
                   <TableCell className="text-right">
                     <div className="flex justify-end gap-1">
                       <Link href={`/candidates/${candidate.id}`} title="View">

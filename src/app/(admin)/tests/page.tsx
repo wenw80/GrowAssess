@@ -593,7 +593,7 @@ export default function TestsPage() {
                       {test.user ? test.user.name : <span className="text-muted-foreground">-</span>}
                     </TableCell>
                   )}
-                  <TableCell className="whitespace-nowrap">{formatDate(test.createdAt)}</TableCell>
+                  <TableCell className="text-xs text-muted-foreground whitespace-nowrap">{formatDate(test.createdAt)}</TableCell>
                   <TableCell className="text-right">
                     <div className="flex justify-end gap-1 items-center">
                       {isAdmin && viewFilter === 'all' && (
