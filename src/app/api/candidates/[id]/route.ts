@@ -42,7 +42,7 @@ export async function PUT(
   try {
     const { id } = await params;
     const data = await request.json();
-    const { name, email, phone, position, status, notes } = data;
+    const { name, email, phone, position, status, notes, jobDescription } = data;
 
     const candidate = await prisma.candidate.update({
       where: { id },
@@ -53,6 +53,7 @@ export async function PUT(
         position,
         status,
         notes,
+        jobDescription,
       },
     });
 
