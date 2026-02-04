@@ -11,17 +11,20 @@ datasource db {
 }
 
 model User {
-  id         String      @id @default(uuid())
-  email      String      @unique
-  name       String
-  password   String
-  role       String      @default("user") // user, admin
-  createdAt  DateTime    @default(now())
-  updatedAt  DateTime    @updatedAt
-  tests      Test[]
-  candidates Candidate[]
+  id                   String      @id @default(uuid())
+  email                String      @unique
+  name                 String
+  password             String
+  role                 String      @default("user") // user, admin
+  passwordResetToken   String?
+  passwordResetExpires DateTime?
+  createdAt            DateTime    @default(now())
+  updatedAt            DateTime    @updatedAt
+  tests                Test[]
+  candidates           Candidate[]
 
   @@index([email])
+  @@index([passwordResetToken])
 }
 
 model Test {
