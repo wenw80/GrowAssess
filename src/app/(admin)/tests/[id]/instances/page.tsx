@@ -38,6 +38,8 @@ export default function TestInstancesPage() {
   const [testTitle, setTestTitle] = useState<string>('');
   const [loading, setLoading] = useState(true);
   const [deleting, setDeleting] = useState<string | null>(null);
+  const [currentPage, setCurrentPage] = useState(1);
+  const [pageSize, setPageSize] = useState(25);
 
   useEffect(() => {
     fetchTestInfo();
@@ -103,24 +105,35 @@ export default function TestInstancesPage() {
     alert('Test link copied to clipboard!');
   };
 
+  // Pagination calculations
+  const totalPages = Math.ceil(instances.length / pageSize);
+  const startIndex = (currentPage - 1) * pageSize;
+  const endIndex = startIndex + pageSize;
+  const paginatedInstances = instances.slice(startIndex, endIndex);
+
+  // Reset to page 1 when page size changes
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [pageSize]);
+
   if (loading) {
     return (
       <div className="flex items-center justify-center h-64">
-        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600" />
+        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary" />
       </div>
     );
   }
 
   return (
-    <div className="px-4 sm:px-0">
+    <div className="mx-auto max-w-6xl px-6 py-6">
       <div className="mb-6">
-        <Link href={`/tests/${testId}`} className="text-blue-600 hover:underline text-sm">
+        <Link href={`/tests/${testId}`} className="text-primary hover:underline text-sm">
           ← Back to Test
         </Link>
         <div className="flex items-center justify-between mt-2">
           <div>
-            <h1 className="text-2xl font-bold text-gray-900">Test Instances</h1>
-            <p className="text-gray-500 mt-1">{testTitle}</p>
+            <h1 className="text-2xl font-bold text-foreground">Test Instances</h1>
+            <p className="text-muted-foreground mt-1">{testTitle}</p>
           </div>
         </div>
       </div>
@@ -128,7 +141,7 @@ export default function TestInstancesPage() {
       {instances.length === 0 ? (
         <Card className="text-center py-12">
           <svg
-            className="mx-auto h-12 w-12 text-gray-400"
+            className="mx-auto h-12 w-12 text-muted-foreground"
             fill="none"
             stroke="currentColor"
             viewBox="0 0 24 24"
@@ -140,13 +153,13 @@ export default function TestInstancesPage() {
               d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"
             />
           </svg>
-          <h3 className="mt-4 text-lg font-medium text-gray-900">No instances found</h3>
-          <p className="mt-2 text-gray-500">No one has been assigned this test yet.</p>
+          <h3 className="mt-4 text-lg font-medium text-foreground">No instances found</h3>
+          <p className="mt-2 text-muted-foreground">No one has been assigned this test yet.</p>
         </Card>
       ) : (
         <Card className="p-0 overflow-hidden">
-          <div className="px-6 py-4 border-b border-gray-200">
-            <p className="text-sm text-gray-600">
+          <div className="px-6 py-4 border-b border-border">
+            <p className="text-sm text-muted-foreground">
               Total instances: <span className="font-semibold">{instances.length}</span>
             </p>
           </div>
@@ -163,16 +176,16 @@ export default function TestInstancesPage() {
               </TableRow>
             </TableHeader>
             <TableBody>
-              {instances.map((instance) => (
+              {paginatedInstances.map((instance) => (
                 <TableRow key={instance.id}>
                   <TableCell>
                     <Link
                       href={`/candidates/${instance.candidate.id}`}
-                      className="text-blue-600 hover:underline font-medium"
+                      className="text-primary hover:underline font-medium"
                     >
                       {instance.candidate.name}
                     </Link>
-                    <p className="text-sm text-gray-500">{instance.candidate.email}</p>
+                    <p className="text-sm text-muted-foreground">{instance.candidate.email}</p>
                   </TableCell>
                   <TableCell>
                     <Badge
@@ -190,9 +203,9 @@ export default function TestInstancesPage() {
                   <TableCell>
                     <div className="flex items-center gap-2">
                       <div className="flex-1">
-                        <div className="h-2 bg-gray-200 rounded-full overflow-hidden">
+                        <div className="h-2 bg-muted rounded-full overflow-hidden">
                           <div
-                            className="h-full bg-blue-600 transition-all duration-300"
+                            className="h-full bg-primary transition-all duration-300"
                             style={{
                               width: `${
                                 instance.progress.totalQuestions > 0
@@ -205,42 +218,56 @@ export default function TestInstancesPage() {
                           />
                         </div>
                       </div>
-                      <span className="text-sm text-gray-600 whitespace-nowrap">
+                      <span className="text-sm text-muted-foreground whitespace-nowrap">
                         {instance.progress.answeredQuestions}/{instance.progress.totalQuestions}
                       </span>
                     </div>
                   </TableCell>
-                  <TableCell className="text-sm text-gray-600">
+                  <TableCell className="text-sm text-muted-foreground">
                     {formatDateTime(instance.assignedAt)}
                   </TableCell>
-                  <TableCell className="text-sm text-gray-600">
+                  <TableCell className="text-sm text-muted-foreground">
                     {instance.startedAt ? formatDateTime(instance.startedAt) : '-'}
                   </TableCell>
-                  <TableCell className="text-sm text-gray-600">
+                  <TableCell className="text-sm text-muted-foreground">
                     {instance.completedAt ? formatDateTime(instance.completedAt) : '-'}
                   </TableCell>
                   <TableCell className="text-right">
-                    <div className="flex items-center justify-end gap-2">
+                    <div className="flex items-center justify-end gap-1">
                       <Button
                         variant="ghost"
                         size="sm"
+                        className="h-8 w-8 p-0"
                         onClick={() => copyLink(instance.uniqueLink)}
                         title="Copy test link"
                       >
-                        Copy Link
+                        <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 5H6a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2v-1M8 5a2 2 0 002 2h2a2 2 0 002-2M8 5a2 2 0 012-2h2a2 2 0 012 2m0 0h2a2 2 0 012 2v3m2 4H10m0 0l3-3m-3 3l3 3" />
+                        </svg>
                       </Button>
-                      <Link href={`/reports?assignment=${instance.id}`}>
-                        <Button variant="ghost" size="sm">
-                          View
+                      <Link href={`/reports?assignment=${instance.id}`} title="View Results">
+                        <Button variant="ghost" size="sm" className="h-8 w-8 p-0">
+                          <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+                          </svg>
                         </Button>
                       </Link>
                       <Button
-                        variant="destructive"
+                        variant="ghost"
                         size="sm"
+                        className="h-8 w-8 p-0 text-destructive hover:text-destructive hover:bg-destructive/10"
                         onClick={() => handleDelete(instance.id, instance.candidate.name)}
                         disabled={deleting === instance.id}
+                        title="Delete"
                       >
-                        {deleting === instance.id ? 'Deleting...' : 'Delete'}
+                        {deleting === instance.id ? (
+                          <div className="h-4 w-4 animate-spin rounded-full border-2 border-current border-t-transparent" />
+                        ) : (
+                          <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                          </svg>
+                        )}
                       </Button>
                     </div>
                   </TableCell>
@@ -248,6 +275,78 @@ export default function TestInstancesPage() {
               ))}
             </TableBody>
           </Table>
+
+          {/* Pagination Controls */}
+          {instances.length > 0 && (
+            <div className="flex items-center justify-between border-t border-border px-4 py-3">
+              <div className="flex items-center gap-2">
+                <span className="text-sm text-muted-foreground">Show</span>
+                <select
+                  value={pageSize}
+                  onChange={(e) => setPageSize(Number(e.target.value))}
+                  className="h-8 rounded-md border border-input bg-background px-2 text-sm"
+                >
+                  <option value={25}>25</option>
+                  <option value={50}>50</option>
+                  <option value={100}>100</option>
+                  <option value={200}>200</option>
+                </select>
+                <span className="text-sm text-muted-foreground">per page</span>
+              </div>
+
+              <div className="flex items-center gap-2">
+                <span className="text-sm text-muted-foreground">
+                  {startIndex + 1}-{Math.min(endIndex, instances.length)} of {instances.length}
+                </span>
+                <div className="flex gap-1">
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    className="h-8 w-8 p-0"
+                    onClick={() => setCurrentPage(1)}
+                    disabled={currentPage === 1}
+                  >
+                    <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 19l-7-7 7-7m8 14l-7-7 7-7" />
+                    </svg>
+                  </Button>
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    className="h-8 w-8 p-0"
+                    onClick={() => setCurrentPage(currentPage - 1)}
+                    disabled={currentPage === 1}
+                  >
+                    <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
+                    </svg>
+                  </Button>
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    className="h-8 w-8 p-0"
+                    onClick={() => setCurrentPage(currentPage + 1)}
+                    disabled={currentPage >= totalPages}
+                  >
+                    <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                    </svg>
+                  </Button>
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    className="h-8 w-8 p-0"
+                    onClick={() => setCurrentPage(totalPages)}
+                    disabled={currentPage >= totalPages}
+                  >
+                    <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 5l7 7-7 7M5 5l7 7-7 7" />
+                    </svg>
+                  </Button>
+                </div>
+              </div>
+            </div>
+          )}
         </Card>
       )}
     </div>

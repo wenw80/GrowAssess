@@ -37,7 +37,7 @@ export default async function EditTestPage({
   };
 
   return (
-    <div className="px-4 sm:px-0">
+    <div className="mx-auto max-w-6xl px-6 py-6">
       <TestHeader testId={id} testTitle={test.title} />
       <TestForm initialData={transformedTest} />
     </div>

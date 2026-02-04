@@ -105,6 +105,8 @@ export default function ReportsPage() {
   const [bulkAiGrades, setBulkAiGrades] = useState<any[]>([]);
   const [generatingBulkGrades, setGeneratingBulkGrades] = useState(false);
   const [savingBulkGrades, setSavingBulkGrades] = useState(false);
+  const [currentPage, setCurrentPage] = useState(1);
+  const [pageSize, setPageSize] = useState(25);
 
   useEffect(() => {
     fetchFiltersData();
@@ -327,6 +329,17 @@ export default function ReportsPage() {
     { value: 'not_started', label: 'Not Started' },
   ];
 
+  // Pagination calculations
+  const totalPages = Math.ceil(assignments.length / pageSize);
+  const startIndex = (currentPage - 1) * pageSize;
+  const endIndex = startIndex + pageSize;
+  const paginatedAssignments = assignments.slice(startIndex, endIndex);
+
+  // Reset to page 1 when filters or page size change
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [filters, pageSize]);
+
   const getOptionText = (options: string | null, answerId: string | null) => {
     if (!options || !answerId) return '-';
     try {
@@ -347,7 +360,7 @@ export default function ReportsPage() {
   }
 
   return (
-    <div className="px-4 sm:px-0">
+    <div className="mx-auto max-w-6xl px-6 py-6">
       <div className="flex justify-between items-center mb-6">
         <div>
           <h1 className="text-2xl font-bold text-foreground">Reports</h1>
@@ -392,49 +405,55 @@ export default function ReportsPage() {
       {viewMode === 'candidate' && (
         <>
           {/* Filters */}
-          <Card className="mb-6">
-            <div className="grid grid-cols-1 md:grid-cols-5 gap-4">
-              <Select
-                label="Candidate"
-                id="candidate"
-                options={[
-                  { value: '', label: 'All Candidates' },
-                  ...candidates.map((c) => ({ value: c.id, label: c.name })),
-                ]}
-                value={filters.candidateId}
-                onChange={(e) => setFilters({ ...filters, candidateId: e.target.value })}
-              />
-              <Select
-                label="Test"
-                id="test"
-                options={[
-                  { value: '', label: 'All Tests' },
-                  ...tests.map((t) => ({ value: t.id, label: t.title })),
-                ]}
-                value={filters.testId}
-                onChange={(e) => setFilters({ ...filters, testId: e.target.value })}
-              />
-              <Select
-                label="Status"
-                id="status"
-                options={statusOptions}
-                value={filters.status}
-                onChange={(e) => setFilters({ ...filters, status: e.target.value })}
-              />
-              <Input
-                label="From Date"
-                id="dateFrom"
-                type="date"
-                value={filters.dateFrom}
-                onChange={(e) => setFilters({ ...filters, dateFrom: e.target.value })}
-              />
-              <Input
-                label="To Date"
-                id="dateTo"
-                type="date"
-                value={filters.dateTo}
-                onChange={(e) => setFilters({ ...filters, dateTo: e.target.value })}
-              />
+          <Card className="mb-6 flex flex-col gap-4 overflow-hidden rounded-xl py-4">
+            <div className="px-4">
+              <h2 className="text-base font-medium leading-snug">Filters</h2>
+              <p className="text-sm text-muted-foreground mt-1">Filter assessment results</p>
+            </div>
+            <div className="px-4">
+              <div className="grid grid-cols-1 md:grid-cols-5 gap-4">
+                <Select
+                  label="Candidate"
+                  id="candidate"
+                  options={[
+                    { value: '', label: 'All Candidates' },
+                    ...candidates.map((c) => ({ value: c.id, label: c.name })),
+                  ]}
+                  value={filters.candidateId}
+                  onChange={(e) => setFilters({ ...filters, candidateId: e.target.value })}
+                />
+                <Select
+                  label="Test"
+                  id="test"
+                  options={[
+                    { value: '', label: 'All Tests' },
+                    ...tests.map((t) => ({ value: t.id, label: t.title })),
+                  ]}
+                  value={filters.testId}
+                  onChange={(e) => setFilters({ ...filters, testId: e.target.value })}
+                />
+                <Select
+                  label="Status"
+                  id="status"
+                  options={statusOptions}
+                  value={filters.status}
+                  onChange={(e) => setFilters({ ...filters, status: e.target.value })}
+                />
+                <Input
+                  label="From Date"
+                  id="dateFrom"
+                  type="date"
+                  value={filters.dateFrom}
+                  onChange={(e) => setFilters({ ...filters, dateFrom: e.target.value })}
+                />
+                <Input
+                  label="To Date"
+                  id="dateTo"
+                  type="date"
+                  value={filters.dateTo}
+                  onChange={(e) => setFilters({ ...filters, dateTo: e.target.value })}
+                />
+              </div>
             </div>
           </Card>
 
@@ -471,7 +490,7 @@ export default function ReportsPage() {
                   </TableRow>
                 </TableHeader>
                 <TableBody>
-                  {assignments.map((assignment) => (
+                  {paginatedAssignments.map((assignment) => (
                     <TableRow key={assignment.id}>
                       <TableCell>
                         <Link
@@ -512,15 +531,92 @@ export default function ReportsPage() {
                         <Button
                           variant="ghost"
                           size="sm"
+                          className="h-8 w-8 p-0"
                           onClick={() => setSelectedAssignment(assignment)}
+                          title="View Details"
                         >
-                          View Details
+                          <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+                          </svg>
                         </Button>
                       </TableCell>
                     </TableRow>
                   ))}
                 </TableBody>
               </Table>
+
+              {/* Pagination Controls */}
+              {assignments.length > 0 && (
+                <div className="flex items-center justify-between border-t border-border px-4 py-3">
+                  <div className="flex items-center gap-2">
+                    <span className="text-sm text-muted-foreground">Show</span>
+                    <select
+                      value={pageSize}
+                      onChange={(e) => setPageSize(Number(e.target.value))}
+                      className="h-8 rounded-md border border-input bg-background px-2 text-sm"
+                    >
+                      <option value={25}>25</option>
+                      <option value={50}>50</option>
+                      <option value={100}>100</option>
+                      <option value={200}>200</option>
+                    </select>
+                    <span className="text-sm text-muted-foreground">per page</span>
+                  </div>
+
+                  <div className="flex items-center gap-2">
+                    <span className="text-sm text-muted-foreground">
+                      {startIndex + 1}-{Math.min(endIndex, assignments.length)} of {assignments.length}
+                    </span>
+                    <div className="flex gap-1">
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        className="h-8 w-8 p-0"
+                        onClick={() => setCurrentPage(1)}
+                        disabled={currentPage === 1}
+                      >
+                        <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 19l-7-7 7-7m8 14l-7-7 7-7" />
+                        </svg>
+                      </Button>
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        className="h-8 w-8 p-0"
+                        onClick={() => setCurrentPage(currentPage - 1)}
+                        disabled={currentPage === 1}
+                      >
+                        <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
+                        </svg>
+                      </Button>
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        className="h-8 w-8 p-0"
+                        onClick={() => setCurrentPage(currentPage + 1)}
+                        disabled={currentPage >= totalPages}
+                      >
+                        <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                        </svg>
+                      </Button>
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        className="h-8 w-8 p-0"
+                        onClick={() => setCurrentPage(totalPages)}
+                        disabled={currentPage >= totalPages}
+                      >
+                        <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 5l7 7-7 7M5 5l7 7-7 7" />
+                        </svg>
+                      </Button>
+                    </div>
+                  </div>
+                </div>
+              )}
             </Card>
           )}
         </>
@@ -529,18 +625,24 @@ export default function ReportsPage() {
       {/* Test View */}
       {viewMode === 'test' && (
         <>
-          <Card className="mb-6">
-            <div className="max-w-md">
-              <Select
-                label="Select Test"
-                id="test-select"
-                options={[
-                  { value: '', label: 'Choose a test...' },
-                  ...tests.map((t) => ({ value: t.id, label: t.title })),
-                ]}
-                value={selectedTestForAnalytics}
-                onChange={(e) => setSelectedTestForAnalytics(e.target.value)}
-              />
+          <Card className="mb-6 flex flex-col gap-4 overflow-hidden rounded-xl py-4">
+            <div className="px-4">
+              <h2 className="text-base font-medium leading-snug">Select Test</h2>
+              <p className="text-sm text-muted-foreground mt-1">Choose a test to view analytics</p>
+            </div>
+            <div className="px-4">
+              <div className="max-w-md">
+                <Select
+                  label="Test"
+                  id="test-select"
+                  options={[
+                    { value: '', label: 'Choose a test...' },
+                    ...tests.map((t) => ({ value: t.id, label: t.title })),
+                  ]}
+                  value={selectedTestForAnalytics}
+                  onChange={(e) => setSelectedTestForAnalytics(e.target.value)}
+                />
+              </div>
             </div>
           </Card>
 
@@ -583,35 +685,38 @@ export default function ReportsPage() {
         {selectedAssignment && (
           <div className="space-y-6 max-h-[70vh] overflow-y-auto">
             {/* Summary */}
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-4 p-4 bg-muted rounded-lg">
-              <div>
-                <p className="text-sm text-muted-foreground">Candidate</p>
-                <p className="font-medium">{selectedAssignment.candidate.name}</p>
-              </div>
-              <div>
-                <p className="text-sm text-muted-foreground">Test</p>
-                <p className="font-medium">{selectedAssignment.test.title}</p>
-              </div>
-              <div>
-                <p className="text-sm text-muted-foreground">Status</p>
-                <Badge
-                  variant={
-                    selectedAssignment.status === 'completed'
-                      ? 'success'
-                      : selectedAssignment.status === 'in_progress'
-                      ? 'warning'
-                      : 'default'
-                  }
-                >
-                  {selectedAssignment.status.replace('_', ' ')}
-                </Badge>
-              </div>
-              <div>
-                <p className="text-sm text-muted-foreground">Score</p>
-                <p className="font-medium">
-                  {selectedAssignment.score.earned}/{selectedAssignment.score.total} (
-                  {selectedAssignment.score.percentage}%)
-                </p>
+            <div className="rounded-lg border p-3 bg-muted/30">
+              <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                <div>
+                  <p className="text-xs text-muted-foreground">Candidate</p>
+                  <p className="text-sm font-medium">{selectedAssignment.candidate.name}</p>
+                </div>
+                <div>
+                  <p className="text-xs text-muted-foreground">Test</p>
+                  <p className="text-sm font-medium">{selectedAssignment.test.title}</p>
+                </div>
+                <div>
+                  <p className="text-xs text-muted-foreground">Status</p>
+                  <Badge
+                    variant={
+                      selectedAssignment.status === 'completed'
+                        ? 'success'
+                        : selectedAssignment.status === 'in_progress'
+                        ? 'warning'
+                        : 'default'
+                    }
+                    className="text-xs mt-1"
+                  >
+                    {selectedAssignment.status.replace('_', ' ')}
+                  </Badge>
+                </div>
+                <div>
+                  <p className="text-xs text-muted-foreground">Score</p>
+                  <p className="text-sm font-medium">
+                    {selectedAssignment.score.earned}/{selectedAssignment.score.total} (
+                    {selectedAssignment.score.percentage}%)
+                  </p>
+                </div>
               </div>
             </div>
 
@@ -696,29 +801,36 @@ export default function ReportsPage() {
             </div>
 
             {/* Responses */}
-            <div className="space-y-4">
-              <h3 className="font-semibold">Responses</h3>
+            <div className="space-y-3">
+              <h3 className="text-sm font-medium">Responses</h3>
               {selectedAssignment.test.questions.map((question, index) => {
                 const response = selectedAssignment.responses.find(
                   (r) => r.questionId === question.id
                 );
 
                 return (
-                  <Card key={question.id} className="bg-muted">
-                    <div className="flex items-start justify-between mb-2">
-                      <span className="text-sm font-medium text-muted-foreground">
-                        Question {index + 1} ({question.type})
+                  <div key={question.id} className="rounded-lg border p-3 bg-muted/30">
+                    <div className="flex items-start justify-between">
+                      <span className="text-sm font-medium">
+                        Question {index + 1}
                       </span>
-                      <span className="text-sm text-muted-foreground">{question.points} pts</span>
+                      <div className="flex items-center gap-2">
+                        <Badge variant="secondary" className="text-xs">
+                          {question.type}
+                        </Badge>
+                        <Badge variant="default" className="text-xs">
+                          {question.points} pts
+                        </Badge>
+                      </div>
                     </div>
 
-                    <p className="text-foreground mb-4 whitespace-pre-wrap">{question.content}</p>
+                    <p className="text-sm text-foreground mt-2 whitespace-pre-wrap">{question.content}</p>
 
-                    <div className="border-t border-border pt-4">
+                    <div className="mt-3 pt-3 border-t border-border">
                       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                         <div>
-                          <p className="text-sm text-muted-foreground mb-1">Answer</p>
-                          <p className="text-foreground">
+                          <p className="text-xs text-muted-foreground mb-1">Answer</p>
+                          <p className="text-sm text-foreground">
                             {response?.answer
                               ? question.type === 'mcq'
                                 ? getOptionText(question.options, response.answer)
@@ -729,8 +841,8 @@ export default function ReportsPage() {
 
                         {question.type === 'mcq' && question.correctAnswer && (
                           <div>
-                            <p className="text-sm text-muted-foreground mb-1">Correct Answer</p>
-                            <p className="text-green-600">
+                            <p className="text-xs text-muted-foreground mb-1">Correct Answer</p>
+                            <p className="text-sm text-green-600">
                               {getOptionText(question.options, question.correctAnswer)}
                             </p>
                           </div>
@@ -738,20 +850,20 @@ export default function ReportsPage() {
                       </div>
 
                       {response && (
-                        <div className="flex items-center justify-between mt-4 pt-4 border-t border-border">
-                          <div className="flex items-center gap-4">
+                        <div className="flex items-center justify-between mt-3 pt-3 border-t border-border">
+                          <div className="flex items-center gap-2">
                             {response.isCorrect !== null && (
-                              <Badge variant={response.isCorrect ? 'success' : 'danger'}>
+                              <Badge variant={response.isCorrect ? 'success' : 'danger'} className="text-xs">
                                 {response.isCorrect ? 'Correct' : 'Incorrect'}
                               </Badge>
                             )}
                             {response.score !== null && (
-                              <span className="text-sm">
+                              <span className="text-xs">
                                 Score: {response.score}/{question.points}
                               </span>
                             )}
                             {response.timeTakenSeconds !== null && (
-                              <span className="text-sm text-muted-foreground">
+                              <span className="text-xs text-muted-foreground">
                                 Time: {response.timeTakenSeconds}s
                               </span>
                             )}
@@ -762,6 +874,7 @@ export default function ReportsPage() {
                               variant="secondary"
                               size="sm"
                               onClick={() => openGradeModal(response, question)}
+                              className="h-7"
                             >
                               Grade
                             </Button>
@@ -770,12 +883,12 @@ export default function ReportsPage() {
                       )}
 
                       {response?.graderNotes && (
-                        <div className="mt-3 p-3 bg-amber-500/10 rounded text-sm">
+                        <div className="mt-3 p-2 bg-amber-500/10 rounded text-xs">
                           <span className="font-medium">Grader Notes:</span> {response.graderNotes}
                         </div>
                       )}
                     </div>
-                  </Card>
+                  </div>
                 );
               })}
             </div>

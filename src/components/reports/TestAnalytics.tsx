@@ -172,8 +172,8 @@ export default function TestAnalytics({ testId }: TestAnalyticsProps) {
   return (
     <div className="space-y-6">
       {/* Test Header */}
-      <Card>
-        <div className="border-b border-border pb-4 mb-4">
+      <Card className="flex flex-col gap-6 overflow-hidden rounded-xl py-4">
+        <div className="px-4 border-b border-border pb-4">
           <h2 className="text-2xl font-bold text-foreground">{data.test.title}</h2>
           {data.test.description && (
             <p className="text-muted-foreground mt-2">{data.test.description}</p>
@@ -197,7 +197,7 @@ export default function TestAnalytics({ testId }: TestAnalyticsProps) {
         </div>
 
         {/* Overall Statistics */}
-        <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
+        <div className="px-4 grid grid-cols-2 md:grid-cols-5 gap-4">
           <div className="p-4 bg-primary/10 rounded-lg">
             <p className="text-sm text-primary font-medium">Total Candidates</p>
             <p className="text-2xl font-bold text-foreground">{data.totalCandidates}</p>
@@ -222,9 +222,12 @@ export default function TestAnalytics({ testId }: TestAnalyticsProps) {
       </Card>
 
       {/* Candidate Rankings */}
-      <Card>
-        <h3 className="text-lg font-semibold text-foreground mb-4">Candidate Performance</h3>
-        <div className="overflow-x-auto">
+      <Card className="flex flex-col gap-4 overflow-hidden rounded-xl py-4">
+        <div className="px-4">
+          <h3 className="text-base font-medium leading-snug">Candidate Performance</h3>
+          <p className="text-sm text-muted-foreground mt-1">Rankings based on test scores</p>
+        </div>
+        <div className="px-4 overflow-x-auto">
           <Table>
             <TableHeader>
               <TableRow>
@@ -280,16 +283,20 @@ export default function TestAnalytics({ testId }: TestAnalyticsProps) {
       </Card>
 
       {/* Question-by-Question Analysis */}
-      <div className="space-y-4">
-        <h3 className="text-lg font-semibold text-foreground">Question Analysis</h3>
+      <Card className="flex flex-col gap-4 overflow-hidden rounded-xl py-4">
+        <div className="px-4">
+          <h3 className="text-base font-medium leading-snug">Question Analysis</h3>
+          <p className="text-sm text-muted-foreground mt-1">Detailed breakdown of each question&apos;s performance</p>
+        </div>
+        <div className="px-4 space-y-3">
         {data.questionAnalytics.map((qa, index) => {
           const isExpanded = expandedQuestions.has(qa.question.id);
 
           return (
-            <Card key={qa.question.id} className="overflow-hidden">
+            <div key={qa.question.id} className="rounded-lg border p-3 bg-muted/30">
               {/* Question Header */}
               <div
-                className="cursor-pointer hover:bg-muted/50 transition-colors"
+                className="cursor-pointer"
                 onClick={() => toggleQuestion(qa.question.id)}
               >
                 <div className="flex items-start justify-between">
@@ -433,10 +440,11 @@ export default function TestAnalytics({ testId }: TestAnalyticsProps) {
                   </div>
                 </div>
               )}
-            </Card>
+            </div>
           );
         })}
-      </div>
+        </div>
+      </Card>
     </div>
   );
 }

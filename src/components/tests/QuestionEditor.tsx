@@ -5,7 +5,7 @@ import { Button } from '@/components/ui/Button';
 import { Input } from '@/components/ui/Input';
 import { Textarea } from '@/components/ui/Textarea';
 import Select from '@/components/ui/SelectSimple';
-import { Card } from '@/components/ui/Card';
+import { Badge } from '@/components/ui/Badge';
 import { QuestionFormData, MCQOption, QuestionType } from '@/types';
 
 interface QuestionEditorProps {
@@ -29,7 +29,7 @@ export default function QuestionEditor({
   isFirst,
   isLast,
 }: QuestionEditorProps) {
-  const [expanded, setExpanded] = useState(true);
+  const [expanded, setExpanded] = useState(false);
 
   const questionTypes = [
     { value: 'mcq', label: 'Multiple Choice' },
@@ -92,33 +92,37 @@ export default function QuestionEditor({
   };
 
   return (
-    <Card className="border-l-4 border-l-primary">
-      <div className="flex items-center justify-between mb-4">
+    <div className="rounded-lg border p-3 bg-muted/30">
+      <div className="flex items-center justify-between">
         <button
           type="button"
           onClick={() => setExpanded(!expanded)}
           className="flex items-center gap-2 text-left"
         >
           <svg
-            className={`w-5 h-5 transition-transform ${expanded ? 'rotate-90' : ''}`}
+            className={`w-4 h-4 transition-transform text-muted-foreground ${expanded ? 'rotate-90' : ''}`}
             fill="none"
             stroke="currentColor"
             viewBox="0 0 24 24"
           >
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
           </svg>
-          <span className="font-medium">Question {index + 1}</span>
-          <span className="text-sm text-muted-foreground">
-            ({questionTypes.find((t) => t.value === question.type)?.label})
-          </span>
+          <span className="text-sm font-medium">Question {index + 1}</span>
         </button>
         <div className="flex items-center gap-2">
+          <Badge variant="secondary" className="text-xs">
+            {questionTypes.find((t) => t.value === question.type)?.label}
+          </Badge>
+          <Badge variant="default" className="text-xs">
+            {question.points} pts
+          </Badge>
           <Button
             type="button"
             variant="ghost"
             size="sm"
             onClick={() => onMoveUp(index)}
             disabled={isFirst}
+            className="h-7 w-7 p-0"
           >
             ↑
           </Button>
@@ -128,17 +132,22 @@ export default function QuestionEditor({
             size="sm"
             onClick={() => onMoveDown(index)}
             disabled={isLast}
+            className="h-7 w-7 p-0"
           >
             ↓
           </Button>
-          <Button type="button" variant="destructive" size="sm" onClick={() => onDelete(index)}>
+          <Button type="button" variant="destructive" size="sm" onClick={() => onDelete(index)} className="h-7">
             Delete
           </Button>
         </div>
       </div>
 
+      {!expanded && question.content && (
+        <p className="text-sm text-muted-foreground mt-2 line-clamp-1">{question.content}</p>
+      )}
+
       {expanded && (
-        <div className="space-y-4">
+        <div className="space-y-4 mt-3 pt-3 border-t border-border">
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
             <Select
               label="Type"
@@ -259,6 +268,6 @@ export default function QuestionEditor({
           )}
         </div>
       )}
-    </Card>
+    </div>
   );
 }

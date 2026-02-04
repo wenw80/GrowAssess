@@ -149,17 +149,17 @@ export default function CandidateDetailPage({
   if (loading) {
     return (
       <div className="flex items-center justify-center h-64">
-        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600" />
+        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary" />
       </div>
     );
   }
 
   if (!candidate) {
     return (
-      <div className="px-4 sm:px-0">
+      <div className="px-4 sm:px-6 lg:px-8">
         <Card className="text-center py-12">
-          <h3 className="text-lg font-medium text-gray-900">Candidate not found</h3>
-          <Link href="/candidates" className="text-blue-600 hover:underline mt-2 block">
+          <h3 className="text-lg font-medium text-foreground">Candidate not found</h3>
+          <Link href="/candidates" className="text-primary hover:underline mt-2 block">
             Back to Candidates
           </Link>
         </Card>
@@ -179,151 +179,162 @@ export default function CandidateDetailPage({
   };
 
   return (
-    <div className="px-4 sm:px-0">
+    <div className="mx-auto max-w-6xl px-6 py-6">
       <div className="mb-6">
-        <Link href="/candidates" className="text-blue-600 hover:underline text-sm">
+        <Link href="/candidates" className="text-primary hover:underline text-sm">
           ← Back to Candidates
         </Link>
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        <Card className="lg:col-span-1">
-          <h2 className="text-xl font-semibold mb-4">{candidate.name}</h2>
-          <div className="space-y-3">
-            <div>
-              <p className="text-sm text-gray-500">Email</p>
-              <p className="font-medium">{candidate.email}</p>
-            </div>
-            {candidate.phone && (
-              <div>
-                <p className="text-sm text-gray-500">Phone</p>
-                <p className="font-medium">{candidate.phone}</p>
-              </div>
-            )}
-            {candidate.position && (
-              <div>
-                <p className="text-sm text-gray-500">Position</p>
-                <p className="font-medium">{candidate.position}</p>
-              </div>
-            )}
-            <div>
-              <p className="text-sm text-gray-500">Status</p>
-              <Badge variant={statusVariants[candidate.status] || 'default'}>
+        <Card className="lg:col-span-1 flex flex-col gap-4 overflow-hidden rounded-xl py-4">
+          <div className="px-4">
+            <div className="flex items-center justify-between">
+              <h2 className="text-base font-medium leading-snug">{candidate.name}</h2>
+              <Badge variant={statusVariants[candidate.status] || 'default'} className="text-xs">
                 {candidate.status}
               </Badge>
             </div>
-            {candidate.notes && (
+            {candidate.position && (
+              <p className="text-sm text-muted-foreground mt-1">{candidate.position}</p>
+            )}
+          </div>
+
+          <div className="px-4 space-y-3">
+            <div className="rounded-lg border p-3 bg-muted/30 space-y-3">
               <div>
-                <p className="text-sm text-gray-500">Notes</p>
+                <p className="text-xs text-muted-foreground">Email</p>
+                <p className="text-sm font-medium">{candidate.email}</p>
+              </div>
+              {candidate.phone && (
+                <div>
+                  <p className="text-xs text-muted-foreground">Phone</p>
+                  <p className="text-sm font-medium">{candidate.phone}</p>
+                </div>
+              )}
+              <div>
+                <p className="text-xs text-muted-foreground">Added</p>
+                <p className="text-sm font-medium">{formatDate(candidate.createdAt)}</p>
+              </div>
+            </div>
+            {candidate.notes && (
+              <div className="rounded-lg border p-3 bg-muted/30">
+                <p className="text-xs text-muted-foreground mb-1">Notes</p>
                 <p className="text-sm whitespace-pre-wrap">{candidate.notes}</p>
               </div>
             )}
-            <div>
-              <p className="text-sm text-gray-500">Added</p>
-              <p className="font-medium">{formatDate(candidate.createdAt)}</p>
-            </div>
           </div>
         </Card>
 
-        <div className="lg:col-span-2 space-y-6">
-          <div className="flex items-center justify-between">
-            <h2 className="text-xl font-semibold">Assigned Tests</h2>
-            {availableTests.length > 0 && (
-              <Button onClick={() => setShowAssignModal(true)}>Assign Test</Button>
-            )}
+        <Card className="lg:col-span-2 flex flex-col gap-4 overflow-hidden rounded-xl py-4">
+          <div className="px-4">
+            <div className="flex items-center justify-between">
+              <h2 className="text-base font-medium leading-snug">Assigned Tests ({candidate.assignments.length})</h2>
+              {availableTests.length > 0 && (
+                <Button size="sm" onClick={() => setShowAssignModal(true)}>Assign Test</Button>
+              )}
+            </div>
+            <p className="text-sm text-muted-foreground mt-1">
+              Tests assigned to this candidate
+            </p>
           </div>
 
-          {candidate.assignments.length === 0 ? (
-            <Card className="text-center py-8 text-gray-500">
-              No tests assigned yet.
-              {availableTests.length > 0 && (
-                <div className="mt-4">
-                  <Button onClick={() => setShowAssignModal(true)}>Assign First Test</Button>
-                </div>
-              )}
-            </Card>
-          ) : (
-            candidate.assignments.map((assignment) => {
-              const score =
-                assignment.status === 'completed'
-                  ? calculateScore(assignment.responses)
-                  : null;
+          <div className="px-4 space-y-3">
+            {candidate.assignments.length === 0 ? (
+              <div className="rounded-lg border p-6 bg-muted/30 text-center text-muted-foreground">
+                No tests assigned yet.
+                {availableTests.length > 0 && (
+                  <div className="mt-4">
+                    <Button onClick={() => setShowAssignModal(true)}>Assign First Test</Button>
+                  </div>
+                )}
+              </div>
+            ) : (
+              candidate.assignments.map((assignment) => {
+                const score =
+                  assignment.status === 'completed'
+                    ? calculateScore(assignment.responses)
+                    : null;
 
-              return (
-                <Card key={assignment.id}>
-                  <div className="flex items-start justify-between mb-4">
-                    <div>
-                      <h3 className="font-semibold">{assignment.test.title}</h3>
-                      {assignment.test.description && (
-                        <p className="text-sm text-gray-500">{assignment.test.description}</p>
+                return (
+                  <div key={assignment.id} className="rounded-lg border p-3 bg-muted/30">
+                    <div className="flex items-start justify-between">
+                      <div>
+                        <h3 className="text-sm font-medium">{assignment.test.title}</h3>
+                        {assignment.test.description && (
+                          <p className="text-sm text-muted-foreground mt-1">{assignment.test.description}</p>
+                        )}
+                      </div>
+                      <Badge
+                        variant={
+                          assignment.status === 'completed'
+                            ? 'success'
+                            : assignment.status === 'in_progress'
+                            ? 'warning'
+                            : 'default'
+                        }
+                        className="text-xs"
+                      >
+                        {assignment.status.replace('_', ' ')}
+                      </Badge>
+                    </div>
+
+                    <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm mt-3 pt-3 border-t border-border">
+                      <div>
+                        <p className="text-muted-foreground text-xs">Assigned</p>
+                        <p className="font-medium text-sm">{formatDateTime(assignment.assignedAt)}</p>
+                      </div>
+                      {assignment.startedAt && (
+                        <div>
+                          <p className="text-muted-foreground text-xs">Started</p>
+                          <p className="font-medium text-sm">{formatDateTime(assignment.startedAt)}</p>
+                        </div>
+                      )}
+                      {assignment.completedAt && (
+                        <div>
+                          <p className="text-muted-foreground text-xs">Completed</p>
+                          <p className="font-medium text-sm">{formatDateTime(assignment.completedAt)}</p>
+                        </div>
+                      )}
+                      {score && (
+                        <div>
+                          <p className="text-muted-foreground text-xs">Score</p>
+                          <p className="font-medium text-sm">
+                            {score.obtained}/{score.total} ({score.percentage}%)
+                          </p>
+                        </div>
                       )}
                     </div>
-                    <Badge
-                      variant={
-                        assignment.status === 'completed'
-                          ? 'success'
-                          : assignment.status === 'in_progress'
-                          ? 'warning'
-                          : 'default'
-                      }
-                    >
-                      {assignment.status.replace('_', ' ')}
-                    </Badge>
-                  </div>
 
-                  <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm mb-4">
-                    <div>
-                      <p className="text-gray-500">Assigned</p>
-                      <p className="font-medium">{formatDateTime(assignment.assignedAt)}</p>
+                    <div className="flex items-center gap-2 mt-3 pt-3 border-t border-border">
+                      <Button
+                        variant="secondary"
+                        size="sm"
+                        onClick={() => copyTestLink(assignment.uniqueLink)}
+                        className="h-7"
+                      >
+                        {copiedLink === assignment.uniqueLink ? 'Copied!' : 'Copy Link'}
+                      </Button>
+                      {assignment.status === 'completed' && (
+                        <Link href={`/reports?assignment=${assignment.id}`}>
+                          <Button variant="ghost" size="sm" className="h-7">View Results</Button>
+                        </Link>
+                      )}
+                      <Button
+                        variant="destructive"
+                        size="sm"
+                        onClick={() => deleteAssignment(assignment.id)}
+                        className="h-7"
+                      >
+                        Remove
+                      </Button>
                     </div>
-                    {assignment.startedAt && (
-                      <div>
-                        <p className="text-gray-500">Started</p>
-                        <p className="font-medium">{formatDateTime(assignment.startedAt)}</p>
-                      </div>
-                    )}
-                    {assignment.completedAt && (
-                      <div>
-                        <p className="text-gray-500">Completed</p>
-                        <p className="font-medium">{formatDateTime(assignment.completedAt)}</p>
-                      </div>
-                    )}
-                    {score && (
-                      <div>
-                        <p className="text-gray-500">Score</p>
-                        <p className="font-medium">
-                          {score.obtained}/{score.total} ({score.percentage}%)
-                        </p>
-                      </div>
-                    )}
                   </div>
-
-                  <div className="flex items-center gap-3 pt-4 border-t border-gray-200">
-                    <Button
-                      variant="secondary"
-                      size="sm"
-                      onClick={() => copyTestLink(assignment.uniqueLink)}
-                    >
-                      {copiedLink === assignment.uniqueLink ? 'Copied!' : 'Copy Link'}
-                    </Button>
-                    {assignment.status === 'completed' && (
-                      <Link href={`/reports?assignment=${assignment.id}`}>
-                        <Button variant="ghost" size="sm">View Results</Button>
-                      </Link>
-                    )}
-                    <Button
-                      variant="destructive"
-                      size="sm"
-                      onClick={() => deleteAssignment(assignment.id)}
-                    >
-                      Remove
-                    </Button>
-                  </div>
-                </Card>
-              );
-            })
-          )}
-        </div>
+                );
+              })
+            )}
+          </div>
+        </Card>
       </div>
 
       <Modal

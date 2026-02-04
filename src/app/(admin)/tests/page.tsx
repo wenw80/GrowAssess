@@ -57,6 +57,8 @@ export default function TestsPage() {
   const [selectedTags, setSelectedTags] = useState<string[]>([]);
   const [durationFilter, setDurationFilter] = useState('all');
   const [viewFilter, setViewFilter] = useState<'all' | 'my'>('all');
+  const [currentPage, setCurrentPage] = useState(1);
+  const [pageSize, setPageSize] = useState(25);
 
   useEffect(() => {
     fetchTests();
@@ -158,6 +160,17 @@ export default function TestsPage() {
       return true;
     });
   }, [tests, searchQuery, selectedTags, durationFilter]);
+
+  // Pagination calculations
+  const totalPages = Math.ceil(filteredTests.length / pageSize);
+  const startIndex = (currentPage - 1) * pageSize;
+  const endIndex = startIndex + pageSize;
+  const paginatedTests = filteredTests.slice(startIndex, endIndex);
+
+  // Reset to page 1 when filters change
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [searchQuery, selectedTags, durationFilter, viewFilter, pageSize]);
 
   const handleDelete = async (id: string) => {
     if (!confirm('Are you sure you want to delete this test?')) return;
@@ -370,7 +383,7 @@ export default function TestsPage() {
       {/* Dashboard Stats */}
       <AssessmentSectionCards />
 
-      <div className="px-4 lg:px-6">
+      <div className="mx-auto max-w-[1400px] px-6 py-6">
       <div className="sm:flex sm:items-center sm:justify-between mb-6">
         <div className="mb-4 sm:mb-0">
           <h1 className="text-2xl font-bold text-foreground">Test Library</h1>
@@ -419,46 +432,52 @@ export default function TestsPage() {
 
       {/* Filters */}
       {tests.length > 0 && (
-        <Card className="mb-6 p-4">
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-            <Input
-              placeholder="Search tests..."
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              className="w-full"
-            />
-            <TagFilter
-              tags={allTags}
-              selectedTags={selectedTags}
-              onChange={setSelectedTags}
-              placeholder="Filter by tags..."
-            />
-            <Select
-              options={[
-                { value: 'all', label: 'All Durations' },
-                { value: 'short', label: 'Short (≤15 min)' },
-                { value: 'medium', label: 'Medium (15-45 min)' },
-                { value: 'long', label: 'Long (>45 min)' },
-              ]}
-              value={durationFilter}
-              onChange={(e) => setDurationFilter(e.target.value)}
-              className="w-full"
-            />
+        <Card className="mb-6 flex flex-col gap-4 overflow-hidden rounded-xl py-4">
+          <div className="px-4">
+            <h2 className="text-base font-medium leading-snug">Search & Filter</h2>
+            <p className="text-sm text-muted-foreground mt-1">Find tests by name, tags, or duration</p>
+          </div>
+          <div className="px-4">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+              <Input
+                placeholder="Search tests..."
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                className="w-full"
+              />
+              <TagFilter
+                tags={allTags}
+                selectedTags={selectedTags}
+                onChange={setSelectedTags}
+                placeholder="Filter by tags..."
+              />
+              <Select
+                options={[
+                  { value: 'all', label: 'All Durations' },
+                  { value: 'short', label: 'Short (≤15 min)' },
+                  { value: 'medium', label: 'Medium (15-45 min)' },
+                  { value: 'long', label: 'Long (>45 min)' },
+                ]}
+                value={durationFilter}
+                onChange={(e) => setDurationFilter(e.target.value)}
+                className="w-full"
+              />
+              {hasActiveFilters && (
+                <Button
+                  variant="ghost"
+                  onClick={clearFilters}
+                  className="w-full sm:w-auto"
+                >
+                  Clear Filters
+                </Button>
+              )}
+            </div>
             {hasActiveFilters && (
-              <Button
-                variant="ghost"
-                onClick={clearFilters}
-                className="w-full sm:w-auto"
-              >
-                Clear Filters
-              </Button>
+              <div className="mt-3 text-sm text-muted-foreground">
+                Showing {filteredTests.length} of {tests.length} tests
+              </div>
             )}
           </div>
-          {hasActiveFilters && (
-            <div className="mt-3 text-sm text-muted-foreground">
-              Showing {filteredTests.length} of {tests.length} tests
-            </div>
-          )}
         </Card>
       )}
 
@@ -519,22 +538,22 @@ export default function TestsPage() {
           <Table>
             <TableHeader>
               <TableRow>
-                <TableHead className="min-w-[200px]">Title</TableHead>
-                <TableHead className="min-w-[150px]">Tags</TableHead>
-                <TableHead className="min-w-[100px]">Questions</TableHead>
-                <TableHead className="min-w-[120px]">Assignments</TableHead>
-                <TableHead className="min-w-[100px]">Duration</TableHead>
+                <TableHead>Title</TableHead>
+                <TableHead>Tags</TableHead>
+                <TableHead>Questions</TableHead>
+                <TableHead>Assignments</TableHead>
+                <TableHead>Duration</TableHead>
                 {viewFilter === 'all' && (
-                  <TableHead className="min-w-[150px]">Created By</TableHead>
+                  <TableHead>Created By</TableHead>
                 )}
-                <TableHead className="min-w-[120px]">Created</TableHead>
-                <TableHead className="min-w-[200px] text-right">Actions</TableHead>
+                <TableHead>Created</TableHead>
+                <TableHead className="text-right">Actions</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
-              {filteredTests.map((test) => (
+              {paginatedTests.map((test) => (
                 <TableRow key={test.id}>
-                  <TableCell className="min-w-[200px]">
+                  <TableCell>
                     <Link href={`/tests/${test.id}`} className="text-primary hover:underline font-medium block">
                       {test.title}
                     </Link>
@@ -576,32 +595,56 @@ export default function TestsPage() {
                   )}
                   <TableCell className="whitespace-nowrap">{formatDate(test.createdAt)}</TableCell>
                   <TableCell className="text-right">
-                    <div className="flex justify-end gap-2 items-center flex-wrap">
+                    <div className="flex justify-end gap-1 items-center">
                       {isAdmin && viewFilter === 'all' && (
-                        <Select
-                          options={[
-                            { value: '', label: '(No Owner)' },
-                            ...allUsers.map(u => ({ value: u.id, label: u.name }))
-                          ]}
-                          value={test.user?.id || ''}
-                          onChange={(e) => handleReassignTest(test.id, e.target.value)}
-                          disabled={reassigningTest === test.id}
-                          className="text-sm w-36"
-                        />
+                        <div className="relative" title="Reassign owner">
+                          <select
+                            value={test.user?.id || ''}
+                            onChange={(e) => handleReassignTest(test.id, e.target.value)}
+                            disabled={reassigningTest === test.id}
+                            className="h-8 w-8 opacity-0 absolute inset-0 cursor-pointer z-10"
+                          >
+                            <option value="">(No Owner)</option>
+                            {allUsers.map(u => (
+                              <option key={u.id} value={u.id}>{u.name}</option>
+                            ))}
+                          </select>
+                          <Button variant="ghost" size="sm" className="h-8 w-8 p-0 pointer-events-none">
+                            <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+                            </svg>
+                          </Button>
+                        </div>
                       )}
-                      <a href={`/api/tests/${test.id}/export`} download>
-                        <Button variant="ghost" size="sm">Export</Button>
+                      <a href={`/api/tests/${test.id}/export`} download title="Export">
+                        <Button variant="ghost" size="sm" className="h-8 w-8 p-0">
+                          <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
+                          </svg>
+                        </Button>
                       </a>
-                      <Link href={`/tests/${test.id}`}>
-                        <Button variant="ghost" size="sm">Edit</Button>
+                      <Link href={`/tests/${test.id}`} title="Edit">
+                        <Button variant="ghost" size="sm" className="h-8 w-8 p-0">
+                          <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+                          </svg>
+                        </Button>
                       </Link>
                       <Button
-                        variant="destructive"
+                        variant="ghost"
                         size="sm"
+                        className="h-8 w-8 p-0 text-destructive hover:text-destructive hover:bg-destructive/10"
                         onClick={() => handleDelete(test.id)}
                         disabled={deleting === test.id}
+                        title="Delete"
                       >
-                        {deleting === test.id ? 'Deleting...' : 'Delete'}
+                        {deleting === test.id ? (
+                          <div className="h-4 w-4 animate-spin rounded-full border-2 border-current border-t-transparent" />
+                        ) : (
+                          <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                          </svg>
+                        )}
                       </Button>
                     </div>
                   </TableCell>
@@ -609,6 +652,78 @@ export default function TestsPage() {
               ))}
             </TableBody>
           </Table>
+
+          {/* Pagination Controls */}
+          {filteredTests.length > 0 && (
+            <div className="flex items-center justify-between border-t border-border px-4 py-3">
+              <div className="flex items-center gap-2">
+                <span className="text-sm text-muted-foreground">Show</span>
+                <select
+                  value={pageSize}
+                  onChange={(e) => setPageSize(Number(e.target.value))}
+                  className="h-8 rounded-md border border-input bg-background px-2 text-sm"
+                >
+                  <option value={25}>25</option>
+                  <option value={50}>50</option>
+                  <option value={100}>100</option>
+                  <option value={200}>200</option>
+                </select>
+                <span className="text-sm text-muted-foreground">per page</span>
+              </div>
+
+              <div className="flex items-center gap-2">
+                <span className="text-sm text-muted-foreground">
+                  {startIndex + 1}-{Math.min(endIndex, filteredTests.length)} of {filteredTests.length}
+                </span>
+                <div className="flex gap-1">
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    className="h-8 w-8 p-0"
+                    onClick={() => setCurrentPage(1)}
+                    disabled={currentPage === 1}
+                  >
+                    <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 19l-7-7 7-7m8 14l-7-7 7-7" />
+                    </svg>
+                  </Button>
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    className="h-8 w-8 p-0"
+                    onClick={() => setCurrentPage(currentPage - 1)}
+                    disabled={currentPage === 1}
+                  >
+                    <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
+                    </svg>
+                  </Button>
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    className="h-8 w-8 p-0"
+                    onClick={() => setCurrentPage(currentPage + 1)}
+                    disabled={currentPage >= totalPages}
+                  >
+                    <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                    </svg>
+                  </Button>
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    className="h-8 w-8 p-0"
+                    onClick={() => setCurrentPage(totalPages)}
+                    disabled={currentPage >= totalPages}
+                  >
+                    <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 5l7 7-7 7M5 5l7 7-7 7" />
+                    </svg>
+                  </Button>
+                </div>
+              </div>
+            </div>
+          )}
         </Card>
       )}
 

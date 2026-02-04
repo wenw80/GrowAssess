@@ -67,6 +67,8 @@ export default function CandidatesPage() {
     status: 'active',
     notes: '',
   });
+  const [currentPage, setCurrentPage] = useState(1);
+  const [pageSize, setPageSize] = useState(25);
 
   useEffect(() => {
     fetchCandidates();
@@ -147,6 +149,17 @@ export default function CandidatesPage() {
     }
   };
 
+  // Pagination calculations
+  const totalPages = Math.ceil(candidates.length / pageSize);
+  const startIndex = (currentPage - 1) * pageSize;
+  const endIndex = startIndex + pageSize;
+  const paginatedCandidates = candidates.slice(startIndex, endIndex);
+
+  // Reset to page 1 when filters change
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [search, statusFilter, viewFilter, pageSize]);
+
   if (loading) {
     return (
       <div className="flex items-center justify-center h-64">
@@ -156,7 +169,7 @@ export default function CandidatesPage() {
   }
 
   return (
-    <div className="px-4 sm:px-0">
+    <div className="mx-auto max-w-6xl px-6 py-6">
       <div className="flex justify-between items-center mb-6">
         <div>
           <h1 className="text-2xl font-bold text-foreground">Candidates</h1>
@@ -193,20 +206,26 @@ export default function CandidatesPage() {
         </div>
       </div>
 
-      <Card className="mb-6">
-        <div className="flex flex-col sm:flex-row gap-4">
-          <Input
-            placeholder="Search by name, email, or position..."
-            value={search}
-            onChange={(e) => setSearch(e.target.value)}
-            className="flex-1"
-          />
-          <Select
-            options={statusOptions}
-            value={statusFilter}
-            onChange={(e) => setStatusFilter(e.target.value)}
-            className="w-full sm:w-48"
-          />
+      <Card className="mb-6 flex flex-col gap-4 overflow-hidden rounded-xl py-4">
+        <div className="px-4">
+          <h2 className="text-base font-medium leading-snug">Search & Filter</h2>
+          <p className="text-sm text-muted-foreground mt-1">Find candidates by name, email, or status</p>
+        </div>
+        <div className="px-4">
+          <div className="flex flex-col sm:flex-row gap-4">
+            <Input
+              placeholder="Search by name, email, or position..."
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+              className="flex-1"
+            />
+            <Select
+              options={statusOptions}
+              value={statusFilter}
+              onChange={(e) => setStatusFilter(e.target.value)}
+              className="w-full sm:w-48"
+            />
+          </div>
         </div>
       </Card>
 
@@ -254,7 +273,7 @@ export default function CandidatesPage() {
               </TableRow>
             </TableHeader>
             <TableBody>
-              {candidates.map((candidate) => (
+              {paginatedCandidates.map((candidate) => (
                 <TableRow key={candidate.id}>
                   <TableCell>
                     <Link
@@ -308,19 +327,30 @@ export default function CandidatesPage() {
                   )}
                   <TableCell>{formatDate(candidate.createdAt)}</TableCell>
                   <TableCell className="text-right">
-                    <div className="flex justify-end gap-2">
-                      <Link href={`/candidates/${candidate.id}`}>
-                        <Button variant="ghost" size="sm">View</Button>
+                    <div className="flex justify-end gap-1">
+                      <Link href={`/candidates/${candidate.id}`} title="View">
+                        <Button variant="ghost" size="sm" className="h-8 w-8 p-0">
+                          <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+                          </svg>
+                        </Button>
                       </Link>
-                      <Button variant="ghost" size="sm" onClick={() => openEditModal(candidate)}>
-                        Edit
+                      <Button variant="ghost" size="sm" className="h-8 w-8 p-0" onClick={() => openEditModal(candidate)} title="Edit">
+                        <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+                        </svg>
                       </Button>
                       <Button
-                        variant="destructive"
+                        variant="ghost"
                         size="sm"
+                        className="h-8 w-8 p-0 text-destructive hover:text-destructive hover:bg-destructive/10"
                         onClick={() => handleDelete(candidate.id)}
+                        title="Delete"
                       >
-                        Delete
+                        <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                        </svg>
                       </Button>
                     </div>
                   </TableCell>
@@ -328,6 +358,78 @@ export default function CandidatesPage() {
               ))}
             </TableBody>
           </Table>
+
+          {/* Pagination Controls */}
+          {candidates.length > 0 && (
+            <div className="flex items-center justify-between border-t border-border px-4 py-3">
+              <div className="flex items-center gap-2">
+                <span className="text-sm text-muted-foreground">Show</span>
+                <select
+                  value={pageSize}
+                  onChange={(e) => setPageSize(Number(e.target.value))}
+                  className="h-8 rounded-md border border-input bg-background px-2 text-sm"
+                >
+                  <option value={25}>25</option>
+                  <option value={50}>50</option>
+                  <option value={100}>100</option>
+                  <option value={200}>200</option>
+                </select>
+                <span className="text-sm text-muted-foreground">per page</span>
+              </div>
+
+              <div className="flex items-center gap-2">
+                <span className="text-sm text-muted-foreground">
+                  {startIndex + 1}-{Math.min(endIndex, candidates.length)} of {candidates.length}
+                </span>
+                <div className="flex gap-1">
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    className="h-8 w-8 p-0"
+                    onClick={() => setCurrentPage(1)}
+                    disabled={currentPage === 1}
+                  >
+                    <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 19l-7-7 7-7m8 14l-7-7 7-7" />
+                    </svg>
+                  </Button>
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    className="h-8 w-8 p-0"
+                    onClick={() => setCurrentPage(currentPage - 1)}
+                    disabled={currentPage === 1}
+                  >
+                    <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
+                    </svg>
+                  </Button>
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    className="h-8 w-8 p-0"
+                    onClick={() => setCurrentPage(currentPage + 1)}
+                    disabled={currentPage >= totalPages}
+                  >
+                    <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                    </svg>
+                  </Button>
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    className="h-8 w-8 p-0"
+                    onClick={() => setCurrentPage(totalPages)}
+                    disabled={currentPage >= totalPages}
+                  >
+                    <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 5l7 7-7 7M5 5l7 7-7 7" />
+                    </svg>
+                  </Button>
+                </div>
+              </div>
+            </div>
+          )}
         </Card>
       )}
 

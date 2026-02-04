@@ -245,70 +245,76 @@ export default function SettingsPage() {
   const isApiKeyConfigured = geminiApiKey.trim().length > 0;
 
   return (
-    <div className="px-4 sm:px-6 lg:px-8">
+    <div className="mx-auto max-w-6xl px-6 py-6">
       <div className="mb-6">
-        <h1 className="text-2xl font-bold text-foreground">Settings</h1>
-        <p className="text-muted-foreground mt-1">Manage application settings and integrations</p>
-      </div>
+          <h1 className="text-2xl font-bold text-foreground">Settings</h1>
+          <p className="text-muted-foreground mt-1">Manage application settings and integrations</p>
+        </div>
 
-      {currentUser && (
-        <Card className="mb-6 p-6">
-          <h2 className="text-lg font-semibold text-foreground mb-4">User Profile</h2>
-          <div className="space-y-3">
-            <div className="flex items-center justify-between">
-              <span className="text-sm font-medium text-muted-foreground">Name</span>
-              <span className="text-sm text-foreground">{currentUser.name}</span>
-            </div>
-            <div className="flex items-center justify-between">
-              <span className="text-sm font-medium text-muted-foreground">Email</span>
-              <span className="text-sm text-foreground">{currentUser.email}</span>
-            </div>
-            <div className="flex items-center justify-between">
-              <span className="text-sm font-medium text-muted-foreground">Role</span>
-              <Badge variant={currentUser.role === 'admin' ? 'default' : 'secondary'}>
-                {currentUser.role}
-              </Badge>
-            </div>
-            {currentUser.email === 'wen.wei@gmail.com' && currentUser.role !== 'admin' && (
-              <div className="pt-3 border-t border-border">
-                <Button
-                  onClick={async () => {
-                    try {
-                      const res = await fetch('/api/admin/setup', { method: 'POST' });
-                      if (res.ok) {
-                        alert('Admin role activated! Please refresh the page.');
-                        window.location.reload();
-                      } else {
-                        const data = await res.json();
-                        alert(data.error || 'Failed to activate admin role');
-                      }
-                    } catch {
-                      alert('Failed to activate admin role');
-                    }
-                  }}
-                >
-                  Activate Admin Role
-                </Button>
+        {currentUser && (
+        <Card className="mb-6 flex flex-col gap-4 overflow-hidden rounded-xl py-4">
+          <div className="px-4">
+            <h2 className="text-base font-medium leading-snug">User Profile</h2>
+            <p className="text-sm text-muted-foreground mt-1">Your account information</p>
+          </div>
+          <div className="px-4">
+            <div className="rounded-lg border p-3 bg-muted/30 space-y-3">
+              <div className="flex items-center justify-between">
+                <span className="text-xs text-muted-foreground">Name</span>
+                <span className="text-sm font-medium text-foreground">{currentUser.name}</span>
               </div>
-            )}
+              <div className="flex items-center justify-between">
+                <span className="text-xs text-muted-foreground">Email</span>
+                <span className="text-sm font-medium text-foreground">{currentUser.email}</span>
+              </div>
+              <div className="flex items-center justify-between">
+                <span className="text-xs text-muted-foreground">Role</span>
+                <Badge variant={currentUser.role === 'admin' ? 'default' : 'secondary'} className="text-xs">
+                  {currentUser.role}
+                </Badge>
+              </div>
+              {currentUser.email === 'wen.wei@gmail.com' && currentUser.role !== 'admin' && (
+                <div className="pt-3 border-t border-border">
+                  <Button
+                    size="sm"
+                    onClick={async () => {
+                      try {
+                        const res = await fetch('/api/admin/setup', { method: 'POST' });
+                        if (res.ok) {
+                          alert('Admin role activated! Please refresh the page.');
+                          window.location.reload();
+                        } else {
+                          const data = await res.json();
+                          alert(data.error || 'Failed to activate admin role');
+                        }
+                      } catch {
+                        alert('Failed to activate admin role');
+                      }
+                    }}
+                  >
+                    Activate Admin Role
+                  </Button>
+                </div>
+              )}
+            </div>
           </div>
         </Card>
       )}
 
-      <Card className="mb-6 p-6">
-        <div className="flex items-center justify-between mb-4">
-          <div>
-            <h2 className="text-lg font-semibold text-foreground">AI Integration</h2>
-            <p className="text-sm text-muted-foreground mt-1">
-              Configure AI services for test generation features
-            </p>
+      <Card className="mb-6 flex flex-col gap-4 overflow-hidden rounded-xl py-4">
+        <div className="px-4">
+          <div className="flex items-center justify-between">
+            <h2 className="text-base font-medium leading-snug">AI Integration</h2>
+            {isApiKeyConfigured && (
+              <Badge variant="default" className="text-xs">Configured</Badge>
+            )}
           </div>
-          {isApiKeyConfigured && (
-            <Badge variant="default">Configured</Badge>
-          )}
+          <p className="text-sm text-muted-foreground mt-1">
+            Configure AI services for test generation features
+          </p>
         </div>
 
-        <div className="border-t border-border pt-4 space-y-4">
+        <div className="px-4 space-y-4">
           <div>
             <label htmlFor="gemini-api-key" className="block text-sm font-medium text-foreground mb-2">
               Google Gemini API Key
@@ -487,26 +493,24 @@ export default function SettingsPage() {
       </Card>
 
       {currentUser?.role === 'admin' && (
-        <Card className="mb-6 p-6">
-          <div className="flex items-center justify-between mb-4">
-            <div>
-              <h2 className="text-lg font-semibold text-foreground">Database Management</h2>
-              <p className="text-sm text-muted-foreground mt-1">
-                Backup and manage your application data
-              </p>
-            </div>
+        <Card className="mb-6 flex flex-col gap-4 overflow-hidden rounded-xl py-4">
+          <div className="px-4">
+            <h2 className="text-base font-medium leading-snug">Database Management</h2>
+            <p className="text-sm text-muted-foreground mt-1">
+              Backup and manage your application data
+            </p>
           </div>
 
-          <div className="border-t border-border pt-4">
-            <div className="mb-4">
+          <div className="px-4 space-y-4">
+            <div className="rounded-lg border p-3 bg-muted/30">
               <h3 className="text-sm font-medium text-foreground mb-2">Export Database</h3>
-              <p className="text-sm text-muted-foreground mb-4">
+              <p className="text-sm text-muted-foreground mb-3">
                 Download a complete backup of your database in JSON format. This includes all tests,
                 candidates, assignments, responses, and settings.
               </p>
-              <div className="flex items-start gap-3 p-4 bg-yellow-500/10 border border-yellow-500/20 rounded-lg mb-4">
+              <div className="flex items-start gap-3 p-3 bg-yellow-500/10 border border-yellow-500/20 rounded-lg mb-3">
                 <svg
-                  className="h-5 w-5 text-yellow-600 dark:text-yellow-400 flex-shrink-0 mt-0.5"
+                  className="h-4 w-4 text-yellow-600 dark:text-yellow-400 flex-shrink-0 mt-0.5"
                   fill="none"
                   stroke="currentColor"
                   viewBox="0 0 24 24"
@@ -518,9 +522,9 @@ export default function SettingsPage() {
                     d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"
                   />
                 </svg>
-                <div className="text-sm text-yellow-700 dark:text-yellow-300">
+                <div className="text-xs text-yellow-700 dark:text-yellow-300">
                   <p className="font-medium mb-1">Important Notes:</p>
-                  <ul className="list-disc list-inside space-y-1">
+                  <ul className="list-disc list-inside space-y-0.5">
                     <li>API keys are redacted in the export for security</li>
                     <li>User passwords are excluded from the export</li>
                     <li>Store the backup file securely as it contains sensitive data</li>
@@ -532,6 +536,7 @@ export default function SettingsPage() {
                 onClick={handleExportDatabase}
                 disabled={exporting}
                 variant="secondary"
+                size="sm"
               >
                 {exporting ? 'Exporting...' : 'Export Database'}
               </Button>
@@ -540,33 +545,42 @@ export default function SettingsPage() {
         </Card>
       )}
 
-      <Card className="p-6">
-        <h3 className="text-lg font-semibold text-foreground mb-3">
-          How to get a Gemini API Key
-        </h3>
-        <ol className="space-y-2 text-sm text-muted-foreground list-decimal list-inside">
-          <li>
-            Visit{' '}
-            <a
-              href="https://ai.google.dev/"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="text-primary hover:underline"
-            >
-              Google AI Studio
-            </a>
-          </li>
-          <li>Click &quot;Get API Key&quot; in the top navigation</li>
-          <li>Create a new API key or use an existing one</li>
-          <li>Copy the API key and paste it above</li>
-          <li>Click &quot;Save API Key&quot; to enable AI test generation</li>
-        </ol>
-
-        <div className="mt-4 p-4 bg-primary/10 border border-primary/20 rounded-lg">
-          <p className="text-sm text-foreground">
-            <strong>Note:</strong> The API key is stored securely in your database and will be
-            used for all AI-powered test generation features. You can update or delete it at any time.
+      <Card className="flex flex-col gap-4 overflow-hidden rounded-xl py-4">
+        <div className="px-4">
+          <h3 className="text-base font-medium leading-snug">
+            How to get a Gemini API Key
+          </h3>
+          <p className="text-sm text-muted-foreground mt-1">
+            Follow these steps to set up AI features
           </p>
+        </div>
+        <div className="px-4">
+          <div className="rounded-lg border p-3 bg-muted/30">
+            <ol className="space-y-2 text-sm text-muted-foreground list-decimal list-inside">
+              <li>
+                Visit{' '}
+                <a
+                  href="https://ai.google.dev/"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="text-primary hover:underline"
+                >
+                  Google AI Studio
+                </a>
+              </li>
+              <li>Click &quot;Get API Key&quot; in the top navigation</li>
+              <li>Create a new API key or use an existing one</li>
+              <li>Copy the API key and paste it above</li>
+              <li>Click &quot;Save API Key&quot; to enable AI test generation</li>
+            </ol>
+          </div>
+
+          <div className="mt-3 p-3 bg-primary/10 border border-primary/20 rounded-lg">
+            <p className="text-sm text-foreground">
+              <strong>Note:</strong> The API key is stored securely in your database and will be
+              used for all AI-powered test generation features. You can update or delete it at any time.
+            </p>
+          </div>
         </div>
       </Card>
     </div>

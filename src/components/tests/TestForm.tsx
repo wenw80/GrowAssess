@@ -192,89 +192,95 @@ export default function TestForm({ initialData }: TestFormProps) {
   };
 
   return (
-    <form onSubmit={handleSubmit} className="space-y-6">
-      <Card>
-        <h2 className="text-lg font-semibold mb-4">Test Details</h2>
-        <div className="space-y-4">
+    <form onSubmit={handleSubmit} className="space-y-8">
+      <div className="space-y-4">
+        <Input
+          label="Title"
+          id="title"
+          value={title}
+          onChange={(e) => setTitle(e.target.value)}
+          placeholder="e.g., Cognitive Aptitude Test"
+          required
+        />
+        <Textarea
+          label="Description"
+          id="description"
+          rows={3}
+          value={description}
+          onChange={(e) => setDescription(e.target.value)}
+          placeholder="Describe what this test measures..."
+        />
+        <Textarea
+          label="Requirements / Generation Prompt"
+          id="requirements"
+          rows={5}
+          className="h-[300px]"
+          value={requirements}
+          onChange={(e) => setRequirements(e.target.value)}
+          placeholder="Store the AI prompt used to generate this test, or any requirements and notes..."
+        />
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <Input
-            label="Title"
-            id="title"
-            value={title}
-            onChange={(e) => setTitle(e.target.value)}
-            placeholder="e.g., Cognitive Aptitude Test"
-            required
+            label="Tags (comma-separated)"
+            id="tags"
+            value={tagsInput}
+            onChange={(e) => setTagsInput(e.target.value)}
+            placeholder="e.g., Analytical, Verbal, Numerical"
           />
-          <Textarea
-            label="Description"
-            id="description"
-            rows={3}
-            value={description}
-            onChange={(e) => setDescription(e.target.value)}
-            placeholder="Describe what this test measures..."
+          <Input
+            label="Duration (minutes)"
+            id="duration"
+            type="number"
+            min={1}
+            value={durationMinutes}
+            onChange={(e) =>
+              setDurationMinutes(e.target.value ? parseInt(e.target.value) : '')
+            }
+            placeholder="e.g., 30"
           />
-          <Textarea
-            label="Requirements / Generation Prompt"
-            id="requirements"
-            rows={5}
-            value={requirements}
-            onChange={(e) => setRequirements(e.target.value)}
-            placeholder="Store the AI prompt used to generate this test, or any requirements and notes..."
-          />
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <Input
-              label="Tags (comma-separated)"
-              id="tags"
-              value={tagsInput}
-              onChange={(e) => setTagsInput(e.target.value)}
-              placeholder="e.g., Analytical, Verbal, Numerical"
-            />
-            <Input
-              label="Duration (minutes)"
-              id="duration"
-              type="number"
-              min={1}
-              value={durationMinutes}
-              onChange={(e) =>
-                setDurationMinutes(e.target.value ? parseInt(e.target.value) : '')
-              }
-              placeholder="e.g., 30"
-            />
+        </div>
+      </div>
+
+      <Card className="flex flex-col gap-4 overflow-hidden rounded-xl py-4">
+        <div className="px-4">
+          <div className="flex items-center justify-between">
+            <h2 className="text-base font-medium leading-snug">Questions ({questions.length})</h2>
+            <Button
+              type="button"
+              variant="secondary"
+              size="sm"
+              onClick={() => setShowAddQuestionModal(true)}
+            >
+              + Add Questions
+            </Button>
           </div>
+          <p className="text-sm text-muted-foreground mt-1">
+            Add and manage test questions
+          </p>
+        </div>
+
+        <div className="px-4 space-y-3">
+          {questions.length === 0 ? (
+            <div className="rounded-lg border p-6 bg-muted/30 text-center text-muted-foreground">
+              No questions yet. Add your first question using the button above.
+            </div>
+          ) : (
+            questions.map((question, index) => (
+              <QuestionEditor
+                key={question.id || index}
+                question={question}
+                index={index}
+                onUpdate={updateQuestion}
+                onDelete={deleteQuestion}
+                onMoveUp={(i) => moveQuestion(i, 'up')}
+                onMoveDown={(i) => moveQuestion(i, 'down')}
+                isFirst={index === 0}
+                isLast={index === questions.length - 1}
+              />
+            ))
+          )}
         </div>
       </Card>
-
-      <div className="space-y-4">
-        <div className="flex items-center justify-between">
-          <h2 className="text-lg font-semibold">Questions ({questions.length})</h2>
-          <Button
-            type="button"
-            variant="secondary"
-            onClick={() => setShowAddQuestionModal(true)}
-          >
-            + Add Questions
-          </Button>
-        </div>
-
-        {questions.length === 0 ? (
-          <Card className="text-center py-12 text-muted-foreground">
-            No questions yet. Add your first question using the buttons above.
-          </Card>
-        ) : (
-          questions.map((question, index) => (
-            <QuestionEditor
-              key={question.id || index}
-              question={question}
-              index={index}
-              onUpdate={updateQuestion}
-              onDelete={deleteQuestion}
-              onMoveUp={(i) => moveQuestion(i, 'up')}
-              onMoveDown={(i) => moveQuestion(i, 'down')}
-              isFirst={index === 0}
-              isLast={index === questions.length - 1}
-            />
-          ))
-        )}
-      </div>
 
       <div className="flex justify-end gap-4">
         <Button type="button" variant="secondary" onClick={() => router.back()}>

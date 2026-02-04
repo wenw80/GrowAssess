@@ -48,6 +48,8 @@ export default function QuestionsLibraryPage() {
   const [selectedQuestionIds, setSelectedQuestionIds] = useState<Set<string>>(new Set());
   const [showBulkTagEditor, setShowBulkTagEditor] = useState(false);
   const [questionForTests, setQuestionForTests] = useState<Question | null>(null);
+  const [currentPage, setCurrentPage] = useState(1);
+  const [pageSize, setPageSize] = useState(25);
 
   useEffect(() => {
     fetchQuestions();
@@ -108,6 +110,17 @@ export default function QuestionsLibraryPage() {
     }
     return true;
   });
+
+  // Pagination calculations
+  const totalPages = Math.ceil(filteredQuestions.length / pageSize);
+  const startIndex = (currentPage - 1) * pageSize;
+  const endIndex = startIndex + pageSize;
+  const paginatedQuestions = filteredQuestions.slice(startIndex, endIndex);
+
+  // Reset to page 1 when filters change
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [searchQuery, selectedTags, typeFilter, pageSize]);
 
   const clearFilters = () => {
     setSearchQuery('');
@@ -203,7 +216,7 @@ export default function QuestionsLibraryPage() {
   }
 
   return (
-    <div className="px-4 sm:px-6 lg:px-8">
+    <div className="mx-auto max-w-[1400px] px-6 py-6">
       <div className="sm:flex sm:items-center sm:justify-between mb-6">
         <div className="mb-4 sm:mb-0">
           <h1 className="text-2xl font-bold text-foreground">Questions Library</h1>
@@ -216,40 +229,46 @@ export default function QuestionsLibraryPage() {
 
       {/* Filters */}
       {questions.length > 0 && (
-        <Card className="mb-6">
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-            <Input
-              placeholder="Search questions..."
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              className="w-full"
-            />
-            <TagFilter
-              tags={allTags}
-              selectedTags={selectedTags}
-              onChange={setSelectedTags}
-              placeholder="Filter by tags..."
-            />
-            <Select
-              options={[
-                { value: 'all', label: 'All Types' },
-                { value: 'mcq', label: 'Multiple Choice' },
-                { value: 'freetext', label: 'Free Text' },
-                { value: 'timed', label: 'Timed Task' },
-              ]}
-              value={typeFilter}
-              onChange={(e) => setTypeFilter(e.target.value)}
-              className="w-full"
-            />
-            {hasActiveFilters && (
-              <Button
-                variant="ghost"
-                onClick={clearFilters}
-                className="w-full sm:w-auto"
-              >
-                Clear Filters
-              </Button>
-            )}
+        <Card className="mb-6 flex flex-col gap-4 overflow-hidden rounded-xl py-4">
+          <div className="px-4">
+            <h2 className="text-base font-medium leading-snug">Search & Filter</h2>
+            <p className="text-sm text-muted-foreground mt-1">Find questions by content, tags, or type</p>
+          </div>
+          <div className="px-4">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+              <Input
+                placeholder="Search questions..."
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                className="w-full"
+              />
+              <TagFilter
+                tags={allTags}
+                selectedTags={selectedTags}
+                onChange={setSelectedTags}
+                placeholder="Filter by tags..."
+              />
+              <Select
+                options={[
+                  { value: 'all', label: 'All Types' },
+                  { value: 'mcq', label: 'Multiple Choice' },
+                  { value: 'freetext', label: 'Free Text' },
+                  { value: 'timed', label: 'Timed Task' },
+                ]}
+                value={typeFilter}
+                onChange={(e) => setTypeFilter(e.target.value)}
+                className="w-full"
+              />
+              {hasActiveFilters && (
+                <Button
+                  variant="ghost"
+                  onClick={clearFilters}
+                  className="w-full sm:w-auto"
+                >
+                  Clear Filters
+                </Button>
+              )}
+            </div>
           </div>
         </Card>
       )}
@@ -340,16 +359,16 @@ export default function QuestionsLibraryPage() {
                         className="rounded"
                       />
                     </TableHead>
-                    <TableHead className="w-[35%]">Question</TableHead>
-                    <TableHead className="w-[10%]">Type</TableHead>
-                    <TableHead className="w-[20%]">Tags</TableHead>
-                    <TableHead className="w-[8%]">Points</TableHead>
-                    <TableHead className="w-[12%]">Tests</TableHead>
-                    <TableHead className="w-[15%] text-right">Actions</TableHead>
+                    <TableHead>Question</TableHead>
+                    <TableHead>Type</TableHead>
+                    <TableHead>Tags</TableHead>
+                    <TableHead>Points</TableHead>
+                    <TableHead>Tests</TableHead>
+                    <TableHead className="text-right">Actions</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
-                  {filteredQuestions.map((question) => (
+                  {paginatedQuestions.map((question) => (
                     <TableRow key={question.id}>
                       <TableCell className="w-10">
                         <input
@@ -359,7 +378,7 @@ export default function QuestionsLibraryPage() {
                           className="rounded"
                         />
                       </TableCell>
-                      <TableCell className="w-[35%]">
+                      <TableCell>
                         <button
                           onClick={() => setSelectedQuestion(question)}
                           className="text-left hover:text-primary transition-colors w-full"
@@ -374,12 +393,12 @@ export default function QuestionsLibraryPage() {
                           )}
                         </button>
                       </TableCell>
-                      <TableCell className="w-[10%]">
+                      <TableCell>
                         <Badge variant="default">
                           {question.type === 'mcq' ? 'MCQ' : question.type === 'freetext' ? 'Free Text' : 'Timed'}
                         </Badge>
                       </TableCell>
-                      <TableCell className="w-[20%]">
+                      <TableCell>
                         {question.tags.length > 0 ? (
                           <div className="flex flex-wrap gap-1 max-h-16 overflow-hidden">
                             {question.tags.slice(0, 3).map((tag, idx) => (
@@ -395,8 +414,8 @@ export default function QuestionsLibraryPage() {
                           <span className="text-muted-foreground">-</span>
                         )}
                       </TableCell>
-                      <TableCell className="w-[8%]">{question.points}</TableCell>
-                      <TableCell className="w-[12%]">
+                      <TableCell>{question.points}</TableCell>
+                      <TableCell>
                         {question._count.tests > 0 ? (
                           <button
                             onClick={() => setQuestionForTests(question)}
@@ -408,20 +427,30 @@ export default function QuestionsLibraryPage() {
                           <span className="text-sm text-muted-foreground whitespace-nowrap">0 tests</span>
                         )}
                       </TableCell>
-                      <TableCell className="w-[15%] text-right">
+                      <TableCell className="text-right">
                         <div className="flex justify-end gap-1">
-                          <Link href={`/questions/${question.id}`}>
-                            <Button variant="ghost" size="sm">
-                              Edit
+                          <Link href={`/questions/${question.id}`} title="Edit">
+                            <Button variant="ghost" size="sm" className="h-8 w-8 p-0">
+                              <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+                              </svg>
                             </Button>
                           </Link>
                           <Button
-                            variant="destructive"
+                            variant="ghost"
                             size="sm"
+                            className="h-8 w-8 p-0 text-destructive hover:text-destructive hover:bg-destructive/10"
                             onClick={() => handleDelete(question.id)}
                             disabled={deleting === question.id}
+                            title="Delete"
                           >
-                            {deleting === question.id ? 'Deleting...' : 'Delete'}
+                            {deleting === question.id ? (
+                              <div className="h-4 w-4 animate-spin rounded-full border-2 border-current border-t-transparent" />
+                            ) : (
+                              <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                              </svg>
+                            )}
                           </Button>
                         </div>
                       </TableCell>
@@ -430,6 +459,78 @@ export default function QuestionsLibraryPage() {
               </TableBody>
             </Table>
           </div>
+
+          {/* Pagination Controls */}
+          {filteredQuestions.length > 0 && (
+            <div className="flex items-center justify-between border-t border-border px-4 py-3">
+              <div className="flex items-center gap-2">
+                <span className="text-sm text-muted-foreground">Show</span>
+                <select
+                  value={pageSize}
+                  onChange={(e) => setPageSize(Number(e.target.value))}
+                  className="h-8 rounded-md border border-input bg-background px-2 text-sm"
+                >
+                  <option value={25}>25</option>
+                  <option value={50}>50</option>
+                  <option value={100}>100</option>
+                  <option value={200}>200</option>
+                </select>
+                <span className="text-sm text-muted-foreground">per page</span>
+              </div>
+
+              <div className="flex items-center gap-2">
+                <span className="text-sm text-muted-foreground">
+                  {startIndex + 1}-{Math.min(endIndex, filteredQuestions.length)} of {filteredQuestions.length}
+                </span>
+                <div className="flex gap-1">
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    className="h-8 w-8 p-0"
+                    onClick={() => setCurrentPage(1)}
+                    disabled={currentPage === 1}
+                  >
+                    <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 19l-7-7 7-7m8 14l-7-7 7-7" />
+                    </svg>
+                  </Button>
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    className="h-8 w-8 p-0"
+                    onClick={() => setCurrentPage(currentPage - 1)}
+                    disabled={currentPage === 1}
+                  >
+                    <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
+                    </svg>
+                  </Button>
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    className="h-8 w-8 p-0"
+                    onClick={() => setCurrentPage(currentPage + 1)}
+                    disabled={currentPage >= totalPages}
+                  >
+                    <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                    </svg>
+                  </Button>
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    className="h-8 w-8 p-0"
+                    onClick={() => setCurrentPage(totalPages)}
+                    disabled={currentPage >= totalPages}
+                  >
+                    <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 5l7 7-7 7M5 5l7 7-7 7" />
+                    </svg>
+                  </Button>
+                </div>
+              </div>
+            </div>
+          )}
         </Card>
         </>
       )}
