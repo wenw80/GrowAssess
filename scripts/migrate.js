@@ -4,15 +4,15 @@ const { execSync } = require('child_process');
 
 // Only run migrations on Vercel (production)
 if (process.env.VERCEL) {
-  console.log('Running database migrations...');
+  console.log('Running database schema sync...');
   try {
-    execSync('npx prisma migrate deploy', { stdio: 'inherit' });
-    console.log('Migrations completed successfully');
+    execSync('npx prisma db push --accept-data-loss', { stdio: 'inherit' });
+    console.log('Database schema sync completed successfully');
   } catch (error) {
-    console.error('Migration failed:', error.message);
+    console.error('Database sync failed:', error.message);
     process.exit(1);
   }
 } else {
-  console.log('Skipping migrations (not on Vercel)');
-  console.log('Run "npx prisma migrate deploy" manually for local development');
+  console.log('Skipping database sync (not on Vercel)');
+  console.log('Run "npx prisma db push" manually for local development');
 }
