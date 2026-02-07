@@ -258,10 +258,22 @@ IMPORTANT: Return ONLY valid JSON. No markdown, no code blocks, no explanations 
       Math.min(100, Math.round(analysisData.overallFitScore))
     );
 
+    // Save the analysis to the database
+    const now = new Date();
+    await prisma.candidate.update({
+      where: { id },
+      data: {
+        fitScore: analysisData.overallFitScore,
+        fitLevel: analysisData.fitLevel,
+        fitAnalysis: JSON.stringify(analysisData),
+        fitAnalyzedAt: now,
+      },
+    });
+
     return NextResponse.json({
       success: true,
       analysis: analysisData,
-      generatedAt: new Date().toISOString(),
+      generatedAt: now.toISOString(),
     });
   } catch (error) {
     console.error('Error generating fit analysis:', error);

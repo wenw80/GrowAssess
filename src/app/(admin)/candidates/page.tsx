@@ -26,6 +26,8 @@ interface Candidate {
   position: string | null;
   status: string;
   notes: string | null;
+  fitScore: number | null;
+  fitLevel: string | null;
   createdAt: string;
   user?: {
     id: string;
@@ -264,6 +266,7 @@ export default function CandidatesPage() {
                 <TableHead>Name</TableHead>
                 <TableHead>Position</TableHead>
                 <TableHead>Status</TableHead>
+                <TableHead>Fit Score</TableHead>
                 <TableHead>Tests Assigned</TableHead>
                 {viewFilter === 'all' && (
                   <TableHead>Created By</TableHead>
@@ -289,6 +292,27 @@ export default function CandidatesPage() {
                     <Badge variant={statusVariants[candidate.status] || 'default'}>
                       {candidate.status}
                     </Badge>
+                  </TableCell>
+                  <TableCell>
+                    {candidate.fitScore !== null ? (
+                      <div className="flex items-center gap-2">
+                        <div
+                          className={`w-8 h-8 rounded-full flex items-center justify-center text-xs font-bold text-white ${
+                            candidate.fitScore > 90
+                              ? 'bg-green-500'
+                              : candidate.fitScore >= 80
+                              ? 'bg-yellow-500'
+                              : candidate.fitScore >= 70
+                              ? 'bg-orange-500'
+                              : 'bg-red-500'
+                          }`}
+                        >
+                          {candidate.fitScore}
+                        </div>
+                      </div>
+                    ) : (
+                      <span className="text-muted-foreground text-xs">-</span>
+                    )}
                   </TableCell>
                   <TableCell>
                     {candidate.assignments.length > 0 ? (

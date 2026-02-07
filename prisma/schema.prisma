@@ -85,6 +85,10 @@ model Candidate {
   jobDescription String?          @db.Text
   status         String           @default("active") // active, hired, rejected, pending
   notes          String?
+  fitScore       Int?
+  fitLevel       String?
+  fitAnalysis    String?          @db.Text // JSON string of full analysis
+  fitAnalyzedAt  DateTime?
   userId         String?
   createdAt      DateTime         @default(now())
   updatedAt      DateTime         @updatedAt

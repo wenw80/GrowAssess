@@ -56,6 +56,10 @@ interface Candidate {
   jobDescription: string | null;
   status: string;
   notes: string | null;
+  fitScore: number | null;
+  fitLevel: string | null;
+  fitAnalysis: string | null;
+  fitAnalyzedAt: string | null;
   createdAt: string;
   assignments: Assignment[];
 }
@@ -140,6 +144,16 @@ export default function CandidateDetailPage({
         notes: candidateData.notes || '',
         jobDescription: candidateData.jobDescription || '',
       });
+
+      // Load saved fit analysis if available
+      if (candidateData.fitAnalysis) {
+        try {
+          const savedAnalysis = JSON.parse(candidateData.fitAnalysis);
+          setFitAnalysis(savedAnalysis);
+        } catch (e) {
+          console.error('Error parsing saved fit analysis:', e);
+        }
+      }
     } catch (error) {
       console.error('Error fetching data:', error);
     } finally {
