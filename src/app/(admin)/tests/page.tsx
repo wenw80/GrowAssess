@@ -818,7 +818,7 @@ export default function TestsPage() {
     }
   ]
 }'
-              className="font-mono text-sm"
+              className="font-mono text-sm [field-sizing:fixed] max-h-80 resize-y"
             />
           </div>
 
@@ -834,7 +834,7 @@ export default function TestsPage() {
             </div>
           )}
 
-          <div className="flex flex-col sm:flex-row justify-end gap-3 pt-4 border-t border-border">
+          <div className="flex flex-col sm:flex-row justify-end gap-3 pt-4 border-t border-border sticky bottom-0 bg-background">
             <Button variant="secondary" onClick={() => setShowImportModal(false)} className="w-full sm:w-auto">
               Cancel
             </Button>
